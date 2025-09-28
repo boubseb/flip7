@@ -1,8 +1,0 @@
-/* mobile-first simple styles */
-body,html { margin:0; padding:0; font-family: Arial, Helvetica, sans-serif; }
-.app-shell { padding:16px; max-width:480px; margin:0 auto; }
-.app-header { text-align:center; }
-.home-card { display:flex; flex-direction:column; gap:8px; margin:16px 0; }
-.auth-card { background:#f9f9f9; padding:12px; border-radius:8px; }
-input { width:100%; padding:8px; margin:6px 0; box-sizing:border-box; }
-button { padding:10px; border-radius:6px; }
