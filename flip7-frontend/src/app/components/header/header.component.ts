@@ -16,9 +16,9 @@ import { AuthenticationService } from '../../services/authentication/authentific
 })
 export class HeaderComponent {
 
-  authenticationService = inject(AuthenticationService);
+ // authenticationService = inject(AuthenticationService);
 
-  isLogin$: Observable<Boolean> = this.authenticationService.isLogin$;
+  // isLogin$: Observable<Boolean> = this.authenticationService.isLogin$;
 
 
   constructor() {}

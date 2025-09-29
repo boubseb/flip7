@@ -1,0 +1,55 @@
+// ...existing code...
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;         
+  background-color: rgba(31, 31, 31, 0.8);
+  z-index: 1;
+  width: 100%;
+  box-sizing: border-box; // <-- include padding in width
+
+  .header-container {
+    width: 100%;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: auto 1fr auto; /* left / center / right */
+    align-items: center;
+    padding: 0 1rem;
+    max-width: 100%; /* prevent accidental overflow */
+
+    .rules-container {
+      display: flex;
+      align-items: center;
+      justify-self: start;
+      overflow: hidden;
+    }
+
+    .title-container {
+      display: flex;
+      justify-content: center; /* center content inside middle cell */
+      text-align: center;
+      pointer-events: none;
+      .title {
+        pointer-events: auto;
+      }
+    }
+
+    .profil-container {
+      display: flex;
+      align-items: center;
+      justify-self: end; /* keep at right edge of its cell */
+      overflow: hidden;   /* clip if content too large */
+    }
+
+    /* safe guards for buttons/images so they don't force overflow */
+    .profil-container button,
+    .rules-container button,
+    .header-container img {
+      max-width: 100%;
+      height: auto;
+      white-space: nowrap;
+    }
+  }
+}
+// ...existing code...

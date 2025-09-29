@@ -1,13 +1,15 @@
 <header class="header">
- 
-  <div class="play-button">
-    @if((isLogin$| async) ===true){
-
-    <a routerLink="/creation-personnage"><img class="image-play-container" src="assets/pictures/jouer.png" alt="profil"></a>
-
-    }
-    @else{
-    <button><img class="image-play-container" src="assets/pictures/jouer.png"></button>
-    }
+  <div class="header-container">
+      <div class="rules-container">
+    <button routerLink="/rules" class="btn-rules">rules</button>
   </div>
+  <div class="title-container">
+    <a class="title" href="/"><h1>Flip 7</h1></a>
+  </div>
+  <div class="profil-container">
+   <button routerLink="/profil" class="btn-profil">profil</button>
+  </div>
+    
+  </div>
+
 </header>
