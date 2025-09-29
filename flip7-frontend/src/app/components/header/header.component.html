@@ -1,0 +1,13 @@
+<header class="header">
+ 
+  <div class="play-button">
+    @if((isLogin$| async) ===true){
+
+    <a routerLink="/creation-personnage"><img class="image-play-container" src="assets/pictures/jouer.png" alt="profil"></a>
+
+    }
+    @else{
+    <button><img class="image-play-container" src="assets/pictures/jouer.png"></button>
+    }
+  </div>
+</header>
