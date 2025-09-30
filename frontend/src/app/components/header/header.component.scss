@@ -9,7 +9,10 @@
   width: 100%;
   box-sizing: border-box; // <-- include padding in width
 
+
   .header-container {
+    height: 5rem;
+    justify-content: center;
     width: 100%;
     box-sizing: border-box;
     display: grid;
@@ -22,10 +25,19 @@
       display: flex;
       align-items: center;
       justify-self: start;
-      overflow: hidden;
+      justify-content: center;
+      align-items: center;
+      .rules-image{ 
+        max-height: 3rem; 
+        height: auto; 
+        margin-right: 0.5rem; 
+      }
     }
 
     .title-container {
+    position: absolute;
+        left: 50%;
+
       display: flex;
       justify-content: center; /* center content inside middle cell */
       text-align: center;

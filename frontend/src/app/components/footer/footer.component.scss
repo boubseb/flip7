@@ -13,10 +13,12 @@
   height: 5.1rem;
   bottom: 0;
   padding: 0 1rem;
+  box-sizing: border-box;
   position: fixed;
 
   .containerFooter {
     width: 100%;
+    box-sizing: border-box;
     height: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -32,6 +34,7 @@
       justify-self: end;
     }
     .iconDiscord {
+      display: block;
       width: 4rem;
       height: auto;
     }
