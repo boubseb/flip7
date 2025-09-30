@@ -1,1 +1,38 @@
-/* You can add global styles to this file, and also import other style files */
+@use "import" as *;
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+/* HEADER */
+app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: $headerHeight;
+}
+
+
+
+/* FOOTER */
+app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: $footerHeight;
+}
+
+/* MAIN prend exactement l’espace entre header et footer */
+main {
+  position: absolute;
+  top: var(--header-height, $headerHeight);   /* espace égal à la hauteur du header */
+  bottom: var(--footer-height, $footerHeight); /* espace égal à la hauteur du footer */
+  left: 0;
+  right: 0;
+  overflow: auto;
+}

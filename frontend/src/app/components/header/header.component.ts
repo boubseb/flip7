@@ -1,27 +1,27 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
-import { AuthenticationService } from '../../services/authentication/authentification.service';
+import { Component } from '@angular/core';
+import { RulesComponent } from '../rules/rules.component';
+
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
+    RulesComponent
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
 
- // authenticationService = inject(AuthenticationService);
+  constructor() { }
 
-  // isLogin$: Observable<Boolean> = this.authenticationService.isLogin$;
+  isRules: boolean = false;
+  toggleIsRules() {
+    this.isRules = !this.isRules;
+  }
 
-
-  constructor() {}
-  
- 
 }
+
+
