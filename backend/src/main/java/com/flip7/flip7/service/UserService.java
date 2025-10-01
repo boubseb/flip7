@@ -23,36 +23,36 @@ public class UserService {
         return users;
     }
 
-//     public User getUserById(String id) {
+    public User getUserById(String id) {
 
-//         User user = this.userRepository.findById(id).get();
-//         if (user == null) {
-//             throw new RuntimeException("User not found");
-//         }
-//         return user;
-//     }
+        User user = this.userRepository.findById(id).get();
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return user;
+    }
 
     public void save(User user) {
         this.userRepository.save(user);
     }
 
-//     public String delete(String userUUID,String password) {
-//         User user = this.getUserById(userUUID);
-//         if (user.getPassword().equals(password)) {
-//             this.userRepository.delete(user);
-//             return "User deleted";
-//         } else {
-//             return "Wrong password";
-//         }
-//     }
+    public String delete(String userUUID,String password) {
+        User user = this.getUserById(userUUID);
+        if (user.getPassword().equals(password)) {
+            this.userRepository.delete(user);
+            return "User deleted";
+        } else {
+            return "Wrong password";
+        }
+    }
 
-//     public User findById(String id) {
-//         return this.userRepository.findById(id).get();
-//     }
+    public User findById(String id) {
+        return this.userRepository.findById(id).get();
+    }
 
-//     public User findByPseudo(String pseudo) {
-//         return this.userRepository.findByPseudo(pseudo);
-//     }
+    public User findByPseudo(String pseudo) {
+        return this.userRepository.findByPseudo(pseudo);
+    }
 
 //     public User updateUserPersonnalData(String userUUID, String firstname, String lastname, String email, Date dateOfBirth) {
 //         User userToUpdate = this.getUserById(userUUID);

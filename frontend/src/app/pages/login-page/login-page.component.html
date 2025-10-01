@@ -1,47 +1,37 @@
-<form>
-    <div class="container">
-      <div class="buttonHeader">
-          <button class="buttonDispose" (click)="onClose()"><img class="buttonContent" src="assets/pictures/CloseButton.png"></button>
-      </div>
-
-      <div class="containerFlex">
+<div class="login-container">
+    <form class="login-form">
         <div class="connect">
-            SE CONNECTER
-        </div>
-
-        <div class="logo">
-            <img class="logo-content" src="assets/pictures/Blop.png" alt="Logo">
+            Login
         </div>
 
         <div>
-          <label for="login" class="formatText">
-              Identifiant :
-          </label>
+            <label for="login" class="formatText">
+                Username :
+            </label>
         </div>
 
         <div class="inputLogin">
-          <input id="login" name="login" type="text"  [(ngModel)] = "login.login" [ngModelOptions]="{standalone: true}"/>
+            <input id="login" name="login" type="text" [(ngModel)]="login.login"
+                [ngModelOptions]="{standalone: true}" />
         </div>
 
         <div>
-          <label for="password" class="formatText">
-              Mot de passe :
-          </label>
+            <label for="password" class="formatText">
+                Password :
+            </label>
         </div>
 
         <div class="inputLogin">
-          <input id="password" name="password" type="password"  [(ngModel)] = "login.password" [ngModelOptions]="{standalone: true}"/>
+            <input id="password" name="password" type="password" [(ngModel)]="login.password"
+                [ngModelOptions]="{standalone: true}" />
         </div>
 
         <div class="forgot-password">
-            Mot de passe oublié ?
+            forget password ?
         </div>
-        
 
-        <button (click)="onLogin(login.login,login.password)" class = "connectButton">Connexion</button>
-        <button class = "registerButton" (click)="onClose()" routerLink="inscription">Inscription</button>
 
-      </div>
-
-    </div>
-</form>
+        <button (click)="onLogin(login.login,login.password)" class="connectButton">Connexion</button>
+        <button class="registerButton" routerLink="/register">register</button>
+    </form>
+</div>

@@ -1,5 +1,5 @@
 @use "import" as *;
-@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+@use '@angular/material' as mat;
 html, body {
   height: 100%;
   margin: 0;

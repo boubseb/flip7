@@ -9,6 +9,6 @@ import com.flip7.flip7.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
-    Optional<User> findByPseudo(String pseudo);
+    User findByPseudo(String pseudo);
 }
 
