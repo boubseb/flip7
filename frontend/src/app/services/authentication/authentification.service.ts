@@ -62,11 +62,5 @@ register(user: User): Observable<any> {
     return this.http.post<User>(this.url+'/register', user)
 }
 
-
-
-
-
-
-
 }
 

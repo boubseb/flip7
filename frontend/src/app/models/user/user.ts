@@ -2,17 +2,12 @@ export class User {
 
     id?:string;
     pseudo!:string;
-    pseudoDisplay!:string;
     lastname!:string;
     firstname!:string;
     password!:string;
     email!:string;
     dateOfBirth!:string;
   
-    biography!:string;
-    profilPictureUrl!:string;
-    
-
 
     constructor(
         pseudo: string,

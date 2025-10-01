@@ -1,13 +1,13 @@
-package com.flip7.flip7_backend;
+package com.flip7.flip7;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Flip7BackendApplication {
+public class Flip7Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Flip7BackendApplication.class, args);
+		SpringApplication.run(Flip7Application.class, args);
 	}
 
 }

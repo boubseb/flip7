@@ -34,7 +34,7 @@
             transition: background-color 0.3s ease;
 
             &:hover {
-                background-color: darken($homeButtonColor, 50%);
+                background-color: adjust-color($homeButtonColor, $lightness: -10%);
             }
         }
     }
