@@ -1,0 +1,135 @@
+<div class="room-page-container">
+  <!-- Messages -->
+  <div class="message-banner error" *ngIf="errorMessage">
+    <span>❌ {{ errorMessage }}</span>
+    <button (click)="clearMessages()">✕</button>
+  </div>
+
+  <div class="message-banner success" *ngIf="successMessage">
+    <span>✅ {{ successMessage }}</span>
+    <button (click)="clearMessages()">✕</button>
+  </div>
+
+  <div class="room-lobby">
+    <h1>🎮 Lobby des Rooms</h1>
+    <p class="subtitle">Créez une nouvelle room ou rejoignez une partie existante</p>
+
+    <div class="lobby-content">
+      <!-- Left: Create & Join -->
+      <div class="lobby-left">
+        <!-- Create room section -->
+        <div class="card create-room-card">
+          <h2>🆕 Créer une nouvelle room</h2>
+          <div class="form-group">
+            <label>Mot de passe de la room</label>
+            <input 
+              type="password" 
+              [(ngModel)]="createRoomPassword" 
+              placeholder="Entrez un mot de passe"
+              (keyup.enter)="createRoom()">
+          </div>
+          <div class="form-group">
+            <label>Nombre de joueurs maximum</label>
+            <input 
+              type="number" 
+              [(ngModel)]="createRoomMaxPlayers" 
+              min="2" 
+              max="8"
+              placeholder="4">
+          </div>
+          <button class="btn btn-primary" (click)="createRoom()">
+            🎯 Créer la room
+          </button>
+        </div>
+
+        <!-- Join room section -->
+        <div class="card join-room-card">
+          <h2>🚪 Rejoindre une room</h2>
+          <div class="form-group">
+            <label>ID de la room</label>
+            <input 
+              type="text" 
+              [(ngModel)]="joinRoomId" 
+              placeholder="Collez l'ID de la room"
+              [readonly]="joinRoomId.length > 0">
+            <button 
+              class="btn-clear" 
+              *ngIf="joinRoomId.length > 0"
+              (click)="joinRoomId = ''; clearMessages()">
+              ✕
+            </button>
+          </div>
+          <div class="form-group">
+            <label>Mot de passe</label>
+            <input 
+              type="password" 
+              [(ngModel)]="joinRoomPassword" 
+              placeholder="Mot de passe de la room"
+              (keyup.enter)="joinRoom()">
+          </div>
+          <button 
+            class="btn btn-success" 
+            (click)="joinRoom()"
+            [disabled]="!joinRoomId || !joinRoomPassword">
+            ➡️ Rejoindre
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Available rooms -->
+      <div class="lobby-right">
+        <div class="card available-rooms-card">
+          <div class="card-header">
+            <h2>📋 Rooms disponibles</h2>
+            <button class="btn-refresh" (click)="loadAvailableRooms()">
+              🔄 Rafraîchir
+            </button>
+          </div>
+          
+          <div class="rooms-list" *ngIf="availableRooms.length > 0">
+            <div 
+              class="room-item" 
+              *ngFor="let room of availableRooms"
+              [class.selected]="joinRoomId === room.id"
+              (click)="selectRoomToJoin(room.id)">
+              <div class="room-main">
+                <div class="room-icon">🎴</div>
+                <div class="room-details">
+                  <div class="room-id-line">
+                    <span class="room-id-label">Room:</span>
+                    <code class="room-id">{{ room.id.substring(0, 8) }}...</code>
+                    <button 
+                      class="btn-copy" 
+                      (click)="copyRoomId(room.id); $event.stopPropagation()"
+                      title="Copier l'ID">
+                      📋
+                    </button>
+                  </div>
+                  <div class="room-meta">
+                    <span class="room-players">
+                      👥 {{ room.players.length }}/{{ room.maxPlayers }}
+                    </span>
+                    <span class="room-status" [class]="room.status.toLowerCase()">
+                      {{ getRoomStatusLabel(room.status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                class="btn-select"
+                [class.selected]="joinRoomId === room.id">
+                {{ joinRoomId === room.id ? '✓ Sélectionnée' : 'Sélectionner' }}
+              </button>
+            </div>
+          </div>
+          
+          <div class="no-rooms" *ngIf="availableRooms.length === 0">
+            <div class="no-rooms-icon">🎲</div>
+            <p>Aucune room disponible</p>
+            <p class="hint">Soyez le premier à créer une room !</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

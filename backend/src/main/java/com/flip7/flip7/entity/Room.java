@@ -1,0 +1,132 @@
+package com.flip7.flip7.entity;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "rooms")
+public class Room {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    
+    @Column(nullable = false)
+    private String password;
+    
+    @Column(nullable = false)
+    private String adminId;
+    
+    @ElementCollection
+    @CollectionTable(name = "room_players", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "player_id")
+    private List<String> players = new ArrayList<>();
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RoomStatus status = RoomStatus.WAITING;
+    
+    @Column
+    private Integer turnIndex = 0;
+    
+    @Column(columnDefinition = "TEXT")
+    private String gameState; // JSON string pour l'état du jeu
+    
+    @Column
+    private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @Column
+    private Integer maxPlayers = 4;
+    
+    // Getters and Setters
+    public String getId() {
+        return id;
+    }
+    
+    public void setId(String id) {
+        this.id = id;
+    }
+    
+    public String getPassword() {
+        return password;
+    }
+    
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    
+    public String getAdminId() {
+        return adminId;
+    }
+    
+    public void setAdminId(String adminId) {
+        this.adminId = adminId;
+    }
+    
+    public List<String> getPlayers() {
+        return players;
+    }
+    
+    public void setPlayers(List<String> players) {
+        this.players = players;
+    }
+    
+    public RoomStatus getStatus() {
+        return status;
+    }
+    
+    public void setStatus(RoomStatus status) {
+        this.status = status;
+    }
+    
+    public Integer getTurnIndex() {
+        return turnIndex;
+    }
+    
+    public void setTurnIndex(Integer turnIndex) {
+        this.turnIndex = turnIndex;
+    }
+    
+    public String getGameState() {
+        return gameState;
+    }
+    
+    public void setGameState(String gameState) {
+        this.gameState = gameState;
+    }
+    
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    
+    public Integer getMaxPlayers() {
+        return maxPlayers;
+    }
+    
+    public void setMaxPlayers(Integer maxPlayers) {
+        this.maxPlayers = maxPlayers;
+    }
+    
+    public enum RoomStatus {
+        WAITING,
+        IN_GAME,
+        FINISHED
+    }
+}
