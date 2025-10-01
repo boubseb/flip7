@@ -54,29 +54,57 @@
       }
     }
 
-    .profil-container {
+    .profil-container{
       display: flex;
+      justify-content: right;
       align-items: center;
-      justify-self: end;
-      /* keep at right edge of its cell */
-      overflow: hidden;
-      /* clip if content too large */
+      .profil-image{
+        display: grid;
+        grid-template-columns: 1fr;
+        place-items: center;
+        img {
+            grid-column-start: 1;
+            grid-column-end: 1;
+            grid-row-start: 1;
+            grid-row-end: 1 ;
+          }
+          .avatar{
+            z-index: 2;
+            height: 40px;
+            width: 40px;
+
+          }
+      }
+      .logout-image{
+        height: 53px;
+          width: 53px;
+        
+      }
+      
     }
 
-    /* safe guards for buttons/images so they don't force overflow */
-    .profil-container button,
-    .rules-button,
-    .header-container img {
-      max-width: 100%;
-      height: auto;
-      white-space: nowrap;
-    }
   }
 
 
 }
 
 .rules-container {
+  position: absolute;
+  top: var(--header-height, $headerHeight);
+  /* espace égal à la hauteur du header */
+  bottom: var(--footer-height, $footerHeight);
+  /* espace égal à la hauteur du footer */
+  left: 0;
+  right: 0;
+  display: flex;
+  z-index: 1001;
+  background-color: rgb(155, 89, 89);
+
+  overflow: auto;
+  height: calc(100vh - $headerHeight - $footerHeight);
+
+}
+.profil-page-container {
   position: absolute;
   top: var(--header-height, $headerHeight);
   /* espace égal à la hauteur du header */

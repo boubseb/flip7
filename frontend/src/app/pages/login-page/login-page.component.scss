@@ -1,165 +1,140 @@
-.login-container{
-    background-color: #3b1c07;
-    background-size: cover;
-    background-position: center center;
-    background-attachment: fixed;
-    padding-top: 160px;
-    height: 100%;
-    width: 100%;
-    padding-bottom: 4rem;
-}
-
-.checkbox-container {
-    margin-top: 10px;
+.login-container {
     display: flex;
+    justify-content: center;
     align-items: center;
-}
-
-.checkbox-container input {
-    margin-right: 10px;
-}
-
-.checkbox-container label {
-    font-family: 'Inika';
-    color: white;
-}
+    height: 100%;
+    background-color: rgba(70, 68, 68, 0.9);
 
 
-.login-form {
-    display: flex;
-    flex-direction: column;
-    width: 400px;
-    margin: 0 auto;
-    padding-top: 6%;
-    padding: 20px;
-    color: white;
-    position: relative;
-}
-
-.login-form h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 35px;
-    font-family: 'Cinzel';
-    color: white;
-}
-
-.login-form label {
-    margin-top: 10px;
-}
-
-.login-form input[type="text"],
-.login-form input[type="date"],
-.login-form input[type="email"],
-.login-form input[type="password"] {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: none;
-    background-color: #DDB375;
-    border-radius: 5px;
-}
-
-#toggle-cgu {
-    display: none;
-}
-
-.cgu-container {
-    position: relative;
-    width: 130%;
-    align-self: center;
-    text-align: center;
-    margin-top: 20px;
-}
-
-input {
-    color: #000000;
-}
-
-label, input {
-    font-family: 'Inika';
-}
-
-.cgu-button {
-    margin-top: 20px;
-    padding: 10px;
-    width: 100%;
-    background-color: #DDB375;
-    color: #fff;
-    text-align: center;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    display: inline-block;
-    transition: height 0.3s;
-}
-
-.cgu-title {
-    font-weight: bold;
-}
-
-.cgu-button .cgu-content {
-    display: none;
-    max-height: 0;
-    overflow-y: scroll;
-    padding: 10px;
-    background-color: #DDB375;
-    color: black;
-    box-sizing: border-box;
-    transition: max-height 0.3s;
-    text-align: left;
-    line-height: 1.5;
-}
-
-#toggle-cgu:checked+.cgu-button {
-    height: auto;
-}
-
-#toggle-cgu:checked+.cgu-button .cgu-title {
-    display: none;
-}
-
-#toggle-cgu:checked+.cgu-button .cgu-content {
-    display: block;
-    max-height: 200px;
-}
-
-#login-button {
-    margin-top: 20px;
-    padding: 10px;
-    width: 50%;
-    background-color: #3b1c07;
-    font-family: 'Cinzel', cursive;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    align-self: center;
-    font-weight: bold;
-}
-
-.login-form button:disabled {
-    background-color: #a07c58;
-}
-
-@media (max-width: 480px) {
     .login-form {
-        width: 100%;
-        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        width: 400px;
+
+        .input-container {
+             display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 2rem;
+            margin-bottom: 15px;
+            width: 100%;
+            
+            .inputLogin {
+                width: 100%;
+                margin-bottom: 0.75rem;
+            }
+
+            /* Labels above inputs */
+            .formatText {
+                display: block;
+                margin-bottom: 0.35rem;
+                color: rgba(255,255,255,0.85);
+                font-weight: 600;
+                font-size: 0.95rem;
+                font-family: 'Inika', serif;
+            }
+
+            input {
+                width: 100%;
+                padding: 0.72rem 0.9rem;
+                border-radius: 10px;
+                border: 1px solid rgba(255,255,255,0.10);
+                background: rgba(255,255,255,0.03);
+                color: #ffffff;
+                font-size: 1rem;
+                box-sizing: border-box;
+                transition: box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+                font-family: 'Inika', serif;
+            }
+
+            input::placeholder {
+                color: rgba(255,255,255,0.6);
+            }
+
+            input:focus {
+                outline: none;
+                border-color: rgba(79,70,229,0.9);
+                box-shadow: 0 6px 18px rgba(2,6,23,0.55), 0 0 0 4px rgba(79,70,229,0.10);
+                background: rgba(255,255,255,0.035);
+            }
+
+            /* smaller screens: increase spacing */
+            @media (max-width: 480px) {
+                .inputLogin { margin-bottom: 0.9rem; }
+                input { padding: 0.8rem; }
+            }
+
+        }
+
+       
+
+
+
+
+
+        .connectButton {
+            margin-top: 12px;
+            margin-bottom: 3rem; /* extra breathing room before the links */
+            padding: 0.8rem 1.1rem;
+            width: 100%;
+            max-width: 320px;
+            background: linear-gradient(90deg, #6d28d9 0%, #4f46e5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            align-self: center;
+            font-weight: 700;
+            box-shadow: 0 10px 24px rgba(79,70,229,0.18);
+            transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+        }
+
+        .connectButton:hover { transform: translateY(-2px); opacity: 0.98 }
+        .connectButton:active { transform: translateY(0px); box-shadow: 0 6px 18px rgba(79,70,229,0.12); }
+
+        .login-form button:disabled,
+        .connectButton:disabled {
+            background-color: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* link group below the form */
+        .login-form > div:last-child {
+            margin-top: 1.6rem; /* increased spacing from button */
+            display: flex;
+            gap: 1rem; /* increase gap between links */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .registerButton {
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .forgot-password {
+            padding: 0.45rem 0.9rem;
+            border-radius: 999px;
+            color: rgba(255,255,255,0.85);
+            font-size: 0.95rem;
+        }
     }
 
-    .login-form h1 {
-        font-size: 20px;
-    }
 
-    .login-form button {
-        font-size: 12px;
-        padding: 8px;
-    }
 
-    #CGU {
-        display: none;
-    }
+
+
+
+
 }

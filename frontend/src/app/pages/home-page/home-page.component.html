@@ -1,8 +1,20 @@
-<div class="main-container">
-    <div class="buttons-container" >
-            <button  routerLink="/login" class="button-home">login</button>
-            <button  routerLink="/register" class="button-home">register</button>
-            <button  routerLink="/offline" class="button-home">offline</button>
+@if(isLogin$| async){
+    <div class="main-container">
+    <div class="buttons-container">
+        <button routerLink="/game" class="button-home">Create room</button>
+        <button routerLink="/game" class="button-home">Join Room</button>
+        <button routerLink="/game" class="button-home">offline</button>
 
     </div>
 </div>
+}
+@else {
+<div class="main-container">
+    <div class="buttons-container">
+        <button routerLink="/login" class="button-home">login</button>
+        <button routerLink="/register" class="button-home">register</button>
+        <button routerLink="/offline" class="button-home">offline</button>
+
+    </div>
+</div>
+}

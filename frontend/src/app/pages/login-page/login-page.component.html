@@ -1,37 +1,39 @@
 <div class="login-container">
     <form class="login-form">
-        <div class="connect">
+        <h1 class="connect">
             Login
+        </h1>
+        <div class="input-container">
+            <div class="inputLogin">
+                <label for="login" class="formatText">
+                    Username :
+                </label>
+            </div>
+
+            <div class="inputLogin">
+                <input id="login" name="login" type="text" [(ngModel)]="login.login"
+                    [ngModelOptions]="{standalone: true}" />
+            </div>
+
+            <div class="inputLogin">
+                <label for="password" class="formatText">
+                    Password :
+                </label>
+            </div>
+
+            <div class="inputLogin">
+                <input id="password" name="password" type="password" [(ngModel)]="login.password"
+                    [ngModelOptions]="{standalone: true}" />
+            </div>
         </div>
-
-        <div>
-            <label for="login" class="formatText">
-                Username :
-            </label>
-        </div>
-
-        <div class="inputLogin">
-            <input id="login" name="login" type="text" [(ngModel)]="login.login"
-                [ngModelOptions]="{standalone: true}" />
-        </div>
-
-        <div>
-            <label for="password" class="formatText">
-                Password :
-            </label>
-        </div>
-
-        <div class="inputLogin">
-            <input id="password" name="password" type="password" [(ngModel)]="login.password"
-                [ngModelOptions]="{standalone: true}" />
-        </div>
-
-        <div class="forgot-password">
-            forget password ?
-        </div>
-
-
         <button (click)="onLogin(login.login,login.password)" class="connectButton">Connexion</button>
-        <button class="registerButton" routerLink="/register">register</button>
+        <div>
+            <a class="registerButton" routerLink="/register">register</a>
+
+            <a class="forgot-password">
+                forget password ?
+            </a>
+        </div>
+
     </form>
 </div>
