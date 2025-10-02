@@ -13,6 +13,7 @@ export interface Room {
   currentPlayerId: string;
   createdAt: Date;
   maxPlayers: number;
+  currentPlayers: number; // Added for room browser
 }
 
 export interface RoomCreateRequest {

@@ -1,7 +1,7 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Room, RoomCreateRequest, RoomCreateResponse, RoomJoinRequest } from '../../models/room/room.model';
 
 @Injectable({
@@ -15,6 +15,14 @@ export class RoomService {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
+  // Helper to add currentPlayers to Room objects
+  private enrichRoom(room: any): Room {
+    return {
+      ...room,
+      currentPlayers: room.players?.length || 0
+    };
+  }
+
   private getHeaders(): HttpHeaders {
     let token = '';
     if (isPlatformBrowser(this.platformId)) {
@@ -27,48 +35,48 @@ export class RoomService {
   }
 
   createRoom(request: RoomCreateRequest): Observable<Room> {
-    return this.http.post<Room>(
+    return this.http.post<any>(
       `${this.apiUrl}/create`,
       request,
       { headers: this.getHeaders() }
-    );
+    ).pipe(map(room => this.enrichRoom(room)));
   }
 
   joinRoom(request: RoomJoinRequest): Observable<Room> {
-    return this.http.post<Room>(
+    return this.http.post<any>(
       `${this.apiUrl}/join`,
       request,
       { headers: this.getHeaders() }
-    );
+    ).pipe(map(room => this.enrichRoom(room)));
   }
 
   getRoom(roomId: string): Observable<Room> {
-    return this.http.get<Room>(
+    return this.http.get<any>(
       `${this.apiUrl}/${roomId}`,
       { headers: this.getHeaders() }
-    );
+    ).pipe(map(room => this.enrichRoom(room)));
   }
 
   getAvailableRooms(): Observable<Room[]> {
-    return this.http.get<Room[]>(
+    return this.http.get<any[]>(
       `${this.apiUrl}/available`,
       { headers: this.getHeaders() }
-    );
+    ).pipe(map(rooms => rooms.map(room => this.enrichRoom(room))));
   }
 
   startGame(roomId: string): Observable<Room> {
-    return this.http.post<Room>(
+    return this.http.post<any>(
       `${this.apiUrl}/${roomId}/start`,
       {},
       { headers: this.getHeaders() }
-    );
+    ).pipe(map(room => this.enrichRoom(room)));
   }
 
   playTurn(roomId: string, move: string): Observable<Room> {
-    return this.http.post<Room>(
+    return this.http.post<any>(
       `${this.apiUrl}/${roomId}/play`,
       { move },
       { headers: this.getHeaders() }
-    );
+    ).pipe(map(room => this.enrichRoom(room)));
   }
 }

@@ -48,7 +48,7 @@
     </div>
   </div>
 
-  <!-- JOIN VIEW (join form + rooms list) -->
+  <!-- JOIN VIEW (room browser with tabs) -->
   <div class="join-view" *ngIf="currentView === 'join'">
     <div class="view-header">
       <button class="btn-back" (click)="backToHome()">← Back</button>
@@ -57,97 +57,14 @@
     </div>
 
     <div class="join-content">
-      <!-- Left: Join form -->
-      <div class="join-left">
-        <div class="card join-room-card">
-          <h2>🚪 Join room</h2>
-          <div class="form-group">
-            <label>Room ID</label>
-            <input 
-              type="text" 
-              [(ngModel)]="joinRoomId" 
-              placeholder="Collez l'ID de la room"
-              [readonly]="joinRoomId.length > 0">
-            <button 
-              class="btn-clear" 
-              *ngIf="joinRoomId.length > 0"
-              (click)="joinRoomId = ''; clearMessages()">
-              ✕
-            </button>
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input 
-              type="password" 
-              [(ngModel)]="joinRoomPassword" 
-              placeholder="Mot de passe de la room"
-              (keyup.enter)="joinRoom()">
-          </div>
-          <button 
-            class="btn btn-success" 
-            (click)="joinRoom()"
-            [disabled]="!joinRoomId || !joinRoomPassword">
-            ➡️ Join
-          </button>
-        </div>
-      </div>
-
-      <!-- Right: Available rooms -->
-      <div class="join-right">
-        <div class="card available-rooms-card">
-          <div class="card-header">
-            <h2>📋 Available rooms</h2>
-            <button class="btn-refresh" (click)="loadAvailableRooms()">
-              🔄 Refresh
-            </button>
-          </div>
-          
-          <div class="rooms-list" *ngIf="availableRooms.length > 0">
-            <div 
-              class="room-item" 
-              *ngFor="let room of availableRooms"
-              [class.selected]="joinRoomId === room.id"
-              (click)="selectRoomToJoin(room.id)">
-              <div class="room-main">
-                <div class="room-icon">🎴</div>
-                <div class="room-details">
-                  <div class="room-id-line">
-                    <span class="room-id-label">Room:</span>
-                    <code class="room-id">{{ room.id.substring(0, 8) }}...</code>
-                    <button 
-                      class="btn-copy" 
-                      (click)="copyRoomId(room.id); $event.stopPropagation()"
-                      title="Copier l'ID">
-                      📋
-                    </button>
-                  </div>
-                  <div class="room-meta">
-                    <span class="room-players">
-                      👥 {{ room.players.length }}/{{ room.maxPlayers }}
-                    </span>
-                    <span class="room-status" [class]="room.status.toLowerCase()">
-                      {{ getRoomStatusLabel(room.status) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <button 
-                class="btn-select"
-                [class.selected]="joinRoomId === room.id">
-                {{ joinRoomId === room.id ? '✓ Sélectionnée' : 'Sélectionner' }}
-              </button>
-            </div>
-          </div>
-          
-          <div class="no-rooms" *ngIf="availableRooms.length === 0">
-            <div class="no-rooms-icon">🎲</div>
-            <p>Aucune room disponible</p>
-            <p class="hint">Soyez le premier à créer une room !</p>
-          </div>
-        </div>
-      </div>
+      <app-room-browser
+        [availableRooms]="availableRooms"
+        (onJoinById)="handleJoinById($event)"
+        (onRefreshRooms)="loadAvailableRooms()">
+      </app-room-browser>
     </div>
   </div>
+
 
   <!-- WAITING ROOM VIEW (when in a room) -->
   <div class="waiting-room" *ngIf="currentView === 'waiting' && currentRoom">

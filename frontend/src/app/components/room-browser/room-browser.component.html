@@ -1,0 +1,134 @@
+<div class="room-browser">
+  <!-- Tabs Navigation -->
+  <div class="tabs-navigation">
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab === 'byId'"
+      (click)="switchTab('byId')">
+      🔑 Join by ID
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="activeTab === 'browse'"
+      (click)="switchTab('browse')">
+      📋 Browse Rooms
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    
+    <!-- JOIN BY ID TAB -->
+    <div class="tab-panel" *ngIf="activeTab === 'byId'">
+      <div class="card">
+        <h2>🔑 Join by ID</h2>
+        <div class="form-group">
+          <label>Room ID</label>
+          <div class="input-with-clear">
+            <input 
+              type="text" 
+              [(ngModel)]="joinRoomId" 
+              placeholder="Paste room ID"
+              [readonly]="joinRoomId.length > 0">
+            <button 
+              class="btn-clear-input" 
+              *ngIf="joinRoomId.length > 0"
+              (click)="clearRoomId()">
+              ✕
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input 
+            type="password" 
+            [(ngModel)]="joinRoomPassword" 
+            placeholder="Room password"
+            (keyup.enter)="joinById()">
+        </div>
+        <button 
+          class="btn btn-success btn-large" 
+          (click)="joinById()"
+          [disabled]="!joinRoomId || !joinRoomPassword">
+          ➡️ Join Room
+        </button>
+      </div>
+    </div>
+
+    <!-- BROWSE ROOMS TAB -->
+    <div class="tab-panel" *ngIf="activeTab === 'browse'">
+      <div class="card">
+        <!-- Search and Refresh Header -->
+        <div class="browse-header">
+          <h2>📋 Available Rooms</h2>
+          <button class="btn-refresh" (click)="refreshRooms()" title="Refresh">
+            🔄
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <div class="input-with-clear">
+            <input 
+              type="text" 
+              [(ngModel)]="searchQuery" 
+              placeholder="🔍 Search by ID or status..."
+              class="search-input">
+            <button 
+              class="btn-clear-input" 
+              *ngIf="searchQuery.length > 0"
+              (click)="clearSearch()">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Rooms List -->
+        <div class="rooms-list-container">
+          <div class="rooms-list" *ngIf="filteredRooms.length > 0">
+            <div 
+              class="room-item"
+              *ngFor="let room of filteredRooms"
+              (click)="selectRoom(room.id)"
+              title="Click to join this room">
+              
+              <div class="room-icon">🎮</div>
+              <div class="room-details">
+                <div class="room-id-line">
+                  <span class="room-id-label">ID:</span>
+                  <span class="room-id">{{ room.id.substring(0, 8) }}...</span>
+                </div>
+                <div class="room-meta">
+                  <span class="room-players">
+                    👥 {{ room.currentPlayers }}/{{ room.maxPlayers }}
+                  </span>
+                  <span class="room-status" [class]="room.status.toLowerCase()">
+                    {{ room.status }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="room-arrow">
+                ➜
+              </div>
+            </div>
+          </div>
+
+          <!-- No Results -->
+          <div class="no-rooms" *ngIf="filteredRooms.length === 0 && availableRooms.length > 0">
+            <p class="emoji">🔍</p>
+            <p class="text">No rooms found matching "{{ searchQuery }}"</p>
+          </div>
+
+          <!-- Empty State -->
+          <div class="no-rooms" *ngIf="availableRooms.length === 0">
+            <p class="emoji">😴</p>
+            <p class="text">No rooms available</p>
+            <p class="subtext">Be the first to create one!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>

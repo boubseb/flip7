@@ -5,11 +5,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { RoomService } from '../../services/room/room.service';
 import { WebSocketService } from '../../services/websocket/websocket.service';
 import { Room, RoomStatus, RoomCreateRequest, RoomJoinRequest } from '../../models/room/room.model';
+import { RoomBrowserComponent } from '../../components/room-browser/room-browser.component';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-room-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RoomBrowserComponent],
   templateUrl: './room-page.component.html',
   styleUrl: './room-page.component.scss'
 })
@@ -276,6 +277,11 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         this.errorMessage = error.error?.message || 'Erreur lors du démarrage de la partie';
       }
     });
+  }
+
+  // Handler for room browser component
+  handleJoinById(event: { roomId: string, password: string }): void {
+    this.joinRoom(event.roomId, event.password);
   }
   
   leaveRoom(): void {

@@ -1,4 +1,5 @@
 @use "../../../import" as *;
+@use "sass:color";
 
 .main-container {
     display: flex;
@@ -34,7 +35,7 @@
             transition: background-color 0.3s ease;
 
             &:hover {
-                background-color: darken($homeButtonColor, 10%);
+                background-color: color.adjust($homeButtonColor, $lightness: -10%);
             }
         }
     }
