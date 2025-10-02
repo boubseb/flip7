@@ -83,7 +83,7 @@
       <div class="players-list">
         <div class="player-card" *ngFor="let playerId of currentRoom.players; let i = index">
           <span class="player-number">{{ i + 1 }}</span>
-          <span class="player-id">{{ playerId.substring(0, 8) }}...</span>
+          <span class="player-id">{{ getPlayerPseudo(playerId) }}</span>
           <span class="badge-you" *ngIf="playerId === currentUserId">Vous</span>
           <span class="badge-admin" *ngIf="playerId === currentRoom.adminId">👑 Admin</span>
           <button 

@@ -1,6 +1,7 @@
 package com.flip7.flip7.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,16 +10,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.flip7.flip7.dto.PlayerInfo;
 import com.flip7.flip7.dto.RoomResponse;
 import com.flip7.flip7.entity.Room;
+import com.flip7.flip7.entity.User;
 import com.flip7.flip7.entity.Room.RoomStatus;
 import com.flip7.flip7.repository.RoomRepository;
+import com.flip7.flip7.repository.UserRepository;
 
 @Service
 public class RoomService {
     
     @Autowired
     private RoomRepository roomRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -155,7 +162,16 @@ public class RoomService {
     }
     
     public RoomResponse toRoomResponse(Room room) {
-        return new RoomResponse(
+        // Fetch player infos with pseudos
+        List<PlayerInfo> playerInfos = room.getPlayers().stream()
+            .map(playerId -> {
+                User user = userRepository.findById(playerId).orElse(null);
+                String pseudo = user != null ? user.getPseudo() : "Unknown";
+                return new PlayerInfo(playerId, pseudo);
+            })
+            .collect(Collectors.toList());
+        
+        RoomResponse response = new RoomResponse(
             room.getId(),
             room.getAdminId(),
             room.getPlayers(),
@@ -164,6 +180,8 @@ public class RoomService {
             room.getCreatedAt(),
             room.getMaxPlayers()
         );
+        response.setPlayerInfos(playerInfos);
+        return response;
     }
     
     private void broadcastRoomUpdate(Room room) {

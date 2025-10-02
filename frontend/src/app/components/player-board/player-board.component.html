@@ -1,0 +1,40 @@
+<div class="player-board">
+  <div class="game-info" *ngIf="gameState">
+    <div class="info-item">
+      <span class="label">Round</span>
+      <span class="value">{{ gameState.currentRound || 1 }} / {{ gameState.totalRounds || 5 }}</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Phase</span>
+      <span class="value">{{ gameState.currentPhase || 'EN_ATTENTE' }}</span>
+    </div>
+  </div>
+
+  <div class="center-area" *ngIf="gameState && gameState.centerCards">
+    <h3>Cartes au centre</h3>
+    <div class="center-cards">
+      <div class="card" *ngFor="let card of gameState.centerCards">
+        {{ card }}
+      </div>
+    </div>
+  </div>
+
+  <div class="hand-area">
+    <div class="cards-hand" *ngIf="getMyHand().length > 0">
+      <div 
+        class="card" 
+        *ngFor="let card of getMyHand()"
+        [class.playable]="isMyTurn"
+        (click)="isMyTurn ? playCard(card) : null">
+        {{ card }}
+      </div>
+    </div>
+    <div class="no-cards" *ngIf="getMyHand().length === 0">
+      <p>Aucune carte en main</p>
+    </div>
+  </div>
+
+  <div class="action-hint" *ngIf="isMyTurn">
+    <p>💡 Cliquez sur une carte pour la jouer</p>
+  </div>
+</div>

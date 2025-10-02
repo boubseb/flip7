@@ -68,11 +68,16 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     // Check query params to determine initial view
     this.route.queryParams.subscribe(params => {
       const mode = params['mode'];
+      const roomId = params['roomId'];
+      
       if (mode === 'create') {
         this.currentView = 'create';
       } else if (mode === 'join') {
         this.currentView = 'join';
         this.loadAvailableRooms();
+      } else if (mode === 'waiting' && roomId) {
+        // Load the room and go to waiting view
+        this.loadRoomById(roomId);
       } else {
         // Default to create if no mode specified
         this.currentView = 'create';
@@ -127,6 +132,36 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error loading rooms:', error);
         this.showErrorMessage('Erreur lors du chargement des rooms');
+      }
+    });
+  }
+
+  loadRoomById(roomId: string): void {
+    this.roomService.getRoom(roomId).subscribe({
+      next: (room) => {
+        console.log('✅ Room loaded:', room);
+        
+        // Check if user is part of the room
+        if (!room.players.includes(this.currentUserId)) {
+          console.warn('❌ User not in room');
+          this.showErrorMessage('Vous ne faites pas partie de cette room');
+          this.currentView = 'join';
+          return;
+        }
+
+        this.currentRoom = room;
+        this.updateRoomState();
+        this.currentView = 'waiting';
+        
+        // Subscribe to WebSocket updates for this room
+        if (this.wsConnected) {
+          this.wsService.subscribeToRoom(room.id);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error loading room:', error);
+        this.showErrorMessage('Room introuvable');
+        this.currentView = 'join';
       }
     });
   }
@@ -383,5 +418,13 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     console.log('🔄 Room state updated:');
     console.log('  - isAdmin:', this.isAdmin);
     console.log('  - players:', this.currentRoom.players.length);
+  }
+
+  getPlayerPseudo(playerId: string): string {
+    if (!this.currentRoom || !this.currentRoom.playerInfos) {
+      return playerId.substring(0, 8) + '...';
+    }
+    const playerInfo = this.currentRoom.playerInfos.find(p => p.id === playerId);
+    return playerInfo ? playerInfo.pseudo : playerId.substring(0, 8) + '...';
   }
 }

@@ -6,16 +6,19 @@ import { RoomService } from '../../services/room/room.service';
 import { WebSocketService } from '../../services/websocket/websocket.service';
 import { Room, RoomStatus } from '../../models/room/room.model';
 import { Subscription } from 'rxjs';
+import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
+import { PlayerBoardComponent } from '../../components/player-board/player-board.component';
+import { ScoreBoardComponent } from '../../components/score-board/score-board.component';
 
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
 export class GamePageComponent implements OnInit, OnDestroy {
-  // View states
-  currentView: 'room' | 'game' = 'room';
+  // View state for game
+  gameViewMode: 'all' | 'player' | 'score' = 'player';
   
   // Room ID from URL
   roomId: string = '';
@@ -102,7 +105,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
       this.wsService.gameStarts$.subscribe(room => {
         console.log('Game started:', room);
         this.currentRoom = room;
-        this.currentView = 'game';
         this.updateRoomState();
       })
     );
@@ -145,34 +147,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.currentRoom = room;
         this.updateRoomState();
         
-        // Determine view based on room status
-        if (room.status === RoomStatus.IN_GAME || room.status === RoomStatus.FINISHED) {
-          this.currentView = 'game';
-          console.log('📍 View set to: game');
-        } else {
-          this.currentView = 'room';
-          console.log('📍 View set to: room (waiting lobby)');
+        // Redirect to room-page if game not started yet
+        if (room.status !== RoomStatus.IN_GAME && room.status !== RoomStatus.FINISHED) {
+          console.log('⚠️ Game not started yet, redirecting to room-page');
+          this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+          return;
         }
+        
+        console.log('✅ Game in progress, displaying game view');
       },
       error: (error) => {
         console.error('❌ Error loading room:', error);
         this.errorMessage = 'Room introuvable';
         setTimeout(() => this.router.navigate(['/room']), 2000);
-      }
-    });
-  }
-
-  startGame(): void {
-    if (!this.currentRoom || !this.isAdmin) return;
-    
-    this.roomService.startGame(this.currentRoom.id).subscribe({
-      next: (room) => {
-        console.log('Game started');
-        // The game start will be received via WebSocket
-      },
-      error: (error) => {
-        console.error('Error starting game:', error);
-        this.errorMessage = error.error?.message || 'Erreur lors du démarrage de la partie';
       }
     });
   }
@@ -219,25 +206,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
   }
 
-  copyRoomId(): void {
-    if (this.currentRoom) {
-      navigator.clipboard.writeText(this.currentRoom.id).then(() => {
-        // Show success message briefly
-        const originalMessage = this.errorMessage;
-        this.errorMessage = '✅ ID copié dans le presse-papier !';
-        setTimeout(() => {
-          this.errorMessage = originalMessage;
-        }, 2000);
-      });
-    }
-  }
-
-  getRoomStatusLabel(status: RoomStatus): string {
-    const labels = {
-      [RoomStatus.WAITING]: 'En attente',
-      [RoomStatus.IN_GAME]: 'En cours',
-      [RoomStatus.FINISHED]: 'Terminée'
-    };
-    return labels[status];
+  switchGameView(mode: 'all' | 'player' | 'score'): void {
+    this.gameViewMode = mode;
   }
 }

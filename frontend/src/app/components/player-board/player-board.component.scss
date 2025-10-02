@@ -1,0 +1,148 @@
+.player-board {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    gap: 1rem;
+
+    .game-info {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        border-radius: 12px;
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+
+            .label {
+                font-size: 0.75rem;
+                color: #6b7280;
+                font-weight: 600;
+            }
+
+            .value {
+                font-size: 1.125rem;
+                color: #1f2937;
+                font-weight: 700;
+            }
+        }
+    }
+
+    .center-area {
+        h3 {
+            font-size: 1rem;
+            color: #1f2937;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .center-cards {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+        }
+    }
+
+    .hand-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+
+        .cards-hand {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+
+            &::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: #f3f4f6;
+                border-radius: 4px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: #d1d5db;
+                border-radius: 4px;
+
+                &:hover {
+                    background: #9ca3af;
+                }
+            }
+        }
+
+        .no-cards {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 1rem;
+            padding: 2rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+        }
+    }
+
+    .card {
+        width: 80px;
+        height: 112px;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+
+        &.playable {
+            cursor: pointer;
+            border-color: #10b981;
+
+            &:hover {
+                transform: translateY(-8px) scale(1.05);
+                box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+                border-color: #059669;
+            }
+        }
+    }
+
+    .action-hint {
+        text-align: center;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-radius: 12px;
+        color: #92400e;
+        font-weight: 600;
+        animation: fadeIn 0.5s;
+
+        p {
+            margin: 0;
+        }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+}

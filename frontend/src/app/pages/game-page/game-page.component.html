@@ -5,106 +5,64 @@
     <button (click)="clearError()">✕</button>
   </div>
 
-  <!-- Connection status -->
-  <div class="connection-status" [class.connected]="wsConnected">
-    <span class="status-dot"></span>
-    {{ wsConnected ? 'Connecté' : 'Déconnecté' }}
-  </div>
-
-  <!-- ROOM VIEW (Waiting lobby) -->
-  <div class="room-view" *ngIf="currentView === 'room' && currentRoom">
-    <div class="room-header">
-      <div class="room-title">
-        <h1>🎮 Salle d'attente</h1>
-        <div class="room-id-display">
-          <label>ID de la room:</label>
-          <code class="room-id-code">{{ currentRoom.id }}</code>
-          <button class="btn-copy-id" (click)="copyRoomId()" title="Copier l'ID">
-            📋 Copier
-          </button>
-        </div>
-      </div>
-      <button class="btn-leave" (click)="leaveRoom()">❌ Quitter</button>
-    </div>
-
-    <div class="room-info-box">
-      <div class="info-item">
-        <span class="label">Status:</span>
-        <span class="value status-waiting">{{ getRoomStatusLabel(currentRoom.status) }}</span>
-      </div>
-      <div class="info-item">
-        <span class="label">Joueurs:</span>
-        <span class="value">{{ currentRoom.players.length }}/{{ currentRoom.maxPlayers }}</span>
-      </div>
-      <div class="info-item" *ngIf="isAdmin">
-        <span class="badge-admin">👑 Vous êtes admin</span>
-      </div>
-    </div>
-
-    <div class="players-section">
-      <h2>Joueurs dans la room</h2>
-      <div class="players-list">
-        <div class="player-card" *ngFor="let playerId of currentRoom.players; let i = index">
-          <span class="player-number">{{ i + 1 }}</span>
-          <span class="player-id">{{ playerId.substring(0, 8) }}...</span>
-          <span class="badge-you" *ngIf="playerId === currentUserId">Vous</span>
-          <span class="badge-admin" *ngIf="playerId === currentRoom.adminId">👑 Admin</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="waiting-message" *ngIf="currentRoom.players.length < 2">
-      <p>⏳ En attente d'autres joueurs...</p>
-      <p class="hint">Partagez l'ID de la room avec vos amis !</p>
-    </div>
-
-    <button 
-      class="btn-start-game" 
-      *ngIf="isAdmin && currentRoom.players.length >= 2"
-      (click)="startGame()">
-      🎮 Lancer la partie
-    </button>
-
-    <p class="waiting-admin" *ngIf="!isAdmin && currentRoom.players.length >= 2">
-      En attente que l'admin lance la partie...
-    </p>
-  </div>
-
   <!-- GAME VIEW -->
-  <div class="game-view" *ngIf="currentView === 'game' && currentRoom">
+  <div class="game-view" *ngIf="currentRoom">
     <div class="game-header">
-      <h1>Partie en cours</h1>
-      <button class="btn-leave" (click)="leaveRoom()">Quitter</button>
+      <button class="btn-leave" (click)="leaveRoom()">✕</button>
     </div>
 
-    <div class="turn-indicator" [class.my-turn]="isMyTurn">
-      <span *ngIf="isMyTurn">🎯 C'est votre tour !</span>
-      <span *ngIf="!isMyTurn">⏳ Tour du joueur {{ currentRoom.turnIndex + 1 }}</span>
+    <!-- Game Content Area -->
+    <div class="game-content">
+      <!-- Players Board View (All players) -->
+      <app-players-board 
+        *ngIf="gameViewMode === 'all'"
+        [gameState]="currentRoom.gameState"
+        [players]="currentRoom.players"
+        [playerInfos]="currentRoom.playerInfos || []"
+        [currentUserId]="currentUserId"
+        [currentPlayerId]="currentRoom.currentPlayerId">
+      </app-players-board>
+
+      <!-- Player Board View (Current player) -->
+      <app-player-board 
+        *ngIf="gameViewMode === 'player'"
+        [gameState]="currentRoom.gameState"
+        [currentUserId]="currentUserId"
+        [isMyTurn]="isMyTurn"
+        (onPlayCard)="playTurn($event)">
+      </app-player-board>
+
+      <!-- Score Board View -->
+      <app-score-board 
+        *ngIf="gameViewMode === 'score'"
+        [gameState]="currentRoom.gameState"
+        [players]="currentRoom.players"
+        [playerInfos]="currentRoom.playerInfos || []">
+      </app-score-board>
     </div>
 
-    <div class="players-bar">
-      <div 
-        class="player-item" 
-        *ngFor="let playerId of currentRoom.players; let i = index"
-        [class.active]="i === currentRoom.turnIndex"
-        [class.current-user]="playerId === currentUserId">
-        <div class="player-avatar">{{ i + 1 }}</div>
-        <div class="player-name">
-          {{ playerId === currentUserId ? 'Vous' : 'Joueur ' + (i + 1) }}
-        </div>
-      </div>
-    </div>
-
-    <div class="game-board">
-      <h2>Plateau de jeu</h2>
-      <p class="placeholder">🎴 Interface de jeu à implémenter</p>
-      
-      <!-- Temporary test button -->
+    <!-- Bottom Navigation Menu -->
+    <div class="game-nav-menu">
       <button 
-        class="btn-play" 
-        *ngIf="isMyTurn"
-        (click)="playTurn('test-move')">
-        Jouer une carte (test)
+        class="nav-btn"
+        [class.active]="gameViewMode === 'all'"
+        (click)="switchGameView('all')">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Tous</span>
+      </button>
+      <button 
+        class="nav-btn"
+        [class.active]="gameViewMode === 'player'"
+        (click)="switchGameView('player')">
+        <span class="nav-icon">🃏</span>
+        <span class="nav-label">Ma main</span>
+      </button>
+      <button 
+        class="nav-btn"
+        [class.active]="gameViewMode === 'score'"
+        (click)="switchGameView('score')">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Scores</span>
       </button>
     </div>
   </div>

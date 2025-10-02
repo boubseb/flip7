@@ -577,3 +577,105 @@
   background: #6d28d9;
   color: white;
 }
+
+// Game View
+.game-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 160px);
+  min-height: 500px;
+  gap: 1rem;
+
+  .game-header {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 100;
+
+    .btn-leave {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      border: none;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+
+      &:hover {
+        background: rgba(220, 38, 38, 1);
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+      }
+    }
+  }
+
+  .game-content {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .game-nav-menu {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.1);
+
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 600;
+      color: #6b7280;
+
+      &:hover {
+        border-color: #667eea;
+        background: #f9fafb;
+        transform: translateY(-2px);
+      }
+
+      &.active {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+
+        .nav-icon {
+          transform: scale(1.1);
+        }
+      }
+
+      .nav-icon {
+        font-size: 1.5rem;
+        transition: transform 0.2s;
+      }
+
+      .nav-label {
+        font-size: 0.875rem;
+      }
+    }
+  }
+}

@@ -8,7 +8,8 @@ import com.flip7.flip7.entity.Room.RoomStatus;
 public class RoomResponse {
     private String id;
     private String adminId;
-    private List<String> players;
+    private List<String> players; // kept for backward compatibility
+    private List<PlayerInfo> playerInfos; // new field with pseudo
     private RoomStatus status;
     private Integer turnIndex;
     private LocalDateTime createdAt;
@@ -92,5 +93,13 @@ public class RoomResponse {
     
     public void setCurrentPlayerId(String currentPlayerId) {
         this.currentPlayerId = currentPlayerId;
+    }
+    
+    public List<PlayerInfo> getPlayerInfos() {
+        return playerInfos;
+    }
+    
+    public void setPlayerInfos(List<PlayerInfo> playerInfos) {
+        this.playerInfos = playerInfos;
     }
 }
