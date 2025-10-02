@@ -26,8 +26,8 @@ export class RoomService {
     });
   }
 
-  createRoom(request: RoomCreateRequest): Observable<RoomCreateResponse> {
-    return this.http.post<RoomCreateResponse>(
+  createRoom(request: RoomCreateRequest): Observable<Room> {
+    return this.http.post<Room>(
       `${this.apiUrl}/create`,
       request,
       { headers: this.getHeaders() }

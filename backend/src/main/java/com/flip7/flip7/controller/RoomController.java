@@ -30,7 +30,7 @@ public class RoomController {
     private RoomService roomService;
     
     @PostMapping("/create")
-    public ResponseEntity<Map<String, String>> createRoom(
+    public ResponseEntity<RoomResponse> createRoom(
             @RequestBody RoomCreateRequest request,
             @RequestHeader("Authorization") String authHeader) {
         
@@ -39,9 +39,7 @@ public class RoomController {
         
         Room room = roomService.createRoom(request.getPassword(), userId, request.getMaxPlayers());
         
-        Map<String, String> response = new HashMap<>();
-        response.put("roomId", room.getId());
-        response.put("message", "Room created successfully");
+        RoomResponse response = roomService.toRoomResponse(room);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

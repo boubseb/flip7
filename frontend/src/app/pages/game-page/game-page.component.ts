@@ -78,8 +78,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
           console.log('✅ WebSocket connected');
           // Subscribe to room when connected
           if (this.roomId) {
+            console.log('📡 Subscribing to room:', this.roomId);
             this.wsService.subscribeToRoom(this.roomId);
           }
+        } else {
+          console.warn('⚠️ WebSocket disconnected');
         }
       })
     );
@@ -87,7 +90,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to room updates
     this.subscriptions.push(
       this.wsService.roomUpdates$.subscribe(room => {
-        console.log('Room update received:', room);
+        console.log('🔄 Room update received:', room);
+        console.log('Players now:', room.players);
         this.currentRoom = room;
         this.updateRoomState();
       })
@@ -123,20 +127,35 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   loadRoom(): void {
+    console.log('🔍 Loading room:', this.roomId);
     this.roomService.getRoom(this.roomId).subscribe({
       next: (room) => {
+        console.log('✅ Room loaded:', room);
+        console.log('Current user:', this.currentUserId);
+        console.log('Players in room:', room.players);
+        
+        // Check if user is part of the room
+        if (!room.players.includes(this.currentUserId)) {
+          console.warn('❌ User not in room');
+          this.errorMessage = 'Vous ne faites pas partie de cette room';
+          setTimeout(() => this.router.navigate(['/room']), 2000);
+          return;
+        }
+
         this.currentRoom = room;
         this.updateRoomState();
         
         // Determine view based on room status
         if (room.status === RoomStatus.IN_GAME || room.status === RoomStatus.FINISHED) {
           this.currentView = 'game';
+          console.log('📍 View set to: game');
         } else {
           this.currentView = 'room';
+          console.log('📍 View set to: room (waiting lobby)');
         }
       },
       error: (error) => {
-        console.error('Error loading room:', error);
+        console.error('❌ Error loading room:', error);
         this.errorMessage = 'Room introuvable';
         setTimeout(() => this.router.navigate(['/room']), 2000);
       }
@@ -181,14 +200,36 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   private updateRoomState(): void {
-    if (!this.currentRoom) return;
+    if (!this.currentRoom) {
+      console.warn('⚠️ updateRoomState called but currentRoom is null');
+      return;
+    }
     
     this.isAdmin = this.currentRoom.adminId === this.currentUserId;
     this.isMyTurn = this.currentRoom.currentPlayerId === this.currentUserId;
+    
+    console.log('🔄 Room state updated:');
+    console.log('  - isAdmin:', this.isAdmin);
+    console.log('  - isMyTurn:', this.isMyTurn);
+    console.log('  - players count:', this.currentRoom.players.length);
+    console.log('  - room status:', this.currentRoom.status);
   }
 
   clearError(): void {
     this.errorMessage = '';
+  }
+
+  copyRoomId(): void {
+    if (this.currentRoom) {
+      navigator.clipboard.writeText(this.currentRoom.id).then(() => {
+        // Show success message briefly
+        const originalMessage = this.errorMessage;
+        this.errorMessage = '✅ ID copié dans le presse-papier !';
+        setTimeout(() => {
+          this.errorMessage = originalMessage;
+        }, 2000);
+      });
+    }
   }
 
   getRoomStatusLabel(status: RoomStatus): string {

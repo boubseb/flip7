@@ -17,7 +17,7 @@ export class AuthenticationService {
 
   url=environment.apiUrl
 
-  private isLoginSubject: BehaviorSubject<any> = new BehaviorSubject<boolean>(typeof localStorage !== 'undefined'&& localStorage.getItem('token')!==null )
+  private isLoginSubject: BehaviorSubject<any> = new BehaviorSubject<boolean>(typeof localStorage !== 'undefined'&& localStorage.getItem('access_token')!==null )
   isLogin$: Observable<any> = this.isLoginSubject.asObservable();
 
 
@@ -25,7 +25,7 @@ export class AuthenticationService {
  
 
 login(username: string, password: string): Observable<any> {
-    this.isLoginSubject.next(localStorage.getItem('token') !== null);
+    this.isLoginSubject.next(localStorage.getItem('access_token') !== null);
     const params = new HttpParams().set('password',password).set('username',username)
     return this.http.post(this.url+'/login',{},{params} );
 
@@ -44,16 +44,16 @@ deleteAccount(password:string):Observable<any>{
 
 
 setToken(token: string): void {
-  localStorage.setItem('token',token);
+  localStorage.setItem('access_token',token);
   this.isLoginSubject.next(true);
 }
 
 getToken(): any {
-  return localStorage.getItem('token');
+  return localStorage.getItem('access_token');
 }
 
 removeToken():void{
-  localStorage.removeItem('token')
+  localStorage.removeItem('access_token')
   this.isLoginSubject.next(false);
 }
 

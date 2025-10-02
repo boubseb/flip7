@@ -1,8 +1,8 @@
 @if(isLogin$| async){
     <div class="main-container">
     <div class="buttons-container">
-        <button routerLink="/room" class="button-home">Create room</button>
-        <button routerLink="/room" class="button-home">Join Room</button>
+        <button [routerLink]="['/room']" [queryParams]="{mode: 'create'}" class="button-home">Create room</button>
+        <button [routerLink]="['/room']" [queryParams]="{mode: 'join'}" class="button-home">Join Room</button>
         <button routerLink="/offline" class="button-home">offline</button>
 
     </div>

@@ -14,14 +14,23 @@
   <!-- ROOM VIEW (Waiting lobby) -->
   <div class="room-view" *ngIf="currentView === 'room' && currentRoom">
     <div class="room-header">
-      <h1>Room: {{ currentRoom.id.substring(0, 12) }}...</h1>
-      <button class="btn-leave" (click)="leaveRoom()">Quitter</button>
+      <div class="room-title">
+        <h1>🎮 Salle d'attente</h1>
+        <div class="room-id-display">
+          <label>ID de la room:</label>
+          <code class="room-id-code">{{ currentRoom.id }}</code>
+          <button class="btn-copy-id" (click)="copyRoomId()" title="Copier l'ID">
+            📋 Copier
+          </button>
+        </div>
+      </div>
+      <button class="btn-leave" (click)="leaveRoom()">❌ Quitter</button>
     </div>
 
     <div class="room-info-box">
       <div class="info-item">
         <span class="label">Status:</span>
-        <span class="value">{{ getRoomStatusLabel(currentRoom.status) }}</span>
+        <span class="value status-waiting">{{ getRoomStatusLabel(currentRoom.status) }}</span>
       </div>
       <div class="info-item">
         <span class="label">Joueurs:</span>
