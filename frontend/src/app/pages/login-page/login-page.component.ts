@@ -5,12 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { Router, RouterLink,  } from '@angular/router';
 import { Login } from '../../models/login/login.model';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
+import { FooterComponent } from '../../components/footer/footer.component';
+
 
 
 @Component({
   selector: 'app-popup',
   standalone: true,
-  imports: [ MatButtonModule, FormsModule,RouterLink],
+  imports: [ MatButtonModule, FormsModule, RouterLink, FooterComponent],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss'
 })

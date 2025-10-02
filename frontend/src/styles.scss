@@ -31,8 +31,8 @@ app-footer {
 main {
   position: absolute;
   top: var(--header-height, $headerHeight);   /* espace égal à la hauteur du header */
-  bottom: var(--footer-height, $footerHeight); /* espace égal à la hauteur du footer */
   left: 0;
   right: 0;
-  overflow: auto;
+  overflow: hidden;
+  bottom: var(--footer-height, $footerHeight); /* espace égal à la hauteur du footer */
 }

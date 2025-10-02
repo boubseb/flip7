@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { FooterComponent } from '../../components/footer/footer.component';
 import { RoomService } from '../../services/room/room.service';
 import { WebSocketService } from '../../services/websocket/websocket.service';
 import { Room, RoomStatus, RoomCreateRequest, RoomJoinRequest } from '../../models/room/room.model';
@@ -10,7 +11,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-room-page',
-  imports: [CommonModule, FormsModule, RoomBrowserComponent],
+  imports: [CommonModule, FormsModule, RoomBrowserComponent, FooterComponent],
   templateUrl: './room-page.component.html',
   styleUrl: './room-page.component.scss'
 })
