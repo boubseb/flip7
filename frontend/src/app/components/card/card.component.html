@@ -6,9 +6,11 @@
   (click)="onCardClick()">
   
   <div class="card-content">
-    <div class="card-icon" *ngIf="getCardIcon()">
-      {{ getCardIcon() }}
-    </div>
+    @if (getCardIcon()) {
+      <div class="card-icon">
+        {{ getCardIcon() }}
+      </div>
+    }
     <div class="card-value">
       {{ card.displayName }}
     </div>

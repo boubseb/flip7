@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RoomService } from '../../services/room/room.service';
 import { WebSocketService } from '../../services/websocket/websocket.service';
+import { GameService } from '../../services/game/game.service';
 import { Room, RoomStatus } from '../../models/room/room.model';
 import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
@@ -28,6 +29,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
   currentUserId: string = '';
   isAdmin: boolean = false;
   isMyTurn: boolean = false;
+  currentPlayerId: string = '';
+  
+  // Game State
+  gameState: any = null;
   
   // WebSocket
   wsConnected: boolean = false;
@@ -41,6 +46,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
   constructor(
     private roomService: RoomService,
     private wsService: WebSocketService,
+    private gameService: GameService,
     private router: Router,
     private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object
@@ -104,9 +110,29 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to game starts
     this.subscriptions.push(
       this.wsService.gameStarts$.subscribe(room => {
-        console.log('Game started:', room);
+        console.log('🎮 Game started event received:', room);
         this.currentRoom = room;
         this.updateRoomState();
+        
+        // Récupérer immédiatement l'état du jeu pour avoir les cartes initiales
+        console.log('📡 Fetching initial game state...');
+        this.gameService.getGameState(this.roomId).subscribe({
+          next: (gameState) => {
+            console.log('✅ Initial game state received:', gameState);
+            this.gameState = gameState;
+            if (gameState.players && gameState.players.length > 0) {
+              gameState.players.forEach((p: any) => {
+                console.log(`   - ${p.username}: ${p.hand?.length || 0} cards`);
+              });
+              if (gameState.currentPlayerIndex >= 0) {
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+                this.currentPlayerId = currentPlayer.userId;
+                this.isMyTurn = this.currentPlayerId === this.currentUserId;
+              }
+            }
+          },
+          error: (err) => console.error('❌ Error fetching game state:', err)
+        });
       })
     );
     
@@ -117,6 +143,29 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.currentRoom = update.room;
         this.updateRoomState();
         // Handle move data here
+      })
+    );
+    
+    // Subscribe to game state updates
+    this.subscriptions.push(
+      this.wsService.gameStateUpdates$.subscribe(response => {
+        console.log('🎮 Game state update received:', response);
+        console.log('   - Players:', response.players);
+        if (response.players && response.players.length > 0) {
+          response.players.forEach((p: any) => {
+            console.log(`   - ${p.username}: ${p.hand?.length || 0} cards, score: ${p.roundScore}`);
+          });
+        }
+        
+        this.gameState = response; // Le DTO complet contient players, pas response.gameState
+        
+        // Déterminer le joueur actuel à partir de l'index
+        if (response.players && response.players.length > 0 && response.currentPlayerIndex >= 0) {
+          const currentPlayer = response.players[response.currentPlayerIndex];
+          this.currentPlayerId = currentPlayer.userId;
+          this.isMyTurn = this.currentPlayerId === this.currentUserId;
+          console.log('🎯 Current player:', this.currentPlayerId, '- My turn:', this.isMyTurn);
+        }
       })
     );
   }
@@ -156,6 +205,27 @@ export class GamePageComponent implements OnInit, OnDestroy {
         }
         
         console.log('✅ Game in progress, displaying game view');
+        
+        // Si le jeu est déjà en cours, récupérer l'état actuel
+        console.log('📡 Fetching current game state...');
+        this.gameService.getGameState(this.roomId).subscribe({
+          next: (gameState) => {
+            console.log('✅ Game state received:', gameState);
+            this.gameState = gameState;
+            if (gameState.players && gameState.players.length > 0) {
+              gameState.players.forEach((p: any) => {
+                console.log(`   - ${p.username}: ${p.hand?.length || 0} cards`);
+              });
+              if (gameState.currentPlayerIndex >= 0) {
+                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+                this.currentPlayerId = currentPlayer.userId;
+                this.isMyTurn = this.currentPlayerId === this.currentUserId;
+                console.log('🎯 Current player:', currentPlayer.username, '- My turn:', this.isMyTurn);
+              }
+            }
+          },
+          error: (err) => console.error('❌ Error fetching game state:', err)
+        });
       },
       error: (error) => {
         console.error('❌ Error loading room:', error);
@@ -165,19 +235,56 @@ export class GamePageComponent implements OnInit, OnDestroy {
     });
   }
 
-  playTurn(move: string): void {
-    if (!this.currentRoom || !this.isMyTurn) return;
+  onPlayerAction(action: any): void {
+    console.log('🎯 Player action received:', action);
+    console.log('   - roomId:', this.roomId);
+    console.log('   - isMyTurn:', this.isMyTurn);
     
-    this.roomService.playTurn(this.currentRoom.id, move).subscribe({
-      next: (room) => {
-        console.log('Turn played');
-        // Update will be received via WebSocket
-      },
-      error: (error) => {
-        console.error('Error playing turn:', error);
-        this.showError('Erreur lors du jeu');
-      }
-    });
+    if (!this.roomId) {
+      console.error('❌ No roomId!');
+      return;
+    }
+    
+    // Temporairement: permettre l'action même si ce n'est pas notre tour (pour debug)
+    if (!this.isMyTurn) {
+      console.warn('⚠️ Not your turn, but allowing action for debugging');
+    }
+    
+    if (action.action === 'REVEAL') {
+      // Joueur clique sur "Hit" - Tirer une carte
+      console.log('🎲 Calling drawCard API...');
+      this.gameService.drawCard(this.roomId).subscribe({
+        next: (result) => {
+          console.log('🃏 Card drawn:', result);
+          
+          if (result.eliminated) {
+            this.showError('Double ! Vous êtes éliminé !');
+          } else if (result.lifeUsed) {
+            console.log('⚡ Carte Vie utilisée automatiquement');
+          } else if (result.roundEnded) {
+            console.log('🏆 7 cartes différentes ! Round gagné !');
+          }
+          
+          // L'état sera mis à jour via WebSocket
+        },
+        error: (error) => {
+          console.error('❌ Error drawing card:', error);
+          this.showError('Erreur lors de la pioche');
+        }
+      });
+    } else if (action.action === 'STOP') {
+      // Joueur clique sur "Stop"
+      this.gameService.stopDrawing(this.roomId).subscribe({
+        next: () => {
+          console.log('✋ Stopped drawing');
+          // L'état sera mis à jour via WebSocket
+        },
+        error: (error) => {
+          console.error('❌ Error stopping:', error);
+          this.showError('Erreur lors de l\'arrêt');
+        }
+      });
+    }
   }
 
   leaveRoom(): void {

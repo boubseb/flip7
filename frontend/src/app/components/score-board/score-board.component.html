@@ -20,53 +20,61 @@
     </button>
   </div>
 
-  <div class="scores-container" *ngIf="players.length > 0">
-    <!-- Header fixe -->
-    <div class="table-header">
-      <div class="header-cell rank">#</div>
-      <div class="header-cell player">Joueur</div>
-      <div class="header-cell score">Round</div>
-      <div class="header-cell score">Cumulé</div>
-    </div>
+  @if (players.length > 0) {
+    <div class="scores-container">
+      <!-- Header fixe -->
+      <div class="table-header">
+        <div class="header-cell rank">#</div>
+        <div class="header-cell player">Joueur</div>
+        <div class="header-cell score">Round</div>
+        <div class="header-cell score">Cumulé</div>
+      </div>
 
-    <!-- Body scrollable -->
-    <div class="table-body">
-      <div class="table-row" *ngFor="let playerId of getSortedPlayers(); let i = index" 
-           [class.first-place]="i === 0" [class.podium]="i < 3">
-        <div class="cell rank">
-          <span class="rank-badge" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
-            {{ getRank(playerId) }}
-          </span>
-        </div>
-        <div class="cell player">
-          {{ getPlayerPseudo(playerId) }}
-        </div>
-        <div class="cell score">
-          {{ getPlayerRoundScore(playerId) }}
-        </div>
-        <div class="cell score cumulative">
-          {{ getPlayerCumulativeScore(playerId) }}
-        </div>
+      <!-- Body scrollable -->
+      <div class="table-body">
+        @for (playerId of getSortedPlayers(); track playerId; let i = $index) {
+          <div class="table-row"
+               [class.first-place]="i === 0" [class.podium]="i < 3">
+            <div class="cell rank">
+              <span class="rank-badge" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+                {{ getRank(playerId) }}
+              </span>
+            </div>
+            <div class="cell player">
+              {{ getPlayerPseudo(playerId) }}
+            </div>
+            <div class="cell score">
+              {{ getPlayerRoundScore(playerId) }}
+            </div>
+            <div class="cell score cumulative">
+              {{ getPlayerCumulativeScore(playerId) }}
+            </div>
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 
-  <div class="no-data" *ngIf="players.length === 0">
-    <p>Aucune donnée de score disponible</p>
-  </div>
+  @if (players.length === 0) {
+    <div class="no-data">
+      <p>Aucune donnée de score disponible</p>
+    </div>
+  }
 
-  <div class="game-stats" *ngIf="gameState && players.length > 0">
-    <div class="stat-item">
-      <span class="label">Joueurs</span>
-      <span class="value">{{ players.length }}</span>
+  @if (gameState && players.length > 0) {
+    <div class="game-stats">
+      <div class="stat-item">
+        <span class="label">Joueurs</span>
+        <span class="value">{{ players.length }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">Phase</span>
+        <span class="value">{{ gameState.currentPhase || 'EN_ATTENTE' }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">Score max</span>
+        <span class="value">{{ getPlayerScore(getSortedPlayers()[0]) }}</span>
+      </div>
     </div>
-    <div class="stat-item">
-      <span class="label">Phase</span>
-      <span class="value">{{ gameState.currentPhase || 'EN_ATTENTE' }}</span>
-    </div>
-    <div class="stat-item">
-      <span class="label">Score max</span>
-      <span class="value">{{ getPlayerScore(getSortedPlayers()[0]) }}</span>
-    </div>
-  </div>
+  }
 </div>

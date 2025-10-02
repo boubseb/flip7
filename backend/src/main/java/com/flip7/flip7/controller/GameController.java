@@ -1,6 +1,9 @@
 package com.flip7.flip7.controller;
 
 import com.flip7.flip7.game.card.Card;
+import com.flip7.flip7.game.card.NumberCard;
+import com.flip7.flip7.game.card.OperatorCard;
+import com.flip7.flip7.game.card.SpecialCard;
 import com.flip7.flip7.game.model.Game;
 import com.flip7.flip7.game.model.GamePlayer;
 import com.flip7.flip7.service.GameService;
@@ -143,16 +146,12 @@ public class GameController {
                 info.setStatus(player.getStatus().name());
                 info.setTotalScore(player.getTotalScore());
                 info.setRoundScore(player.getRoundScore());
+                info.setHandSize(player.getHandSize());
                 
-                // Si c'est le joueur actuel, inclure sa main complète
-                if (player.getUserId().equals(userId)) {
-                    info.setHand(player.getHand().stream()
-                        .map(this::mapCardToDTO)
-                        .collect(Collectors.toList()));
-                } else {
-                    // Pour les autres joueurs, seulement le nombre de cartes
-                    info.setHandSize(player.getHandSize());
-                }
+                // Inclure la main complète pour TOUS les joueurs (cartes révélées)
+                info.setHand(player.getHand().stream()
+                    .map(this::mapCardToDTO)
+                    .collect(Collectors.toList()));
                 
                 response.addPlayer(info);
             }
@@ -168,16 +167,20 @@ public class GameController {
      */
     private Map<String, Object> mapCardToDTO(Card card) {
         Map<String, Object> dto = new HashMap<>();
-        dto.put("id", card.getId());
-        dto.put("type", card.getCardType().name());
-        dto.put("displayName", card.getDisplayName());
-
-        if (card instanceof com.flip7.flip7.game.card.NumberCard) {
-            dto.put("value", ((com.flip7.flip7.game.card.NumberCard) card).getValue());
-        } else if (card instanceof com.flip7.flip7.game.card.OperatorCard) {
-            dto.put("operatorType", ((com.flip7.flip7.game.card.OperatorCard) card).getOperatorType().name());
-        } else if (card instanceof com.flip7.flip7.game.card.SpecialCard) {
-            dto.put("specialType", ((com.flip7.flip7.game.card.SpecialCard) card).getSpecialType().name());
+        dto.put("cardType", card.getCardType().toString());
+        
+        if (card instanceof NumberCard) {
+            NumberCard numCard = (NumberCard) card;
+            dto.put("value", numCard.getValue());
+            dto.put("special", false);
+        } else if (card instanceof OperatorCard) {
+            OperatorCard opCard = (OperatorCard) card;
+            dto.put("operator", opCard.getOperatorType().toString());
+            dto.put("special", false);
+        } else if (card instanceof SpecialCard) {
+            SpecialCard specCard = (SpecialCard) card;
+            dto.put("specialType", specCard.getSpecialType().toString());
+            dto.put("special", true);
         }
 
         return dto;

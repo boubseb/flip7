@@ -3,12 +3,17 @@ package com.flip7.flip7.service;
 import com.flip7.flip7.entity.GameHistory;
 import com.flip7.flip7.entity.Room;
 import com.flip7.flip7.game.card.Card;
+import com.flip7.flip7.game.card.NumberCard;
+import com.flip7.flip7.game.card.OperatorCard;
+import com.flip7.flip7.game.card.SpecialCard;
 import com.flip7.flip7.game.model.Game;
 import com.flip7.flip7.game.model.GamePlayer;
 import com.flip7.flip7.game.model.GameState;
 import com.flip7.flip7.game.model.PlayerStatus;
+import com.flip7.flip7.event.GameStartEvent;
 import com.flip7.flip7.repository.GameHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +83,21 @@ public class GameService {
     }
 
     /**
+     * Listener pour démarrer automatiquement le jeu quand une room passe en IN_GAME
+     */
+    @EventListener
+    public void onGameStart(GameStartEvent event) {
+        try {
+            System.out.println("🎮 GameStartEvent received for room: " + event.getRoomId());
+            startNewRound(event.getRoomId());
+            System.out.println("✅ Game initialized and first round started for room: " + event.getRoomId());
+        } catch (Exception e) {
+            System.err.println("❌ Error initializing game for room " + event.getRoomId() + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
      * Démarre un nouveau round avec distribution progressive (5 secondes entre chaque carte)
      */
     public void startNewRound(String roomId) {
@@ -88,68 +108,37 @@ public class GameService {
 
         game.startNewRound();
         
+        System.out.println("📋 After startNewRound(), checking player hands:");
+        for (GamePlayer player : game.getPlayers()) {
+            System.out.println("   - " + player.getUsername() + ": " + player.getHand().size() + " cards");
+        }
+        
         // Sauvegarder le début du round dans l'historique
         saveRoundStart(roomId, game);
 
-        // Broadcaster l'état initial (avant distribution)
+        // Broadcaster l'état avec la carte initiale pour tous les joueurs
+        // Tous les joueurs ont déjà reçu 1 carte dans game.startNewRound()
         broadcastGameState(roomId, game);
         
-        // Distribution progressive avec délai de 5 secondes
-        // Note: La distribution est déjà faite dans game.startNewRound()
-        // Ici on broadcast juste les événements de distribution un par un avec délai
-        startProgressiveDistribution(roomId, game);
+        System.out.println("✅ Round started - All players received their first card");
     }
     
-    /**
-     * Distribue les cartes progressivement avec un délai de 5 secondes entre chaque joueur
-     */
-    private void startProgressiveDistribution(String roomId, Game game) {
-        new Thread(() -> {
-            try {
-                for (int i = 0; i < game.getPlayers().size(); i++) {
-                    if (i > 0) {
-                        Thread.sleep(5000); // 5 secondes de délai
-                    }
-                    
-                    GamePlayer player = game.getPlayers().get(i);
-                    
-                    // Broadcaster qu'une carte a été distribuée à ce joueur
-                    Map<String, Object> distributionEvent = new HashMap<>();
-                    distributionEvent.put("playerIndex", i);
-                    distributionEvent.put("playerId", player.getUserId());
-                    distributionEvent.put("playerName", player.getUsername());
-                    
-                    messagingTemplate.convertAndSend(
-                        "/topic/rooms/" + roomId + "/card-distributed", 
-                        distributionEvent
-                    );
-                }
-                
-                // Après la distribution complète, broadcaster l'état final
-                Thread.sleep(1000);
-                broadcastGameState(roomId, game);
-                
-                // Broadcaster que le round commence vraiment
-                messagingTemplate.convertAndSend(
-                    "/topic/rooms/" + roomId + "/round-ready",
-                    Map.of("message", "Le round commence !")
-                );
-                
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }).start();
-    }
-
     /**
      * Un joueur pioche une carte
      */
     public Game.DrawResult drawCard(String roomId, String playerId) {
+        System.out.println("🎲 drawCard called - roomId: " + roomId + ", playerId: " + playerId);
+        System.out.println("📊 Active games count: " + activeGames.size());
+        System.out.println("🗂️ Active game rooms: " + activeGames.keySet());
+        
         Game game = activeGames.get(roomId);
         if (game == null) {
+            System.err.println("❌ Game not found for roomId: " + roomId);
+            System.err.println("💡 Available rooms: " + activeGames.keySet());
             return new Game.DrawResult(false, "Partie non trouvée", null);
         }
 
+        System.out.println("✅ Game found, calling game.drawCard()");
         Game.DrawResult result = game.drawCard(playerId);
 
         // Broadcaster l'état du jeu
@@ -219,12 +208,34 @@ public class GameService {
 
         // Si la partie est terminée (un joueur a atteint 200 points)
         if (game.isGameOver()) {
+            System.out.println("🏆 Game Over! Winner: " + game.getWinner().getUsername());
+            
             // Marquer la partie comme terminée dans l'historique
             saveGameEnd(roomId, game);
             
             broadcastGameOver(roomId, game);
             activeGames.remove(roomId);
             gameHistoryIds.remove(roomId);
+        } else {
+            // Personne n'a atteint 200 points, démarrer un nouveau round après un délai
+            System.out.println("🔄 Round " + game.getRoundNumber() + " ended, no winner yet.");
+            System.out.println("   Current scores:");
+            for (GamePlayer player : game.getPlayers()) {
+                System.out.println("   - " + player.getUsername() + ": " + player.getTotalScore() + " points");
+            }
+            System.out.println("   Starting new round in 5 seconds...");
+            
+            // Délai de 5 secondes pour laisser les joueurs voir les scores
+            new Thread(() -> {
+                try {
+                    Thread.sleep(5000);
+                    System.out.println("🎮 Starting new round for room: " + roomId);
+                    startNewRound(roomId);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    System.err.println("❌ Error starting new round: " + e.getMessage());
+                }
+            }).start();
         }
     }
 
@@ -304,6 +315,11 @@ public class GameService {
      */
     private void broadcastGameState(String roomId, Game game) {
         GameStateDTO dto = createGameStateDTO(game);
+        System.out.println("📡 Broadcasting game state to /topic/rooms/" + roomId + "/game");
+        System.out.println("   - Players count: " + dto.getPlayers().size());
+        for (PlayerDTO player : dto.getPlayers()) {
+            System.out.println("   - Player " + player.getUsername() + ": " + player.getHand().size() + " cards, score: " + player.getRoundScore());
+        }
         messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game", dto);
     }
 
@@ -343,6 +359,36 @@ public class GameService {
             playerDTO.setRoundScore(player.getRoundScore());
             playerDTO.setTotalScore(player.getTotalScore());
             playerDTO.setLifeCardsInHand(player.getLifeCardsInHand());
+            
+            // Ajouter les cartes de la main (révélées)
+            java.util.List<java.util.Map<String, Object>> handCards = new java.util.ArrayList<>();
+            System.out.println("      🃏 Player " + player.getUsername() + " has " + player.getHand().size() + " cards in hand");
+            for (Card card : player.getHand()) {
+                java.util.Map<String, Object> cardMap = new java.util.HashMap<>();
+                cardMap.put("cardType", card.getCardType().toString());
+                
+                if (card instanceof NumberCard) {
+                    NumberCard numCard = (NumberCard) card;
+                    cardMap.put("value", numCard.getValue());
+                    cardMap.put("special", false);
+                    System.out.println("         - NumberCard: " + numCard.getValue());
+                } else if (card instanceof OperatorCard) {
+                    OperatorCard opCard = (OperatorCard) card;
+                    cardMap.put("operator", opCard.getOperatorType().toString());
+                    cardMap.put("special", false);
+                    System.out.println("         - OperatorCard: " + opCard.getOperatorType());
+                } else if (card instanceof SpecialCard) {
+                    SpecialCard specCard = (SpecialCard) card;
+                    cardMap.put("specialType", specCard.getSpecialType().toString());
+                    cardMap.put("special", true);
+                    System.out.println("         - SpecialCard: " + specCard.getSpecialType());
+                }
+                
+                handCards.add(cardMap);
+            }
+            playerDTO.setHand(handCards);
+            System.out.println("      ✅ PlayerDTO.hand size: " + playerDTO.getHand().size());
+            
             dto.addPlayer(playerDTO);
         }
         
@@ -421,6 +467,7 @@ public class GameService {
         private int roundScore;
         private int totalScore;
         private int lifeCardsInHand;
+        private java.util.List<java.util.Map<String, Object>> hand = new java.util.ArrayList<>(); // Cartes révélées
 
         // Getters et Setters
         public String getUserId() { return userId; }
@@ -437,6 +484,8 @@ public class GameService {
         public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
         public int getLifeCardsInHand() { return lifeCardsInHand; }
         public void setLifeCardsInHand(int lifeCardsInHand) { this.lifeCardsInHand = lifeCardsInHand; }
+        public java.util.List<java.util.Map<String, Object>> getHand() { return hand; }
+        public void setHand(java.util.List<java.util.Map<String, Object>> hand) { this.hand = hand; }
     }
 
     public static class RoundEndDTO {

@@ -1,7 +1,7 @@
 package com.flip7.flip7.repository;
 
 import com.flip7.flip7.entity.GameHistory;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -11,7 +11,7 @@ import java.util.List;
  * Repository pour l'historique des parties
  */
 @Repository
-public interface GameHistoryRepository extends MongoRepository<GameHistory, String> {
+public interface GameHistoryRepository extends JpaRepository<GameHistory, String> {
     
     /**
      * Trouve toutes les parties d'une room

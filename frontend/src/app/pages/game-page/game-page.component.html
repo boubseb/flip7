@@ -1,43 +1,50 @@
 <div class="game-page-container">
   <!-- Error message -->
-  <div class="error-banner" *ngIf="errorMessage">
-    <span>{{ errorMessage }}</span>
-    <button (click)="clearError()">✕</button>
-  </div>
+  @if (errorMessage) {
+    <div class="error-banner">
+      <span>{{ errorMessage }}</span>
+      <button (click)="clearError()">✕</button>
+    </div>
+  }
 
   <!-- GAME VIEW -->
-  <div class="game-view" *ngIf="currentRoom">
-    <!-- Game Content Area -->
-    <div class="game-content">
-      <!-- Players Board View (All players) -->
-      <app-players-board 
-        *ngIf="gameViewMode === 'all'"
-        [gameState]="currentRoom.gameState"
-        [players]="currentRoom.players"
-        [playerInfos]="currentRoom.playerInfos || []"
-        [currentUserId]="currentUserId"
-        [currentPlayerId]="currentRoom.currentPlayerId">
-      </app-players-board>
+  @if (currentRoom) {
+    <div class="game-view">
+      <!-- Game Content Area -->
+      <div class="game-content">
+        <!-- Players Board View (All players) -->
+        @if (gameViewMode === 'all') {
+          <app-players-board 
+            [gameState]="gameState"
+            [players]="currentRoom.players"
+            [playerInfos]="currentRoom.playerInfos || []"
+            [currentUserId]="currentUserId"
+            [currentPlayerId]="currentPlayerId">
+          </app-players-board>
+        }
 
-      <!-- Player Board View (Current player) -->
-      <app-player-board 
-        *ngIf="gameViewMode === 'player'"
-        [gameState]="currentRoom.gameState"
-        [currentUserId]="currentUserId"
-        [isMyTurn]="isMyTurn"
-        (onPlayCard)="playTurn($event)">
-      </app-player-board>
+        <!-- Player Board View (Current player) -->
+        @if (gameViewMode === 'player') {
+          <app-player-board 
+            [gameState]="gameState"
+            [currentUserId]="currentUserId"
+            [isMyTurn]="isMyTurn"
+            (onPlayCard)="onPlayerAction($event)">
+          </app-player-board>
+        }
 
-      <!-- Score Board View -->
-      <app-score-board 
-        *ngIf="gameViewMode === 'score'"
-        [gameState]="currentRoom.gameState"
-        [players]="currentRoom.players"
-        [playerInfos]="currentRoom.playerInfos || []">
-      </app-score-board>
+        <!-- Score Board View -->
+        @if (gameViewMode === 'score') {
+          <app-score-board 
+            [gameState]="gameState"
+            [players]="currentRoom.players"
+            [playerInfos]="currentRoom.playerInfos || []">
+          </app-score-board>
+        }
+      </div>
+
     </div>
-
-  </div>
+  }
 </div>
 
 <!-- Footer with game navigation -->

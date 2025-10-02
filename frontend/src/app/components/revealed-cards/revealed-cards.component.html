@@ -1,0 +1,28 @@
+<div class="revealed-cards-container">
+  @if (score > 0 || cards.length > 0) {
+    <div class="cards-header">
+      <span class="cards-count">{{ cards.length }} carte(s)</span>
+      @if (score > 0) {
+        <span class="cards-score">{{ score }} pts</span>
+      }
+    </div>
+  }
+  
+  @if (cards.length > 0) {
+    <div class="cards-list">
+      @for (card of cards; track card) {
+        <div 
+          class="card"
+          [ngClass]="getCardTypeClass(card)">
+          <div class="card-value">{{ getCardDisplay(card) }}</div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (cards.length === 0) {
+    <div class="no-cards">
+      <span class="placeholder-text">Aucune carte découverte</span>
+    </div>
+  }
+</div>

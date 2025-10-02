@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RevealedCardsComponent } from '../revealed-cards/revealed-cards.component';
 
 @Component({
   selector: 'app-player-board',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RevealedCardsComponent],
   templateUrl: './player-board.component.html',
   styleUrl: './player-board.component.scss'
 })
@@ -25,10 +26,21 @@ export class PlayerBoardComponent {
   }
 
   getMyRevealedCards(): any[] {
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[this.currentUserId]) {
+    if (!this.gameState || !this.gameState.players) {
       return [];
     }
-    return this.gameState.players[this.currentUserId].revealedCards || [];
+    // gameState.players est un tableau, chercher le joueur actuel
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    return myPlayer?.hand || [];
+  }
+
+  getMyScore(): number {
+    if (!this.gameState || !this.gameState.players) {
+      return 0;
+    }
+    // gameState.players est un tableau, chercher le joueur actuel
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    return myPlayer?.roundScore || 0;
   }
 
   getCardSuit(card: string): string {
@@ -58,17 +70,26 @@ export class PlayerBoardComponent {
   }
 
   continueRevealing(): void {
-    if (this.isFlipping) return;
+    console.log('🎲 continueRevealing() called');
+    console.log('   - isFlipping:', this.isFlipping);
+    
+    if (this.isFlipping) {
+      console.warn('⚠️ Already flipping, ignoring click');
+      return;
+    }
     
     this.isFlipping = true;
     this.cardRevealed = true;
     
+    // Émettre IMMÉDIATEMENT pour déboguer (pas d'attente d'animation)
+    const card = this.getCurrentCard();
+    console.log('🎯 Emitting REVEAL action with card:', card);
+    this.onPlayCard.emit({ action: 'REVEAL', card: card || 'TEST_CARD' });
+    
     // Animation de flip (600ms)
     setTimeout(() => {
       this.isFlipping = false;
-      // Émettre l'action de révélation
-      const card = this.getCurrentCard();
-      this.onPlayCard.emit({ action: 'REVEAL', card: card || 'TEST_CARD' });
+      console.log('✅ Animation finished, isFlipping reset');
     }, 600);
   }
 
@@ -81,5 +102,30 @@ export class PlayerBoardComponent {
 
   playCard(card: any): void {
     this.onPlayCard.emit(card);
+  }
+
+  /**
+   * Vérifie si le joueur actuel est éliminé
+   */
+  isEliminated(): boolean {
+    if (!this.gameState || !this.gameState.players) {
+      return false;
+    }
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    return myPlayer?.status === 'ELIMINATED';
+  }
+
+  /**
+   * Calcule le score total théorique (score actuel + score du round en cours)
+   */
+  getMyTheoreticalTotal(): number {
+    if (!this.gameState || !this.gameState.players) {
+      return 0;
+    }
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    if (!myPlayer) {
+      return 0;
+    }
+    return (myPlayer.totalScore || 0) + (myPlayer.roundScore || 0);
   }
 }

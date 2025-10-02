@@ -1,43 +1,41 @@
 <div class="player-board">
   <!-- Cartes révélées (max 33% hauteur) -->
   <div class="revealed-cards-section">
-    <h3 class="section-title">Mes cartes révélées</h3>
-    <div class="revealed-cards-grid">
-      <div class="card revealed" *ngFor="let card of getMyRevealedCards()">
-        <span class="card-suit">{{ getCardSuit(card) }}</span>
-        <span class="card-value">{{ getCardValue(card) }}</span>
-      </div>
-      <div class="no-cards" *ngIf="getMyRevealedCards().length === 0">
-        <p>Aucune carte révélée</p>
-      </div>
+    <div class="section-header">
+      @if (gameState) {
+        <div class="scores-info">
+          <span class="round-info">Round {{ gameState.roundNumber || 1 }}</span>
+          <span class="score-separator">|</span>
+          <span class="round-score">Round: {{ getMyScore() }} pts</span>
+          <span class="score-separator">|</span>
+          <span class="round-score">Score: {{ getMyScore() }} pts</span>
+          <span class="score-separator">|</span>
+          <span class="total-score">Total : {{ getMyTheoreticalTotal() }} pts</span>
+        </div>
+      }
     </div>
+    <app-revealed-cards 
+      [cards]="getMyRevealedCards()"
+      [score]="getMyScore()">
+    </app-revealed-cards>
   </div>
 
   <!-- Zone de jeu (67% hauteur restante) -->
-  <div class="game-section">
-    <div class="game-info" *ngIf="gameState">
-      <div class="info-item">
-        <span class="label">Round</span>
-        <span class="value">{{ gameState.currentRound || 1 }} / {{ gameState.totalRounds || 5 }}</span>
-      </div>
-      <div class="info-item">
-        <span class="label">Phase</span>
-        <span class="value">{{ gameState.currentPhase || 'EN_ATTENTE' }}</span>
-      </div>
-      <div class="info-item" *ngIf="isMyTurn">
-        <span class="turn-indicator">🎯 Votre tour</span>
-      </div>
-    </div>
+  <div class="game-section" [class.my-turn]="isMyTurn" [class.waiting]="!isMyTurn">
 
-    <div class="center-area" *ngIf="gameState && gameState.centerCards">
-      <h3>Cartes au centre</h3>
-      <div class="center-cards">
-        <div class="card" *ngFor="let card of gameState.centerCards">
-          <span class="card-suit">{{ getCardSuit(card) }}</span>
-          <span class="card-value">{{ getCardValue(card) }}</span>
+    @if (gameState && gameState.centerCards) {
+      <div class="center-area">
+        <h3>Cartes au centre</h3>
+        <div class="center-cards">
+          @for (card of gameState.centerCards; track card) {
+            <div class="card">
+              <span class="card-suit">{{ getCardSuit(card) }}</span>
+              <span class="card-value">{{ getCardValue(card) }}</span>
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
 
     <div class="hand-area">
       <div class="current-card-container">
@@ -55,11 +53,19 @@
     </div>
 
     <div class="action-buttons">
-      <button class="btn btn-continue" (click)="continueRevealing()" [disabled]="isFlipping">
+      <button 
+        class="btn btn-continue" 
+        (click)="continueRevealing()" 
+        [disabled]="!isMyTurn || isEliminated()"
+        onclick="console.log('🖱️ Hit button CLICKED!')">
         <span class="icon">🎴</span>
         <span>Hit</span>
       </button>
-      <button class="btn btn-stop" (click)="stopRevealing()" [disabled]="isFlipping">
+      <button 
+        class="btn btn-stop" 
+        (click)="stopRevealing()" 
+        [disabled]="!isMyTurn || isEliminated()"
+        onclick="console.log('🖱️ Stop button CLICKED!')">
         <span class="icon">✋</span>
         <span>Stop</span>
       </button>

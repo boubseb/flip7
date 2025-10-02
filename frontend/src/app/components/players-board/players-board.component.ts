@@ -1,10 +1,11 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RevealedCardsComponent } from '../revealed-cards/revealed-cards.component';
 
 @Component({
   selector: 'app-players-board',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RevealedCardsComponent],
   templateUrl: './players-board.component.html',
   styleUrl: './players-board.component.scss'
 })
@@ -50,18 +51,21 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   }
 
   getPlayerScore(playerId: string): number {
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
+    if (!this.gameState || !this.gameState.players) {
       return 0;
     }
-    return this.gameState.players[playerId].score || 0;
+    // gameState.players est un tableau
+    const player = this.gameState.players.find((p: any) => p.userId === playerId);
+    return player?.roundScore || 0;
   }
 
   getRevealedCards(playerId: string): any[] {
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
+    if (!this.gameState || !this.gameState.players) {
       return [];
     }
-    // Les cartes découvertes (revealed) du joueur
-    return this.gameState.players[playerId].revealedCards || [];
+    // gameState.players est un tableau
+    const player = this.gameState.players.find((p: any) => p.userId === playerId);
+    return player?.hand || [];
   }
 
   getSuitSymbol(suit: string): string {

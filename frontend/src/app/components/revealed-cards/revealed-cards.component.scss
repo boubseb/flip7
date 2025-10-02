@@ -1,0 +1,94 @@
+.revealed-cards-container {
+  width: 100%;
+  padding: 0.5rem;
+  
+  .cards-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #666;
+    
+    .cards-count {
+      font-weight: 500;
+    }
+    
+    .cards-score {
+      font-weight: 700;
+      color: #2c3e50;
+      font-size: 1rem;
+    }
+  }
+  
+  .cards-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    
+    .card {
+      position: relative;
+      width: 50px;
+      height: 70px;
+      background: white;
+      border: 2px solid #333;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      
+      .card-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1;
+      }
+      
+      // Default card styling
+      color: #2c3e50;
+      border-color: #34495e;
+      
+      // Cartes spéciales
+      &.card-special {
+        background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+        border-width: 3px;
+        
+        &.card-life {
+          border-color: #27ae60;
+          color: #27ae60;
+          background: linear-gradient(135deg, #e8f8f5 0%, #d5f4e6 100%);
+        }
+        
+        &.card-stop {
+          border-color: #e74c3c;
+          color: #e74c3c;
+          background: linear-gradient(135deg, #fadbd8 0%, #f5b7b1 100%);
+        }
+        
+        &.card-draw_three {
+          border-color: #3498db;
+          color: #3498db;
+          background: linear-gradient(135deg, #d6eaf8 0%, #aed6f1 100%);
+        }
+      }
+    }
+  }
+  
+  .no-cards {
+    padding: 1rem;
+    text-align: center;
+    color: #95a5a6;
+    font-style: italic;
+    
+    .placeholder-text {
+      font-size: 0.9rem;
+    }
+  }
+}

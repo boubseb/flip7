@@ -21,8 +21,8 @@ import { GameHistory, PlayerStats } from '../../models/game/game-history.model';
   providedIn: 'root'
 })
 export class GameService {
-  private apiUrl = `${environment.apiUrl}/game`;
-  private historyUrl = `${environment.apiUrl}/history`;
+  private apiUrl = `${environment.apiUrl}/api/game`;
+  private historyUrl = `${environment.apiUrl}/api/history`;
 
   // État du jeu en cache
   private gameStateSubject = new BehaviorSubject<GameStateResponse | null>(null);
@@ -41,7 +41,8 @@ export class GameService {
    * Headers avec Authorization
    */
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('authToken') || '';
+    const token = localStorage.getItem('access_token') || '';
+    console.log('🔑 GameService token:', token ? 'Present' : 'Missing');
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -63,10 +64,18 @@ export class GameService {
    * Pioche une carte
    */
   drawCard(roomId: string): Observable<DrawResult> {
+    const url = `${this.apiUrl}/${roomId}/draw`;
+    console.log('🌐 DrawCard HTTP Request:');
+    console.log('   URL:', url);
+    console.log('   Headers:', this.getHeaders());
+    
     return this.http.post<DrawResult>(
-      `${this.apiUrl}/${roomId}/draw`,
+      url,
       {},
       { headers: this.getHeaders() }
+    ).pipe(
+      tap(result => console.log('✅ DrawCard response:', result)),
+      tap(null, error => console.error('❌ DrawCard error:', error))
     );
   }
 

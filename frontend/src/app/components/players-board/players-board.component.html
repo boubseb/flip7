@@ -1,46 +1,47 @@
 <div class="players-board">
-  <div class="players-list" *ngIf="players.length > 0">
-    <div 
-      class="player-item" 
-      *ngFor="let playerId of players; let i = index"
-      [class.current-player]="playerId === currentPlayerId"
-      [class.current-user]="playerId === currentUserId"
-      [class.expanded]="isExpanded(playerId)">
-      
-      <!-- Player Header (Always visible) -->
-      <div class="player-header" (click)="togglePlayer(playerId)">
-        <div class="player-left">
-          <span class="expand-icon">{{ isExpanded(playerId) ? '▼' : '▶' }}</span>
-          <span class="player-number">#{{ i + 1 }}</span>
-          <span class="player-name">
-            {{ playerId === currentUserId ? 'Vous' : getPlayerPseudo(playerId) }}
-          </span>
-          <span class="badge-turn" *ngIf="playerId === currentPlayerId">🎯</span>
-        </div>
-        <div class="player-right">
-          <span class="player-score">{{ getPlayerScore(playerId) }} pts</span>
-        </div>
-      </div>
-
-      <!-- Player Content (Expandable) -->
-      <div class="player-content" *ngIf="isExpanded(playerId)">
-        <div class="revealed-cards">
-          <div class="cards-label">Cartes découvertes :</div>
-          <div class="cards-container" *ngIf="getRevealedCards(playerId).length > 0">
-            <div class="card" *ngFor="let card of getRevealedCards(playerId)">
-              <div class="card-value">{{ card.value }}</div>
-              <div class="card-suit">{{ getSuitSymbol(card.suit) }}</div>
+  @if (players.length > 0) {
+    <div class="players-list">
+      @for (playerId of players; track playerId; let i = $index) {
+        <div 
+          class="player-item"
+          [class.current-player]="playerId === currentPlayerId"
+          [class.current-user]="playerId === currentUserId"
+          [class.expanded]="isExpanded(playerId)">
+          
+          <!-- Player Header (Always visible) -->
+          <div class="player-header" (click)="togglePlayer(playerId)">
+            <div class="player-left">
+              <span class="expand-icon">{{ isExpanded(playerId) ? '▼' : '▶' }}</span>
+              <span class="player-number">#{{ i + 1 }}</span>
+              <span class="player-name">
+                {{ playerId === currentUserId ? 'Vous' : getPlayerPseudo(playerId) }}
+              </span>
+              @if (playerId === currentPlayerId) {
+                <span class="badge-turn">🎯</span>
+              }
+            </div>
+            <div class="player-right">
+              <span class="player-score">{{ getPlayerScore(playerId) }} pts</span>
             </div>
           </div>
-          <div class="no-cards" *ngIf="getRevealedCards(playerId).length === 0">
-            Aucune carte découverte
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="no-players" *ngIf="players.length === 0">
-    <p>Aucun joueur dans la partie</p>
-  </div>
+          <!-- Player Content (Expandable) -->
+          @if (isExpanded(playerId)) {
+            <div class="player-content">
+              <app-revealed-cards 
+                [cards]="getRevealedCards(playerId)"
+                [score]="getPlayerScore(playerId)">
+              </app-revealed-cards>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (players.length === 0) {
+    <div class="no-players">
+      <p>Aucun joueur dans la partie</p>
+    </div>
+  }
 </div>

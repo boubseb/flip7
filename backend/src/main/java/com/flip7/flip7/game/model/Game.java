@@ -40,7 +40,17 @@ public class Game {
     public void startNewRound() {
         roundNumber++;
         gameState = GameState.DISTRIBUTING;
-        currentPlayerIndex = 0;
+        
+        // Déterminer le joueur de départ
+        if (roundNumber == 1) {
+            // Premier round : joueur aléatoire
+            currentPlayerIndex = new java.util.Random().nextInt(players.size());
+            System.out.println("🎲 First round - Random starting player: " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
+        } else {
+            // Rounds suivants : faire tourner le joueur de départ
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+            System.out.println("🔄 Round " + roundNumber + " - Starting player rotated to: " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
+        }
 
         // Réinitialiser les joueurs
         for (GamePlayer player : players) {
@@ -51,14 +61,16 @@ public class Game {
         deck.reset();
 
         // Distribution initiale : 1 carte par joueur
-        // Note : Le délai de 5 secondes sera géré côté WebSocket/Controller
+        System.out.println("🎴 Distributing initial cards to all players...");
         for (GamePlayer player : players) {
             Card card = deck.draw();
             player.addCard(card);
             player.setStatus(PlayerStatus.PLAYING);
+            System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ")");
         }
 
         gameState = GameState.PLAYING;
+        System.out.println("✅ Round " + roundNumber + " started! Current player: " + getCurrentPlayer().getUsername());
     }
 
     /**
@@ -120,6 +132,8 @@ public class Game {
             return new DrawResult(true, "7 cartes différentes ! Vous remportez le round !", drawnCard, true);
         }
 
+        // Passer au joueur suivant après une pioche réussie
+        nextPlayer();
         return new DrawResult(true, "Carte piochée", drawnCard);
     }
 

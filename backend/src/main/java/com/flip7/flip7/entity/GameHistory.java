@@ -1,8 +1,10 @@
 package com.flip7.flip7.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,25 +13,53 @@ import java.util.List;
  * Entité représentant l'historique d'une partie de Flip7
  * Une room peut avoir plusieurs parties (GameHistory)
  */
-@Document(collection = "game_history")
+@Entity
+@Table(name = "game_history")
 public class GameHistory {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     
+    @Column(name = "room_id", nullable = false)
     private String roomId;              // Référence à la room
+    
+    @ElementCollection
+    @CollectionTable(name = "game_history_players", joinColumns = @JoinColumn(name = "game_history_id"))
+    @Column(name = "player_id")
     private List<String> playerIds;     // Liste des joueurs
+    
+    @Column(name = "started_at")
     private LocalDateTime startedAt;    // Date de début
+    
+    @Column(name = "ended_at")
     private LocalDateTime endedAt;      // Date de fin (null si non terminée)
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private GameStatus status;          // Statut de la partie
+    
+    @Column(name = "winner_id")
     private String winnerId;            // ID du gagnant (null si pas terminé)
+    
+    @Column(name = "total_rounds")
     private int totalRounds;            // Nombre de rounds joués
     
-    // Historique détaillé de chaque round
+    // Historique détaillé de chaque round - Stocké en JSON pour simplicité
+    @Column(name = "rounds", columnDefinition = "TEXT")
+    private String roundsJson;
+    
+    @Transient
     private List<RoundHistory> rounds;
     
-    // Scores finaux des joueurs
+    // Scores finaux des joueurs - Stocké en JSON pour simplicité
+    @Column(name = "final_scores", columnDefinition = "TEXT")
+    private String finalScoresJson;
+    
+    @Transient
     private List<PlayerScore> finalScores;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public GameHistory() {
         this.rounds = new ArrayList<>();
@@ -42,6 +72,34 @@ public class GameHistory {
         this();
         this.roomId = roomId;
         this.playerIds = new ArrayList<>(playerIds);
+    }
+    
+    @PrePersist
+    @PreUpdate
+    private void serializeJsonFields() {
+        try {
+            this.roundsJson = objectMapper.writeValueAsString(this.rounds);
+            this.finalScoresJson = objectMapper.writeValueAsString(this.finalScores);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Erreur lors de la sérialisation JSON", e);
+        }
+    }
+    
+    @PostLoad
+    private void deserializeJsonFields() {
+        try {
+            this.rounds = objectMapper.readValue(
+                roundsJson != null ? roundsJson : "[]", 
+                new TypeReference<List<RoundHistory>>() {}
+            );
+            this.finalScores = objectMapper.readValue(
+                finalScoresJson != null ? finalScoresJson : "[]", 
+                new TypeReference<List<PlayerScore>>() {}
+            );
+        } catch (JsonProcessingException e) {
+            this.rounds = new ArrayList<>();
+            this.finalScores = new ArrayList<>();
+        }
     }
 
     // Getters et Setters

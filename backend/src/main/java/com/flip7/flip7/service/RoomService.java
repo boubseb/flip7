@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +16,7 @@ import com.flip7.flip7.dto.RoomResponse;
 import com.flip7.flip7.entity.Room;
 import com.flip7.flip7.entity.User;
 import com.flip7.flip7.entity.Room.RoomStatus;
+import com.flip7.flip7.event.GameStartEvent;
 import com.flip7.flip7.repository.RoomRepository;
 import com.flip7.flip7.repository.UserRepository;
 
@@ -29,6 +31,9 @@ public class RoomService {
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
     
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     
@@ -113,10 +118,13 @@ public class RoomService {
         
         room.setStatus(RoomStatus.IN_GAME);
         room.setTurnIndex(0);
-        // Initialize game state here (you'll add this logic)
         room.setGameState("{}");
         
         room = roomRepository.save(room);
+        
+        // Publier un événement pour initialiser le jeu (découplage pour éviter dépendance circulaire)
+        eventPublisher.publishEvent(new GameStartEvent(this, roomId));
+        System.out.println("✅ GameStartEvent published for room: " + roomId);
         
         // Broadcast game start to all players
         broadcastGameStart(room);
