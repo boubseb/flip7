@@ -8,13 +8,14 @@
   font-size: 1rem;
   line-height: 1.5;
   width: 100%;
-  left:0;
+  left: 0;
   height: $footerHeight;
   bottom: 0;
   padding: 0 1rem;
   box-sizing: border-box;
   position: fixed;
 
+  // Standard Footer Layout
   .containerFooter {
     width: 100%;
     box-sizing: border-box;
@@ -39,4 +40,58 @@
     }
   }
 
+  // Game Page Footer: Navigation Buttons
+  &.game-footer {
+    padding: 0;
+
+    .game-nav-menu {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+
+      .nav-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+        color: $textLightColor;
+
+        &:last-child {
+          border-right: none;
+        }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          box-shadow: inset 0 4px 8px rgba(102, 126, 234, 0.3);
+
+          .nav-icon {
+            transform: scale(1.2);
+          }
+        }
+
+        .nav-icon {
+          font-size: 2rem;
+          transition: transform 0.2s;
+        }
+
+        .nav-label {
+          display: none; // Hide labels
+        }
+      }
+    }
+  }
 }

@@ -9,10 +9,11 @@ import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
 import { PlayerBoardComponent } from '../../components/player-board/player-board.component';
 import { ScoreBoardComponent } from '../../components/score-board/score-board.component';
+import { FooterComponent } from '../../components/footer/footer.component';
 
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent, FooterComponent],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })

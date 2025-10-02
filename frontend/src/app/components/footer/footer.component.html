@@ -1,8 +1,31 @@
-<footer class="footer">
-  <div class="containerFooter">
-      <a routerLink="construction">FAQ</a>
+<footer class="footer" [class.game-footer]="isGamePage">
+  <!-- Game Page Footer: Navigation Buttons -->
+  <div class="game-nav-menu" *ngIf="isGamePage">
+    <button 
+      class="nav-btn"
+      [class.active]="gameViewMode === 'all'"
+      (click)="switchView('all')">
+      <span class="nav-icon">👥</span>
+    </button>
+    <button 
+      class="nav-btn"
+      [class.active]="gameViewMode === 'player'"
+      (click)="switchView('player')">
+      <span class="nav-icon">🃏</span>
+    </button>
+    <button 
+      class="nav-btn"
+      [class.active]="gameViewMode === 'score'"
+      (click)="switchView('score')">
+      <span class="nav-icon">📊</span>
+    </button>
+  </div>
+
+  <!-- Standard Footer: FAQ, Credits, Social -->
+  <div class="containerFooter" *ngIf="!isGamePage">
+    <a routerLink="construction">FAQ</a>
     <div class="credits">
-     TITRE FOOTER
+      TITRE FOOTER
     </div>
     <div class="social">
       <a routerLink="/home">
