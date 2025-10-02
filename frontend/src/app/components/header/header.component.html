@@ -1,20 +1,34 @@
 <header class="header">
   <div class="header-container">
     <button class="rules-button" (click)="toggleIsRules()">
-      <img class="rules-image" src="assets/pictures/logo-regles-du-jeu.png" alt="rules">rules
+      <span class="info-icon">i</span>
     </button>
     <div class="title-container">
       <h1 class="title" routerLink="/">Flip 7</h1>
     </div>
     <div class="profil-container">
       @if((isLogin$| async) ===true){ 
-        <div class="profil-image" (click)="toggleIsProfil()">
-          <img class="avatar" src="assets/pictures/Connexion.png" alt="profil">
-      </div>
-      <img (click)="onLogout()" class="logout-image" src="assets/pictures/log-out-button.svg" alt="LO">
-      }
-      @else {
-      else
+        <div class="profil-menu-wrapper">
+          <div class="profil-image" (click)="toggleProfilMenu()">
+            <img class="avatar" src="assets/pictures/Connexion.png" alt="profil">
+          </div>
+          @if(isProfilMenuOpen) {
+            <div class="dropdown-menu">
+              <button class="menu-item" (click)="openProfil()">
+                <span class="menu-icon">👤</span>
+                <span>Profil</span>
+              </button>
+              <button class="menu-item" (click)="openStats()">
+                <span class="menu-icon">📊</span>
+                <span>Stats</span>
+              </button>
+              <button class="menu-item logout" (click)="onLogout()">
+                <span class="menu-icon">🚪</span>
+                <span>Log out</span>
+              </button>
+            </div>
+          }
+        </div>
       }
     </div>
   </div>

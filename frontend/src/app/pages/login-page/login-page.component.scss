@@ -4,7 +4,7 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: rgba(70, 68, 68, 0.9);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding-left: 1rem;
     padding-right: 1rem;
 
@@ -15,13 +15,18 @@
         align-items: center;
         flex-direction: column;
         width: 400px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
 
         .input-container {
              display: flex;
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            padding: 2rem;
+            padding: 0;
             margin-bottom: 15px;
             width: 100%;
             
@@ -34,7 +39,7 @@
             .formatText {
                 display: block;
                 margin-bottom: 0.35rem;
-                color: rgba(255,255,255,0.85);
+                color: #4a5568;
                 font-weight: 600;
                 font-size: 0.95rem;
                 font-family: 'Inika', serif;
@@ -44,9 +49,9 @@
                 width: 100%;
                 padding: 0.72rem 0.9rem;
                 border-radius: 10px;
-                border: 1px solid rgba(255,255,255,0.10);
-                background: rgba(255,255,255,0.03);
-                color: #ffffff;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                background: rgba(255, 255, 255, 0.8);
+                color: #2d3748;
                 font-size: 1rem;
                 box-sizing: border-box;
                 transition: box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
@@ -54,14 +59,14 @@
             }
 
             input::placeholder {
-                color: rgba(255,255,255,0.6);
+                color: rgba(0, 0, 0, 0.4);
             }
 
             input:focus {
                 outline: none;
-                border-color: rgba(79,70,229,0.9);
-                box-shadow: 0 6px 18px rgba(2,6,23,0.55), 0 0 0 4px rgba(79,70,229,0.10);
-                background: rgba(255,255,255,0.035);
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+                background: rgba(255, 255, 255, 1);
             }
 
             /* smaller screens: increase spacing */
@@ -80,11 +85,11 @@
 
         .connectButton {
             margin-top: 12px;
-            margin-bottom: 3rem; /* extra breathing room before the links */
+            margin-bottom: 1.5rem;
             padding: 0.8rem 1.1rem;
             width: 100%;
             max-width: 320px;
-            background: linear-gradient(90deg, #6d28d9 0%, #4f46e5 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
             border: none;
             border-radius: 10px;
@@ -92,26 +97,32 @@
             font-size: 1rem;
             align-self: center;
             font-weight: 700;
-            box-shadow: 0 10px 24px rgba(79,70,229,0.18);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
         }
 
-        .connectButton:hover { transform: translateY(-2px); opacity: 0.98 }
-        .connectButton:active { transform: translateY(0px); box-shadow: 0 6px 18px rgba(79,70,229,0.12); }
+        .connectButton:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        .connectButton:active { 
+            transform: translateY(-1px); 
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3); 
+        }
 
         .login-form button:disabled,
         .connectButton:disabled {
-            background-color: rgba(255,255,255,0.08);
-            color: rgba(255,255,255,0.5);
+            background: rgba(0, 0, 0, 0.2);
+            color: rgba(0, 0, 0, 0.4);
             cursor: not-allowed;
             box-shadow: none;
         }
 
         /* link group below the form */
         .login-form > div:last-child {
-            margin-top: 1.6rem; /* increased spacing from button */
+            margin-top: 1rem;
             display: flex;
-            gap: 1rem; /* increase gap between links */
+            gap: 1rem;
             align-items: center;
             justify-content: center;
         }
@@ -119,18 +130,29 @@
         .registerButton {
             padding: 0.45rem 0.9rem;
             border-radius: 999px;
-            background: rgba(255,255,255,0.04);
-            color: #fff;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
             text-decoration: none;
             font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.06);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .registerButton:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
         }
 
         .forgot-password {
             padding: 0.45rem 0.9rem;
             border-radius: 999px;
-            color: rgba(255,255,255,0.85);
+            color: #4a5568;
             font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .forgot-password:hover {
+            color: #667eea;
         }
     }
 

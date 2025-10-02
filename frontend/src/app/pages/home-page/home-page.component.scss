@@ -6,37 +6,49 @@
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: rgba(70, 68, 68, 0.9);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 
     .buttons-container {
-        padding: 7rem 4rem 7rem 4rem;
-        border-radius: 15px;
+        padding: 4rem 3rem;
+        border-radius: 20px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background-color: rgba(148, 143, 143, 0.9);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
 
         .button-home {
-            background-color: $homeButtonColor;
-             display: flex;           /* <-- centrer le contenu */
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
             justify-content: center;
             align-items: center;
             text-align: center; 
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
             line-height: 1.5;
-            width: 15rem;
+            width: 16rem;
             height: 3.5rem;
             padding: 1rem;
-            margin: 1rem 0;
+            margin: 0.75rem 0;
             border: none;
-            border-radius: 20px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 
             &:hover {
-                background-color: color.adjust($homeButtonColor, $lightness: -10%);
+                transform: translateY(-3px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+                background: linear-gradient(135deg, #764ba2, #667eea);
+            }
+
+            &:active {
+                transform: translateY(-1px);
             }
         }
     }

@@ -68,9 +68,7 @@ export class PlayerBoardComponent {
       this.isFlipping = false;
       // Émettre l'action de révélation
       const card = this.getCurrentCard();
-      if (card) {
-        this.onPlayCard.emit({ action: 'REVEAL', card });
-      }
+      this.onPlayCard.emit({ action: 'REVEAL', card: card || 'TEST_CARD' });
     }, 600);
   }
 

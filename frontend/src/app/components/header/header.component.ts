@@ -29,6 +29,7 @@ export class HeaderComponent {
   isProfil: boolean = false;
   isPrfil = this.isLogin$
   router = inject(Router);
+  isProfilMenuOpen: boolean = false;
 
 
   toggleIsRules() {
@@ -38,7 +39,23 @@ export class HeaderComponent {
     this.isProfil = !this.isProfil;
   }
 
+  toggleProfilMenu() {
+    this.isProfilMenuOpen = !this.isProfilMenuOpen;
+  }
+
+  openProfil() {
+    this.isProfilMenuOpen = false;
+    this.isProfil = true;
+  }
+
+  openStats() {
+    this.isProfilMenuOpen = false;
+    // TODO: Implement stats page
+    console.log('Opening stats...');
+  }
+
   onLogout(): void {
+    this.isProfilMenuOpen = false;
     this.authenticationService.removeToken();
     this.router.navigateByUrl('/');
   }

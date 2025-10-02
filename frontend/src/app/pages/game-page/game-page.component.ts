@@ -10,7 +10,6 @@ import { PlayersBoardComponent } from '../../components/players-board/players-bo
 import { PlayerBoardComponent } from '../../components/player-board/player-board.component';
 import { ScoreBoardComponent } from '../../components/score-board/score-board.component';
 import { FooterComponent } from '../../components/footer/footer.component';
-
 @Component({
   selector: 'app-game-page',
   imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent, FooterComponent],
@@ -35,6 +34,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
   
   // Error handling
   errorMessage: string = '';
+  private errorTimeout: any = null;
   
   private subscriptions: Subscription[] = [];
 
@@ -140,7 +140,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         // Check if user is part of the room
         if (!room.players.includes(this.currentUserId)) {
           console.warn('❌ User not in room');
-          this.errorMessage = 'Vous ne faites pas partie de cette room';
+          this.showError('Vous ne faites pas partie de cette room');
           setTimeout(() => this.router.navigate(['/room']), 2000);
           return;
         }
@@ -159,7 +159,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('❌ Error loading room:', error);
-        this.errorMessage = 'Room introuvable';
+        this.showError('Room introuvable');
         setTimeout(() => this.router.navigate(['/room']), 2000);
       }
     });
@@ -175,7 +175,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error playing turn:', error);
-        this.errorMessage = 'Erreur lors du jeu';
+        this.showError('Erreur lors du jeu');
       }
     });
   }
@@ -203,7 +203,25 @@ export class GamePageComponent implements OnInit, OnDestroy {
     console.log('  - room status:', this.currentRoom.status);
   }
 
+  showError(message: string): void {
+    // Effacer le timer précédent si existe
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+    
+    this.errorMessage = message;
+    
+    // Auto-effacer après 5 secondes
+    this.errorTimeout = setTimeout(() => {
+      this.clearError();
+    }, 5000);
+  }
+
   clearError(): void {
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+      this.errorTimeout = null;
+    }
     this.errorMessage = '';
   }
 

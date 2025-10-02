@@ -40,35 +40,26 @@
     </div>
 
     <div class="hand-area">
-      <div class="current-card-container" *ngIf="getCurrentCard(); else noCard">
+      <div class="current-card-container">
         <div class="card-wrapper" [class.flipping]="isFlipping">
-          <!-- Face cachée (dos de carte) -->
+          <!-- Face cachée (dos de carte avec image) -->
           <div class="card card-back" [class.hidden]="cardRevealed">
-            <div class="card-back-design">
-              <div class="pattern"></div>
-              <span class="logo">FLIP 7</span>
-            </div>
+            <img src="assets/cards/backside.png" alt="Dos de carte" class="card-back-image">
           </div>
           <!-- Face visible -->
           <div class="card card-front" [class.visible]="cardRevealed">
-            <span class="card-suit">{{ getCardSuit(getCurrentCard()!) }}</span>
-            <span class="card-value">{{ getCardValue(getCurrentCard()!) }}</span>
+            <img src="assets/cards/backside.png" alt="Carte révélée" class="card-back-image">
           </div>
         </div>
       </div>
-      <ng-template #noCard>
-        <div class="no-cards">
-          <p>Aucune carte en main</p>
-        </div>
-      </ng-template>
     </div>
 
     <div class="action-buttons">
-      <button class="btn btn-continue" (click)="continueRevealing()" [disabled]="isFlipping || !isMyTurn || !getCurrentCard()">
+      <button class="btn btn-continue" (click)="continueRevealing()" [disabled]="isFlipping">
         <span class="icon">🎴</span>
         <span>Hit</span>
       </button>
-      <button class="btn btn-stop" (click)="stopRevealing()" [disabled]="isFlipping || !isMyTurn || !getCurrentCard()">
+      <button class="btn btn-stop" (click)="stopRevealing()" [disabled]="isFlipping">
         <span class="icon">✋</span>
         <span>Stop</span>
       </button>

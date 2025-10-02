@@ -29,7 +29,7 @@ export class RegisterPageComponent {
       confirmationMail: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(4)]],
       passwordConfirmation: ['', [Validators.required]],
-    }, { validators: this.emailMatchValidator });
+    }, { });
   }
 
   // passwordValidator(control: FormControl): { [key: string]: boolean } | null {
@@ -40,15 +40,6 @@ export class RegisterPageComponent {
   //   return null;
   // }
 
-  emailMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
-    if (group.get('mailAddress')?.value !== group.get('confirmationMail')?.value) {
-      return { 'mailMismatch': true };
-    }
-    if (group.get('password')?.value !== group.get('passwordConfirmation')?.value) {
-      return { 'passwordMismatch': true };
-    }
-    return null;
-  }
 
   onSubmit(): void {
     console.log(this.registerForm.value);
