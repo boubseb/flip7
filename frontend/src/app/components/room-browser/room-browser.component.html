@@ -3,15 +3,15 @@
   <div class="tabs-navigation">
     <button 
       class="tab-btn"
-      [class.active]="activeTab === 'byId'"
-      (click)="switchTab('byId')">
-      🔑 Join by ID
-    </button>
-    <button 
-      class="tab-btn"
       [class.active]="activeTab === 'browse'"
       (click)="switchTab('browse')">
       📋 Browse Rooms
+    </button>
+      <button 
+      class="tab-btn"
+      [class.active]="activeTab === 'byId'"
+      (click)="switchTab('byId')">
+      🔑 Join by ID
     </button>
   </div>
 

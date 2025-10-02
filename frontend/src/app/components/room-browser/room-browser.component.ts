@@ -17,7 +17,7 @@ export class RoomBrowserComponent implements OnDestroy {
   @Output() onRefreshRooms = new EventEmitter<void>();
 
   // Tab management
-  activeTab: 'byId' | 'browse' = 'byId';
+  activeTab: 'byId' | 'browse' = 'browse';
   
   // Auto-refresh interval
   private refreshInterval: any;
