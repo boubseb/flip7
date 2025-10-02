@@ -1,0 +1,707 @@
+package com.flip7.flip7.service;
+
+import com.flip7.flip7.entity.GameHistory;
+import com.flip7.flip7.entity.Room;
+import com.flip7.flip7.game.card.Card;
+import com.flip7.flip7.game.model.Game;
+import com.flip7.flip7.game.model.GamePlayer;
+import com.flip7.flip7.game.model.GameState;
+import com.flip7.flip7.game.model.PlayerStatus;
+import com.flip7.flip7.repository.GameHistoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Service gérant la logique du jeu Flip7
+ */
+@Service
+public class GameService {
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private RoomService roomService;
+
+    @Autowired
+    private GameHistoryRepository gameHistoryRepository;
+
+    // Map des parties en cours (roomId -> Game)
+    private final Map<String, Game> activeGames = new ConcurrentHashMap<>();
+    
+    // Map pour lier une partie en cours à son historique (roomId -> GameHistory.id)
+    private final Map<String, String> gameHistoryIds = new ConcurrentHashMap<>();
+
+    /**
+     * Initialise une nouvelle partie pour une room
+     */
+    public Game initializeGame(String roomId) {
+        Room room = roomService.getRoom(roomId);
+        if (room == null) {
+            throw new RuntimeException("Room not found");
+        }
+
+        // Récupérer les noms des joueurs
+        Map<String, String> playerNames = new HashMap<>();
+        for (String playerId : room.getPlayers()) {
+            try {
+                com.flip7.flip7.entity.User user = roomService.getUserRepository()
+                    .findById(playerId)
+                    .orElse(null);
+                if (user != null) {
+                    String displayName = user.getFirstname() + " " + user.getLastname();
+                    playerNames.put(playerId, displayName);
+                } else {
+                    playerNames.put(playerId, "Player " + playerId.substring(0, Math.min(8, playerId.length())));
+                }
+            } catch (Exception e) {
+                // Fallback si l'utilisateur n'est pas trouvé
+                playerNames.put(playerId, "Player " + playerId.substring(0, Math.min(8, playerId.length())));
+            }
+        }
+
+        Game game = new Game(roomId, room.getPlayers(), playerNames);
+        activeGames.put(roomId, game);
+        
+        // Créer un nouvel historique de partie
+        GameHistory history = new GameHistory(roomId, room.getPlayers());
+        history = gameHistoryRepository.save(history);
+        gameHistoryIds.put(roomId, history.getId());
+        
+        return game;
+    }
+
+    /**
+     * Démarre un nouveau round avec distribution progressive (5 secondes entre chaque carte)
+     */
+    public void startNewRound(String roomId) {
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            game = initializeGame(roomId);
+        }
+
+        game.startNewRound();
+        
+        // Sauvegarder le début du round dans l'historique
+        saveRoundStart(roomId, game);
+
+        // Broadcaster l'état initial (avant distribution)
+        broadcastGameState(roomId, game);
+        
+        // Distribution progressive avec délai de 5 secondes
+        // Note: La distribution est déjà faite dans game.startNewRound()
+        // Ici on broadcast juste les événements de distribution un par un avec délai
+        startProgressiveDistribution(roomId, game);
+    }
+    
+    /**
+     * Distribue les cartes progressivement avec un délai de 5 secondes entre chaque joueur
+     */
+    private void startProgressiveDistribution(String roomId, Game game) {
+        new Thread(() -> {
+            try {
+                for (int i = 0; i < game.getPlayers().size(); i++) {
+                    if (i > 0) {
+                        Thread.sleep(5000); // 5 secondes de délai
+                    }
+                    
+                    GamePlayer player = game.getPlayers().get(i);
+                    
+                    // Broadcaster qu'une carte a été distribuée à ce joueur
+                    Map<String, Object> distributionEvent = new HashMap<>();
+                    distributionEvent.put("playerIndex", i);
+                    distributionEvent.put("playerId", player.getUserId());
+                    distributionEvent.put("playerName", player.getUsername());
+                    
+                    messagingTemplate.convertAndSend(
+                        "/topic/rooms/" + roomId + "/card-distributed", 
+                        distributionEvent
+                    );
+                }
+                
+                // Après la distribution complète, broadcaster l'état final
+                Thread.sleep(1000);
+                broadcastGameState(roomId, game);
+                
+                // Broadcaster que le round commence vraiment
+                messagingTemplate.convertAndSend(
+                    "/topic/rooms/" + roomId + "/round-ready",
+                    Map.of("message", "Le round commence !")
+                );
+                
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+    }
+
+    /**
+     * Un joueur pioche une carte
+     */
+    public Game.DrawResult drawCard(String roomId, String playerId) {
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return new Game.DrawResult(false, "Partie non trouvée", null);
+        }
+
+        Game.DrawResult result = game.drawCard(playerId);
+
+        // Broadcaster l'état du jeu
+        broadcastGameState(roomId, game);
+
+        // Si le round est terminé, calculer les scores
+        if (result.isRoundEnded() || game.isRoundOver()) {
+            handleRoundEnd(roomId, game);
+        }
+
+        return result;
+    }
+
+    /**
+     * Un joueur décide de s'arrêter
+     */
+    public Game.ActionResult stopDrawing(String roomId, String playerId) {
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return new Game.ActionResult(false, "Partie non trouvée");
+        }
+
+        Game.ActionResult result = game.stopDrawing(playerId);
+
+        // Broadcaster l'état du jeu
+        broadcastGameState(roomId, game);
+
+        // Si le round est terminé, calculer les scores
+        if (game.isRoundOver()) {
+            handleRoundEnd(roomId, game);
+        }
+
+        return result;
+    }
+
+    /**
+     * Un joueur joue une carte spéciale
+     */
+    public Game.ActionResult playSpecialCard(String roomId, String playerId, String cardId, String targetPlayerId) {
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return new Game.ActionResult(false, "Partie non trouvée");
+        }
+
+        Game.ActionResult result = game.playSpecialCard(playerId, cardId, targetPlayerId);
+
+        // Broadcaster l'état du jeu
+        broadcastGameState(roomId, game);
+
+        // Si le round est terminé, calculer les scores
+        if (game.isRoundOver()) {
+            handleRoundEnd(roomId, game);
+        }
+
+        return result;
+    }
+
+    /**
+     * Gère la fin d'un round
+     */
+    private void handleRoundEnd(String roomId, Game game) {
+        // Sauvegarder la fin du round dans l'historique
+        saveRoundEnd(roomId, game);
+        
+        // Broadcaster les scores finaux du round
+        broadcastRoundEnd(roomId, game);
+
+        // Si la partie est terminée (un joueur a atteint 200 points)
+        if (game.isGameOver()) {
+            // Marquer la partie comme terminée dans l'historique
+            saveGameEnd(roomId, game);
+            
+            broadcastGameOver(roomId, game);
+            activeGames.remove(roomId);
+            gameHistoryIds.remove(roomId);
+        }
+    }
+
+    /**
+     * Récupère l'état d'une partie
+     */
+    public Game getGame(String roomId) {
+        return activeGames.get(roomId);
+    }
+    
+    /**
+     * Abandonne une partie en cours
+     */
+    public void abandonGame(String roomId, String reason) {
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return;
+        }
+        
+        // Marquer la partie comme abandonnée dans l'historique
+        String historyId = gameHistoryIds.get(roomId);
+        if (historyId != null) {
+            GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
+            if (history != null) {
+                history.setStatus(GameHistory.GameStatus.ABANDONED);
+                history.setEndedAt(LocalDateTime.now());
+                
+                // Sauvegarder les scores actuels même si la partie est abandonnée
+                for (GamePlayer player : game.getPlayers()) {
+                    GameHistory.PlayerScore score = new GameHistory.PlayerScore(
+                        player.getUserId(),
+                        player.getUsername(),
+                        player.getTotalScore()
+                    );
+                    history.getFinalScores().add(score);
+                }
+                
+                gameHistoryRepository.save(history);
+            }
+        }
+        
+        // Supprimer la partie active
+        activeGames.remove(roomId);
+        gameHistoryIds.remove(roomId);
+        
+        // Broadcaster l'abandon
+        messagingTemplate.convertAndSend(
+            "/topic/rooms/" + roomId + "/game-abandoned",
+            Map.of("message", reason != null ? reason : "La partie a été abandonnée")
+        );
+    }
+    
+    /**
+     * Un joueur quitte la partie
+     */
+    public void playerLeaveGame(String roomId, String playerId) {
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return;
+        }
+        
+        // Si tous les joueurs ont quitté, abandonner la partie
+        long remainingPlayers = game.getPlayers().stream()
+            .filter(p -> !p.getUserId().equals(playerId))
+            .count();
+            
+        if (remainingPlayers == 0) {
+            abandonGame(roomId, "Tous les joueurs ont quitté la partie");
+        } else if (remainingPlayers == 1) {
+            // S'il ne reste qu'un joueur, on peut aussi abandonner
+            abandonGame(roomId, "Pas assez de joueurs pour continuer");
+        }
+    }
+
+    /**
+     * Broadcaster l'état du jeu à tous les joueurs de la room
+     */
+    private void broadcastGameState(String roomId, Game game) {
+        GameStateDTO dto = createGameStateDTO(game);
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game", dto);
+    }
+
+    /**
+     * Broadcaster la fin d'un round
+     */
+    private void broadcastRoundEnd(String roomId, Game game) {
+        RoundEndDTO dto = createRoundEndDTO(game);
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/round-end", dto);
+    }
+
+    /**
+     * Broadcaster la fin de la partie
+     */
+    private void broadcastGameOver(String roomId, Game game) {
+        GameOverDTO dto = createGameOverDTO(game);
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game-over", dto);
+    }
+
+    /**
+     * Crée un DTO de l'état du jeu
+     */
+    private GameStateDTO createGameStateDTO(Game game) {
+        GameStateDTO dto = new GameStateDTO();
+        dto.setGameState(game.getGameState());
+        dto.setRoundNumber(game.getRoundNumber());
+        dto.setCurrentPlayerIndex(game.getCurrentPlayerIndex());
+        dto.setRemainingCards(game.getRemainingCards());
+        
+        // Convertir les joueurs
+        for (GamePlayer player : game.getPlayers()) {
+            PlayerDTO playerDTO = new PlayerDTO();
+            playerDTO.setUserId(player.getUserId());
+            playerDTO.setUsername(player.getUsername());
+            playerDTO.setStatus(player.getStatus());
+            playerDTO.setHandSize(player.getHandSize());
+            playerDTO.setRoundScore(player.getRoundScore());
+            playerDTO.setTotalScore(player.getTotalScore());
+            playerDTO.setLifeCardsInHand(player.getLifeCardsInHand());
+            dto.addPlayer(playerDTO);
+        }
+        
+        return dto;
+    }
+
+    /**
+     * Crée un DTO de fin de round
+     */
+    private RoundEndDTO createRoundEndDTO(Game game) {
+        RoundEndDTO dto = new RoundEndDTO();
+        dto.setRoundNumber(game.getRoundNumber());
+        
+        for (GamePlayer player : game.getPlayers()) {
+            RoundPlayerScore score = new RoundPlayerScore();
+            score.setUserId(player.getUserId());
+            score.setUsername(player.getUsername());
+            score.setRoundScore(player.getRoundScore());
+            score.setTotalScore(player.getTotalScore());
+            score.setEliminated(player.getStatus().name().equals("ELIMINATED"));
+            dto.addPlayerScore(score);
+        }
+        
+        return dto;
+    }
+
+    /**
+     * Crée un DTO de fin de partie
+     */
+    private GameOverDTO createGameOverDTO(Game game) {
+        GameOverDTO dto = new GameOverDTO();
+        GamePlayer winner = game.getWinner();
+        if (winner != null) {
+            dto.setWinnerId(winner.getUserId());
+            dto.setWinnerName(winner.getUsername());
+            dto.setWinningScore(winner.getTotalScore());
+        }
+        
+        for (GamePlayer player : game.getPlayers()) {
+            FinalPlayerScore score = new FinalPlayerScore();
+            score.setUserId(player.getUserId());
+            score.setUsername(player.getUsername());
+            score.setTotalScore(player.getTotalScore());
+            dto.addFinalScore(score);
+        }
+        
+        return dto;
+    }
+
+    // DTOs internes
+    public static class GameStateDTO {
+        private GameState gameState;
+        private int roundNumber;
+        private int currentPlayerIndex;
+        private int remainingCards;
+        private java.util.List<PlayerDTO> players = new java.util.ArrayList<>();
+
+        // Getters et Setters
+        public GameState getGameState() { return gameState; }
+        public void setGameState(GameState gameState) { this.gameState = gameState; }
+        public int getRoundNumber() { return roundNumber; }
+        public void setRoundNumber(int roundNumber) { this.roundNumber = roundNumber; }
+        public int getCurrentPlayerIndex() { return currentPlayerIndex; }
+        public void setCurrentPlayerIndex(int currentPlayerIndex) { this.currentPlayerIndex = currentPlayerIndex; }
+        public int getRemainingCards() { return remainingCards; }
+        public void setRemainingCards(int remainingCards) { this.remainingCards = remainingCards; }
+        public java.util.List<PlayerDTO> getPlayers() { return players; }
+        public void addPlayer(PlayerDTO player) { this.players.add(player); }
+    }
+
+    public static class PlayerDTO {
+        private String userId;
+        private String username;
+        private com.flip7.flip7.game.model.PlayerStatus status;
+        private int handSize;
+        private int roundScore;
+        private int totalScore;
+        private int lifeCardsInHand;
+
+        // Getters et Setters
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
+        public com.flip7.flip7.game.model.PlayerStatus getStatus() { return status; }
+        public void setStatus(com.flip7.flip7.game.model.PlayerStatus status) { this.status = status; }
+        public int getHandSize() { return handSize; }
+        public void setHandSize(int handSize) { this.handSize = handSize; }
+        public int getRoundScore() { return roundScore; }
+        public void setRoundScore(int roundScore) { this.roundScore = roundScore; }
+        public int getTotalScore() { return totalScore; }
+        public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
+        public int getLifeCardsInHand() { return lifeCardsInHand; }
+        public void setLifeCardsInHand(int lifeCardsInHand) { this.lifeCardsInHand = lifeCardsInHand; }
+    }
+
+    public static class RoundEndDTO {
+        private int roundNumber;
+        private java.util.List<RoundPlayerScore> playerScores = new java.util.ArrayList<>();
+
+        public int getRoundNumber() { return roundNumber; }
+        public void setRoundNumber(int roundNumber) { this.roundNumber = roundNumber; }
+        public java.util.List<RoundPlayerScore> getPlayerScores() { return playerScores; }
+        public void addPlayerScore(RoundPlayerScore score) { this.playerScores.add(score); }
+    }
+
+    public static class RoundPlayerScore {
+        private String userId;
+        private String username;
+        private int roundScore;
+        private int totalScore;
+        private boolean eliminated;
+
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
+        public int getRoundScore() { return roundScore; }
+        public void setRoundScore(int roundScore) { this.roundScore = roundScore; }
+        public int getTotalScore() { return totalScore; }
+        public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
+        public boolean isEliminated() { return eliminated; }
+        public void setEliminated(boolean eliminated) { this.eliminated = eliminated; }
+    }
+
+    public static class GameOverDTO {
+        private String winnerId;
+        private String winnerName;
+        private int winningScore;
+        private java.util.List<FinalPlayerScore> finalScores = new java.util.ArrayList<>();
+
+        public String getWinnerId() { return winnerId; }
+        public void setWinnerId(String winnerId) { this.winnerId = winnerId; }
+        public String getWinnerName() { return winnerName; }
+        public void setWinnerName(String winnerName) { this.winnerName = winnerName; }
+        public int getWinningScore() { return winningScore; }
+        public void setWinningScore(int winningScore) { this.winningScore = winningScore; }
+        public java.util.List<FinalPlayerScore> getFinalScores() { return finalScores; }
+        public void addFinalScore(FinalPlayerScore score) { this.finalScores.add(score); }
+    }
+
+    public static class FinalPlayerScore {
+        private String userId;
+        private String username;
+        private int totalScore;
+
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
+        public int getTotalScore() { return totalScore; }
+        public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
+    }
+    
+    // ========== Méthodes de sauvegarde de l'historique ==========
+    
+    /**
+     * Sauvegarde le début d'un round
+     */
+    private void saveRoundStart(String roomId, Game game) {
+        String historyId = gameHistoryIds.get(roomId);
+        if (historyId == null) return;
+        
+        GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
+        if (history == null) return;
+        
+        // Créer un nouveau round dans l'historique
+        GameHistory.RoundHistory roundHistory = new GameHistory.RoundHistory(game.getRoundNumber());
+        history.addRound(roundHistory);
+        
+        gameHistoryRepository.save(history);
+    }
+    
+    /**
+     * Sauvegarde la fin d'un round
+     */
+    private void saveRoundEnd(String roomId, Game game) {
+        String historyId = gameHistoryIds.get(roomId);
+        if (historyId == null) return;
+        
+        GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
+        if (history == null) return;
+        
+        // Récupérer le round actuel
+        int currentRoundIndex = game.getRoundNumber() - 1;
+        if (currentRoundIndex < 0 || currentRoundIndex >= history.getRounds().size()) return;
+        
+        GameHistory.RoundHistory roundHistory = history.getRounds().get(currentRoundIndex);
+        roundHistory.setEndedAt(LocalDateTime.now());
+        
+        // Sauvegarder les données de chaque joueur
+        int bestScore = -1;
+        String roundWinnerId = null;
+        
+        for (GamePlayer player : game.getPlayers()) {
+            GameHistory.PlayerRoundData data = new GameHistory.PlayerRoundData(
+                player.getUserId(), 
+                player.getUsername()
+            );
+            data.setRoundScore(player.getRoundScore());
+            data.setEliminated(player.getStatus() == PlayerStatus.ELIMINATED);
+            data.setStopped(player.getStatus() == PlayerStatus.STOPPED);
+            data.setHasSevenDifferent(player.hasSevenDifferentNumbers());
+            data.setUsedLife(player.hasUsedLife());
+            data.setCardsDrawn(player.getHandSize());
+            
+            roundHistory.addPlayerData(data);
+            
+            // Déterminer le gagnant du round (meilleur score non éliminé)
+            if (player.getStatus() != PlayerStatus.ELIMINATED && player.getRoundScore() > bestScore) {
+                bestScore = player.getRoundScore();
+                roundWinnerId = player.getUserId();
+            }
+        }
+        
+        roundHistory.setRoundWinnerId(roundWinnerId);
+        
+        gameHistoryRepository.save(history);
+    }
+    
+    /**
+     * Sauvegarde la fin de la partie
+     */
+    private void saveGameEnd(String roomId, Game game) {
+        String historyId = gameHistoryIds.get(roomId);
+        if (historyId == null) return;
+        
+        GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
+        if (history == null) return;
+        
+        // Marquer la partie comme terminée
+        history.setStatus(GameHistory.GameStatus.COMPLETED);
+        history.setEndedAt(LocalDateTime.now());
+        
+        // Sauvegarder le gagnant
+        GamePlayer winner = game.getWinner();
+        if (winner != null) {
+            history.setWinnerId(winner.getUserId());
+        }
+        
+        // Sauvegarder les scores finaux
+        for (GamePlayer player : game.getPlayers()) {
+            GameHistory.PlayerScore score = new GameHistory.PlayerScore(
+                player.getUserId(),
+                player.getUsername(),
+                player.getTotalScore()
+            );
+            
+            // Compter les rounds gagnés
+            int roundsWon = 0;
+            int roundsPlayed = 0;
+            for (GameHistory.RoundHistory round : history.getRounds()) {
+                if (round.getRoundWinnerId() != null && round.getRoundWinnerId().equals(player.getUserId())) {
+                    roundsWon++;
+                }
+                // Compter les rounds où le joueur n'a pas été éliminé
+                for (GameHistory.PlayerRoundData data : round.getPlayerData()) {
+                    if (data.getPlayerId().equals(player.getUserId()) && !data.isEliminated()) {
+                        roundsPlayed++;
+                        break;
+                    }
+                }
+            }
+            
+            score.setRoundsWon(roundsWon);
+            score.setRoundsPlayed(roundsPlayed);
+            
+            history.getFinalScores().add(score);
+        }
+        
+        gameHistoryRepository.save(history);
+    }
+    
+    /**
+     * Récupère l'historique des parties d'une room
+     */
+    public java.util.List<GameHistory> getRoomGameHistory(String roomId) {
+        return gameHistoryRepository.findByRoomId(roomId);
+    }
+    
+    /**
+     * Récupère l'historique des parties d'un joueur
+     */
+    public java.util.List<GameHistory> getPlayerGameHistory(String playerId) {
+        return gameHistoryRepository.findByPlayerIdsContaining(playerId);
+    }
+    
+    /**
+     * Récupère les statistiques d'un joueur
+     */
+    public PlayerStats getPlayerStats(String playerId) {
+        java.util.List<GameHistory> completedGames = gameHistoryRepository
+            .findByPlayerIdsContainingAndStatus(playerId, GameHistory.GameStatus.COMPLETED);
+        
+        PlayerStats stats = new PlayerStats();
+        stats.setPlayerId(playerId);
+        stats.setTotalGamesPlayed(completedGames.size());
+        
+        int wins = 0;
+        int totalScore = 0;
+        int totalRoundsPlayed = 0;
+        int totalRoundsWon = 0;
+        
+        for (GameHistory game : completedGames) {
+            if (playerId.equals(game.getWinnerId())) {
+                wins++;
+            }
+            
+            for (GameHistory.PlayerScore score : game.getFinalScores()) {
+                if (score.getPlayerId().equals(playerId)) {
+                    totalScore += score.getTotalScore();
+                    totalRoundsPlayed += score.getRoundsPlayed();
+                    totalRoundsWon += score.getRoundsWon();
+                }
+            }
+        }
+        
+        stats.setTotalWins(wins);
+        stats.setTotalScore(totalScore);
+        stats.setTotalRoundsPlayed(totalRoundsPlayed);
+        stats.setTotalRoundsWon(totalRoundsWon);
+        
+        if (completedGames.size() > 0) {
+            stats.setAverageScore(totalScore / completedGames.size());
+            stats.setWinRate((double) wins / completedGames.size() * 100);
+        }
+        
+        return stats;
+    }
+    
+    /**
+     * DTO pour les statistiques d'un joueur
+     */
+    public static class PlayerStats {
+        private String playerId;
+        private int totalGamesPlayed;
+        private int totalWins;
+        private int totalScore;
+        private int averageScore;
+        private double winRate;
+        private int totalRoundsPlayed;
+        private int totalRoundsWon;
+        
+        // Getters et Setters
+        public String getPlayerId() { return playerId; }
+        public void setPlayerId(String playerId) { this.playerId = playerId; }
+        public int getTotalGamesPlayed() { return totalGamesPlayed; }
+        public void setTotalGamesPlayed(int totalGamesPlayed) { this.totalGamesPlayed = totalGamesPlayed; }
+        public int getTotalWins() { return totalWins; }
+        public void setTotalWins(int totalWins) { this.totalWins = totalWins; }
+        public int getTotalScore() { return totalScore; }
+        public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
+        public int getAverageScore() { return averageScore; }
+        public void setAverageScore(int averageScore) { this.averageScore = averageScore; }
+        public double getWinRate() { return winRate; }
+        public void setWinRate(double winRate) { this.winRate = winRate; }
+        public int getTotalRoundsPlayed() { return totalRoundsPlayed; }
+        public void setTotalRoundsPlayed(int totalRoundsPlayed) { this.totalRoundsPlayed = totalRoundsPlayed; }
+        public int getTotalRoundsWon() { return totalRoundsWon; }
+        public void setTotalRoundsWon(int totalRoundsWon) { this.totalRoundsWon = totalRoundsWon; }
+    }
+}

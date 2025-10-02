@@ -1,0 +1,15 @@
+<div class="player-hand">
+  <div class="cards-container">
+    <app-card
+      *ngFor="let card of cards"
+      [card]="card"
+      [selectable]="selectable"
+      [selected]="isSelected(card)"
+      (cardClick)="onCardClick(card)">
+    </app-card>
+  </div>
+  
+  <div class="hand-info" *ngIf="cards.length > 0">
+    {{ cards.length }} carte{{ cards.length > 1 ? 's' : '' }}
+  </div>
+</div>

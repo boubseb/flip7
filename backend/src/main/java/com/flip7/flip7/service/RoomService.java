@@ -223,4 +223,9 @@ public class RoomService {
             return moveData;
         }
     }
+    
+    // Getter pour UserService (utilisé par GameService)
+    public UserRepository getUserRepository() {
+        return userRepository;
+    }
 }
