@@ -63,6 +63,31 @@ public class RoomService {
         return room;
     }
     
+    public Room kickPlayer(String roomId, String adminId, String playerToKick) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+        
+        if (!room.getAdminId().equals(adminId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admin can kick players");
+        }
+        
+        if (playerToKick.equals(adminId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Admin cannot kick themselves");
+        }
+        
+        if (!room.getPlayers().contains(playerToKick)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Player not in room");
+        }
+        
+        room.getPlayers().remove(playerToKick);
+        room = roomRepository.save(room);
+        
+        // Broadcast room update to all remaining players
+        broadcastRoomUpdate(room);
+        
+        return room;
+    }
+    
     public Room startGame(String roomId, String adminId) {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));

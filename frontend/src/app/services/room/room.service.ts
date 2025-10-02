@@ -72,6 +72,14 @@ export class RoomService {
     ).pipe(map(room => this.enrichRoom(room)));
   }
 
+  kickPlayer(roomId: string, playerId: string): Observable<Room> {
+    return this.http.post<any>(
+      `${this.apiUrl}/${roomId}/kick`,
+      { playerId },
+      { headers: this.getHeaders() }
+    ).pipe(map(room => this.enrichRoom(room)));
+  }
+
   playTurn(roomId: string, move: string): Observable<Room> {
     return this.http.post<any>(
       `${this.apiUrl}/${roomId}/play`,

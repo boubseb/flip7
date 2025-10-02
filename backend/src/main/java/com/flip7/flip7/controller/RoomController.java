@@ -84,6 +84,20 @@ public class RoomController {
         return ResponseEntity.ok(roomService.toRoomResponse(room));
     }
     
+    @PostMapping("/{roomId}/kick")
+    public ResponseEntity<RoomResponse> kickPlayer(
+            @PathVariable String roomId,
+            @RequestBody Map<String, String> request,
+            @RequestHeader("Authorization") String authHeader) {
+        
+        String adminId = extractUserIdFromAuth(authHeader);
+        String playerToKick = request.get("playerId");
+        
+        Room room = roomService.kickPlayer(roomId, adminId, playerToKick);
+        
+        return ResponseEntity.ok(roomService.toRoomResponse(room));
+    }
+    
     @PostMapping("/{roomId}/play")
     public ResponseEntity<RoomResponse> playTurn(
             @PathVariable String roomId,

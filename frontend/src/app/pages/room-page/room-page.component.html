@@ -10,31 +10,25 @@
     <button (click)="clearMessages()">✕</button>
   </div>
 
-  <!-- Connection status (only when in waiting room) -->
-  <div class="connection-status" *ngIf="currentView === 'waiting'" [class.connected]="wsConnected">
-    <span class="status-dot"></span>
-    {{ wsConnected ? 'Connecté' : 'Déconnecté' }}
-  </div>
-
   <!-- CREATE VIEW (create room form) -->
   <div class="create-view" *ngIf="currentView === 'create'">
     <div class="view-header">
       <button class="btn-back" (click)="backToHome()">← Back</button>
-      <h1>🆕 Créer une Room</h1>
+      <h1>🆕 Create room</h1>
       <button class="btn-switch" (click)="switchToJoin()">🚺 Join</button>
     </div>
 
     <div class="form-container">
       <div class="form-group">
-        <label>Mot de passe de la room</label>
+        <label>Room password</label>
         <input 
           type="password" 
           [(ngModel)]="createRoomPassword" 
-          placeholder="Entrez un mot de passe"
+          placeholder="Enter a password"
           (keyup.enter)="createRoom()">
       </div>
       <div class="form-group">
-        <label>Nombre de joueurs maximum</label>
+        <label>Maximum number of players</label>
         <input 
           type="number" 
           [(ngModel)]="createRoomMaxPlayers" 
@@ -43,7 +37,7 @@
           placeholder="4">
       </div>
       <button class="btn btn-primary btn-large" (click)="createRoom()">
-        🎯 Créer la room
+        🎯 Crete room
       </button>
     </div>
   </div>
@@ -53,7 +47,7 @@
     <div class="view-header">
       <button class="btn-back" (click)="backToHome()">← Back</button>
       <h1>🚪 Join Room</h1>
-      <button class="btn-switch" (click)="switchToCreate()">🆕 Créer</button>
+      <button class="btn-switch" (click)="switchToCreate()">🆕 Create</button>
     </div>
 
     <div class="join-content">
@@ -69,59 +63,54 @@
   <!-- WAITING ROOM VIEW (when in a room) -->
   <div class="waiting-room" *ngIf="currentView === 'waiting' && currentRoom">
     <div class="room-header">
-      <div class="room-title">
-        <h1>🎮 Salle d'attente</h1>
-        <div class="room-id-display">
-          <label>ID de la room:</label>
-          <code class="room-id-code">{{ currentRoom.id }}</code>
-          <button class="btn-copy-id" (click)="copyRoomId()" title="Copier l'ID">
-            📋 Copy
-          </button>
-        </div>
-      </div>
-      <button class="btn-leave" (click)="leaveRoom()">❌ Leave</button>
+      <h1>🎮 Waiting room</h1>
+      <button class="btn-leave" (click)="leaveRoom()">❌</button>
     </div>
 
-    <div class="room-info-box">
-      <div class="info-item">
-        <span class="label">Status:</span>
-        <span class="value status-waiting">{{ getRoomStatusLabel(currentRoom.status) }}</span>
-      </div>
-      <div class="info-item">
-        <span class="label">Joueurs:</span>
-        <span class="value">{{ currentRoom.players.length }}/{{ currentRoom.maxPlayers }}</span>
-      </div>
-      <div class="info-item" *ngIf="isAdmin">
-        <span class="badge-admin">👑 Vous êtes admin</span>
-      </div>
+    <div class="room-id-display">
+      <label>Room ID:</label>
+      <code class="room-id-code">{{ currentRoom.id }}</code>
+      <button class="btn-copy-id" (click)="copyRoomId()" title="Copier l'ID">
+        📋 Copy
+      </button>
     </div>
 
     <div class="players-section">
-      <h2>Joueurs dans la room</h2>
+      <div class="players-header">
+        <h2>Joueurs dans la room ({{ currentRoom.players.length }}/{{ currentRoom.maxPlayers }})</h2>
+        <button class="btn-refresh" (click)="refreshCurrentRoom()" title="Rafraîchir">🔄</button>
+      </div>
       <div class="players-list">
         <div class="player-card" *ngFor="let playerId of currentRoom.players; let i = index">
           <span class="player-number">{{ i + 1 }}</span>
           <span class="player-id">{{ playerId.substring(0, 8) }}...</span>
           <span class="badge-you" *ngIf="playerId === currentUserId">Vous</span>
           <span class="badge-admin" *ngIf="playerId === currentRoom.adminId">👑 Admin</span>
+          <button 
+            class="btn-kick" 
+            *ngIf="isAdmin && playerId !== currentUserId"
+            (click)="kickPlayer(playerId)"
+            title="Retirer ce joueur">
+            ❌
+          </button>
         </div>
       </div>
     </div>
 
-    <div class="waiting-message" *ngIf="currentRoom.players.length < 2">
-      <p>⏳ En attente d'autres joueurs...</p>
-      <p class="hint">Partagez l'ID de la room avec vos amis !</p>
-    </div>
-
+    <!-- Admin: always show start button if >= 2 players -->
     <button 
       class="btn-start-game" 
-      *ngIf="isAdmin && currentRoom.players.length >= 2"
+      *ngIf="isAdmin"
+      [disabled]="currentRoom.players.length < 2"
       (click)="startGame()">
-      🎮 Lancer la partie
+      <span *ngIf="currentRoom.players.length >= 2">🎮 Lancer la partie</span>
+      <span *ngIf="currentRoom.players.length < 2">⏳ En attente d'un autre joueur...</span>
     </button>
 
-    <p class="waiting-admin" *ngIf="!isAdmin && currentRoom.players.length >= 2">
-      En attente que l'admin lance la partie...
+    <!-- Non-admin: always show waiting message -->
+    <p class="waiting-admin" *ngIf="!isAdmin">
+      <span *ngIf="currentRoom.players.length < 2">⏳ En attente d'autres joueurs...</span>
+      <span *ngIf="currentRoom.players.length >= 2">En attente que l'admin lance la partie...</span>
     </p>
   </div>
 </div>
