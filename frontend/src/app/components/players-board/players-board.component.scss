@@ -1,17 +1,20 @@
 .players-board {
-    width: 100%;
+    width: 95%;
+    max-width: 1600px;
     height: 100%;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     padding: 1rem;
     box-sizing: border-box;
     overflow: hidden;
 
-    .players-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
+    .players-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
         flex: 1;
+        height: 100%;
         overflow-y: auto;
         overflow-x: hidden;
 
@@ -34,39 +37,53 @@
         }
     }
 
-    .player-card {
+    .player-item {
         background: white;
         border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
+        border-radius: 8px;
+        overflow: hidden;
         transition: all 0.2s ease;
+        cursor: pointer;
+
+        &:hover {
+            border-color: #cbd5e1;
+        }
 
         &.current-player {
             border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
         }
 
         &.current-user {
             background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
         }
 
+        &.expanded {
+            border-color: #667eea;
+        }
+
         .player-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            user-select: none;
 
-            .player-info {
+            .player-left {
                 display: flex;
                 align-items: center;
-                gap: 0.5rem;
+                gap: 0.75rem;
+
+                .expand-icon {
+                    color: #6b7280;
+                    font-size: 0.75rem;
+                    width: 12px;
+                    transition: transform 0.2s;
+                }
 
                 .player-number {
-                    width: 32px;
-                    height: 32px;
+                    width: 28px;
+                    height: 28px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -74,93 +91,92 @@
                     color: white;
                     border-radius: 50%;
                     font-weight: 700;
-                    font-size: 0.875rem;
+                    font-size: 0.8rem;
                 }
 
                 .player-name {
                     font-weight: 600;
                     color: #1f2937;
+                    font-size: 1rem;
+                }
+
+                .badge-turn {
+                    font-size: 1rem;
+                    animation: pulse 2s infinite;
                 }
             }
 
-            .player-badges {
-                display: flex;
-                gap: 0.5rem;
-
-                .badge-turn {
-                    background: #10b981;
-                    color: white;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 12px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                }
-
-                .badge-you {
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: white;
-                    padding: 0.25rem 0.5rem;
-                    border-radius: 12px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
+            .player-right {
+                .player-score {
+                    font-weight: 700;
+                    color: #667eea;
+                    font-size: 1rem;
                 }
             }
         }
 
         .player-content {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
+            padding: 0 1rem 1rem 1rem;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+            animation: slideDown 0.2s ease;
 
-            .player-hand {
-                .hand-label {
+            .revealed-cards {
+                padding-top: 0.75rem;
+
+                .cards-label {
                     font-size: 0.875rem;
                     color: #6b7280;
-                    margin-bottom: 0.5rem;
                     font-weight: 600;
+                    margin-bottom: 0.75rem;
                 }
 
-                .cards-preview {
+                .cards-container {
                     display: flex;
-                    gap: 0.25rem;
+                    gap: 0.5rem;
                     flex-wrap: wrap;
 
-                    .card-back {
-                        width: 40px;
-                        height: 56px;
-                        background: linear-gradient(135deg, #667eea, #764ba2);
-                        border-radius: 6px;
+                    .card {
+                        width: 60px;
+                        height: 84px;
+                        background: white;
+                        border: 2px solid #e5e7eb;
+                        border-radius: 8px;
                         display: flex;
+                        flex-direction: column;
                         align-items: center;
                         justify-content: center;
-                        font-size: 1.5rem;
+                        gap: 0.25rem;
                         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        transition: transform 0.2s;
+
+                        &:hover {
+                            transform: translateY(-4px);
+                        }
+
+                        .card-value {
+                            font-size: 1.5rem;
+                            font-weight: 700;
+                            color: #1f2937;
+                        }
+
+                        .card-suit {
+                            font-size: 1.25rem;
+                            
+                            &:contains('♥'),
+                            &:contains('♦') {
+                                color: #ef4444;
+                            }
+                        }
                     }
                 }
-            }
 
-            .player-stats {
-                display: flex;
-                gap: 1rem;
-                padding-top: 0.75rem;
-                border-top: 1px solid #e5e7eb;
-
-                .stat-item {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.25rem;
-
-                    .stat-label {
-                        font-size: 0.75rem;
-                        color: #6b7280;
-                        font-weight: 600;
-                    }
-
-                    .stat-value {
-                        font-size: 1.25rem;
-                        color: #1f2937;
-                        font-weight: 700;
-                    }
+                .no-cards {
+                    padding: 1rem;
+                    text-align: center;
+                    color: #9ca3af;
+                    font-size: 0.875rem;
+                    font-style: italic;
                 }
             }
         }
@@ -173,5 +189,25 @@
         justify-content: center;
         color: #9ca3af;
         font-size: 1rem;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
     }
 }

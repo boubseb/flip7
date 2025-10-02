@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,12 +8,38 @@ import { CommonModule } from '@angular/common';
   templateUrl: './players-board.component.html',
   styleUrl: './players-board.component.scss'
 })
-export class PlayersBoardComponent {
+export class PlayersBoardComponent implements OnInit, OnChanges {
   @Input() gameState: any;
   @Input() players: string[] = [];
   @Input() playerInfos: any[] = [];
   @Input() currentUserId: string = '';
   @Input() currentPlayerId: string = '';
+
+  expandedPlayers: Set<string> = new Set();
+
+  ngOnInit(): void {
+    // Initialiser tous les joueurs comme déployés au chargement
+    this.players.forEach(playerId => this.expandedPlayers.add(playerId));
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Ajouter les nouveaux joueurs comme déployés
+    if (changes['players'] && this.players) {
+      this.players.forEach(playerId => this.expandedPlayers.add(playerId));
+    }
+  }
+
+  isExpanded(playerId: string): boolean {
+    return this.expandedPlayers.has(playerId);
+  }
+
+  togglePlayer(playerId: string): void {
+    if (this.expandedPlayers.has(playerId)) {
+      this.expandedPlayers.delete(playerId);
+    } else {
+      this.expandedPlayers.add(playerId);
+    }
+  }
 
   getPlayerPseudo(playerId: string): string {
     if (!this.playerInfos) {
@@ -23,20 +49,6 @@ export class PlayersBoardComponent {
     return playerInfo ? playerInfo.pseudo : playerId.substring(0, 8) + '...';
   }
 
-  getPlayerHandCount(playerId: string): number {
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
-      return 0;
-    }
-    return this.gameState.players[playerId].hand?.length || 0;
-  }
-
-  getPlayerCards(playerId: string): any[] {
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
-      return [];
-    }
-    return this.gameState.players[playerId].hand || [];
-  }
-
   getPlayerScore(playerId: string): number {
     if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
       return 0;
@@ -44,10 +56,21 @@ export class PlayersBoardComponent {
     return this.gameState.players[playerId].score || 0;
   }
 
-  getPlayerTricks(playerId: string): number {
+  getRevealedCards(playerId: string): any[] {
     if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
-      return 0;
+      return [];
     }
-    return this.gameState.players[playerId].tricks || 0;
+    // Les cartes découvertes (revealed) du joueur
+    return this.gameState.players[playerId].revealedCards || [];
+  }
+
+  getSuitSymbol(suit: string): string {
+    const suitMap: { [key: string]: string } = {
+      'HEARTS': '♥',
+      'DIAMONDS': '♦',
+      'CLUBS': '♣',
+      'SPADES': '♠'
+    };
+    return suitMap[suit] || suit;
   }
 }

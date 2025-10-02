@@ -1,42 +1,39 @@
 <div class="players-board">
-  <div class="players-grid" *ngIf="players.length > 0">
+  <div class="players-list" *ngIf="players.length > 0">
     <div 
-      class="player-card" 
+      class="player-item" 
       *ngFor="let playerId of players; let i = index"
       [class.current-player]="playerId === currentPlayerId"
-      [class.current-user]="playerId === currentUserId">
+      [class.current-user]="playerId === currentUserId"
+      [class.expanded]="isExpanded(playerId)">
       
-      <div class="player-header">
-        <div class="player-info">
+      <!-- Player Header (Always visible) -->
+      <div class="player-header" (click)="togglePlayer(playerId)">
+        <div class="player-left">
+          <span class="expand-icon">{{ isExpanded(playerId) ? '▼' : '▶' }}</span>
           <span class="player-number">#{{ i + 1 }}</span>
           <span class="player-name">
             {{ playerId === currentUserId ? 'Vous' : getPlayerPseudo(playerId) }}
           </span>
+          <span class="badge-turn" *ngIf="playerId === currentPlayerId">🎯</span>
         </div>
-        <div class="player-badges">
-          <span class="badge-turn" *ngIf="playerId === currentPlayerId">🎯 Son tour</span>
-          <span class="badge-you" *ngIf="playerId === currentUserId">Vous</span>
+        <div class="player-right">
+          <span class="player-score">{{ getPlayerScore(playerId) }} pts</span>
         </div>
       </div>
 
-      <div class="player-content">
-        <div class="player-hand">
-          <div class="hand-label">{{ getPlayerHandCount(playerId) }} cartes</div>
-          <div class="cards-preview">
-            <div class="card-back" *ngFor="let card of getPlayerCards(playerId)">
-              🂠
+      <!-- Player Content (Expandable) -->
+      <div class="player-content" *ngIf="isExpanded(playerId)">
+        <div class="revealed-cards">
+          <div class="cards-label">Cartes découvertes :</div>
+          <div class="cards-container" *ngIf="getRevealedCards(playerId).length > 0">
+            <div class="card" *ngFor="let card of getRevealedCards(playerId)">
+              <div class="card-value">{{ card.value }}</div>
+              <div class="card-suit">{{ getSuitSymbol(card.suit) }}</div>
             </div>
           </div>
-        </div>
-
-        <div class="player-stats" *ngIf="gameState">
-          <div class="stat-item">
-            <span class="stat-label">Score</span>
-            <span class="stat-value">{{ getPlayerScore(playerId) }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Plis</span>
-            <span class="stat-value">{{ getPlayerTricks(playerId) }}</span>
+          <div class="no-cards" *ngIf="getRevealedCards(playerId).length === 0">
+            Aucune carte découverte
           </div>
         </div>
       </div>
