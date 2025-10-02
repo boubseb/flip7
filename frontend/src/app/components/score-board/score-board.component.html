@@ -1,40 +1,51 @@
 <div class="score-board">
-  <div class="board-header">
-    <h2>📊 Tableau des scores</h2>
-    <div class="round-info" *ngIf="gameState">
-      Round {{ gameState.currentRound || 1 }} / {{ gameState.totalRounds || 5 }}
+  <!-- Navigation par rounds -->
+  <div class="round-navigation">
+    <button 
+      class="nav-btn" 
+      (click)="previousRound()" 
+      [disabled]="selectedRound <= 1">
+      ←
+    </button>
+    <div class="round-display">
+      <span class="round-label">Round</span>
+      <span class="round-number">{{ selectedRound }}</span>
+      <span class="round-total">/ {{ maxRound }}</span>
     </div>
+    <button 
+      class="nav-btn" 
+      (click)="nextRound()" 
+      [disabled]="selectedRound >= maxRound">
+      →
+    </button>
   </div>
 
-  <div class="scores-table" *ngIf="players.length > 0">
+  <div class="scores-container" *ngIf="players.length > 0">
+    <!-- Header fixe -->
     <div class="table-header">
-      <div class="col rank">#</div>
-      <div class="col player">Joueur</div>
-      <div class="col tricks">Plis</div>
-      <div class="col score">Score</div>
+      <div class="header-cell rank">#</div>
+      <div class="header-cell player">Joueur</div>
+      <div class="header-cell score">Round</div>
+      <div class="header-cell score">Cumulé</div>
     </div>
 
+    <!-- Body scrollable -->
     <div class="table-body">
-      <div 
-        class="table-row" 
-        *ngFor="let playerId of getSortedPlayers(); let i = index"
-        [class.first-place]="i === 0"
-        [class.podium]="i < 3">
-        <div class="col rank">
+      <div class="table-row" *ngFor="let playerId of getSortedPlayers(); let i = index" 
+           [class.first-place]="i === 0" [class.podium]="i < 3">
+        <div class="cell rank">
           <span class="rank-badge" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
             {{ getRank(playerId) }}
           </span>
         </div>
-        <div class="col player">
-          <div class="player-info">
-            <span class="player-id">{{ getPlayerPseudo(playerId) }}</span>
-          </div>
+        <div class="cell player">
+          {{ getPlayerPseudo(playerId) }}
         </div>
-        <div class="col tricks">
-          <span class="tricks-count">🎯 {{ getPlayerTricks(playerId) }}</span>
+        <div class="cell score">
+          {{ getPlayerRoundScore(playerId) }}
         </div>
-        <div class="col score">
-          <span class="score-value">{{ getPlayerScore(playerId) }}</span>
+        <div class="cell score cumulative">
+          {{ getPlayerCumulativeScore(playerId) }}
         </div>
       </div>
     </div>
