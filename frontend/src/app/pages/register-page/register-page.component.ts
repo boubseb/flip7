@@ -26,7 +26,6 @@ export class RegisterPageComponent {
       birthDate: ['', [Validators.required]],
       pseudo: ['', [Validators.required]],
       mailAddress: ['', [Validators.required, Validators.email]],
-      confirmationMail: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(4)]],
       passwordConfirmation: ['', [Validators.required]],
     }, { });

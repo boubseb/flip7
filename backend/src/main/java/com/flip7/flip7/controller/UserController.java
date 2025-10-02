@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.flip7.flip7.dto.RegisterDTO;
+import com.flip7.flip7.dto.UserDTO;
 import com.flip7.flip7.entity.User;
 import com.flip7.flip7.service.UserService;
 
@@ -40,8 +42,9 @@ public class UserController {
 
   @PostConstruct
   private void init() {
-    if (this.BearerPrefix != null) {
-      this.BearerPrefix = this.BearerPrefix.trim();
+    // Ne pas trim pour garder l'espace après "Bearer "
+    if (this.BearerPrefix == null || this.BearerPrefix.isEmpty()) {
+      this.BearerPrefix = "Bearer ";
     }
   }
 
@@ -53,23 +56,45 @@ public class UserController {
     }
 
     if (!BearerHeader.startsWith(BearerPrefix)) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Authorization header format");
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Authorization header format. Expected: '" + BearerPrefix + "', Got: '" + BearerHeader + "'");
     }
 
-    String userUUID = BearerHeader.substring(BearerPrefix.length());
+    String userUUID = BearerHeader.substring(BearerPrefix.length()).trim();
     if (userUUID.isBlank()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Empty token in Authorization header");
     }
 
-    System.out.println(userUUID);
-    User user = userService.getUserById(userUUID);
-    return ResponseEntity.ok(user);
+    System.out.println("User UUID extracted: '" + userUUID + "' (length: " + userUUID.length() + ")");
+    
+    try {
+      User user = userService.getUserById(userUUID);
+      System.out.println("User found: " + user.getPseudo());
+      return ResponseEntity.ok(user);
+    } catch (Exception e) {
+      System.err.println("Error getting user: " + e.getMessage());
+      e.printStackTrace();
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving user: " + e.getMessage());
+    }
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.OK)
-    public void postUser(@RequestBody User user) {
-       userService.save(user);
+    public void postUser(@RequestBody RegisterDTO registerDTO) {
+        System.out.println("=== POST /register called ===");
+        System.out.println("RegisterDTO received: " + registerDTO.getPseudo());
+        
+        // Convert RegisterDTO to User entity
+        User user = new User();
+        user.setPseudo(registerDTO.getPseudo());
+        user.setLastname(registerDTO.getLastname());
+        user.setFirstname(registerDTO.getFirstname());
+        user.setPassword(registerDTO.getPassword());
+        user.setDateOfBirth(registerDTO.getDateOfBirth());
+        user.setEmail(registerDTO.getEmail());
+        
+        System.out.println("Saving user with password: " + (registerDTO.getPassword() != null ? "***" : "NULL"));
+        userService.save(user);
+        System.out.println("User registered successfully");
 }
 
 //       @GetMapping("user/{id}")
@@ -99,42 +124,71 @@ public class UserController {
 //         return userService.delete(userUUID, password);
         
 
-// }
-//     @PostMapping("updatePersonnalData")
-//     public User updateUserPersonnalData(@RequestHeader("Authorization") String BearerHeader,@RequestParam("firstname") String firstname,
-//     @RequestParam("lastname") String lastname,@RequestParam("email") String email,@RequestParam("dateOfBirth") Date dateOfBirth) {
-//         String userUUID=BearerHeader.substring(BearerPrefix.length());
-//         return userService.updateUserPersonnalData(userUUID,firstname,lastname,email,dateOfBirth);
-//     }
+    @PostMapping("/updateProfile")
+    public ResponseEntity<UserDTO> updateUserProfile(
+            @RequestHeader("Authorization") String BearerHeader,
+            @RequestBody Map<String, Object> updates) {
+        
+        if (BearerHeader == null || !BearerHeader.startsWith(BearerPrefix)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Authorization header");
+        }
+        
+        String userUUID = BearerHeader.substring(BearerPrefix.length());
+        
+        String firstname = (String) updates.get("firstname");
+        String lastname = (String) updates.get("lastname");
+        String email = (String) updates.get("email");
+        String dateOfBirthStr = (String) updates.get("dateOfBirth");
+        Date dateOfBirth = dateOfBirthStr != null ? Date.valueOf(dateOfBirthStr) : null;
+        
+        User updatedUser = userService.updateUserPersonnalData(userUUID, firstname, lastname, email, dateOfBirth);
+        
+        // Convert to DTO
+        UserDTO userDTO = new UserDTO(
+            updatedUser.getId(),
+            updatedUser.getPseudo(),
+            updatedUser.getLastname(),
+            updatedUser.getFirstname(),
+            updatedUser.getDateOfBirth(),
+            updatedUser.getEmail()
+        );
+        
+        return ResponseEntity.ok(userDTO);
+    }
 
-//     @PostMapping("changePassword")
-//    public void changePassword(@RequestHeader("Authorization") String BearerHeader,@RequestParam("oldPassword") String oldPassword,@RequestParam("newPassword") String newPassword) {
-//        String userUUID=BearerHeader.substring(BearerPrefix.length());
-//        userService.changePassword(userUUID,oldPassword,newPassword);
-//    }
+    @PostMapping("/changePassword")
+    public ResponseEntity<Map<String, String>> changePassword(
+            @RequestHeader("Authorization") String BearerHeader,
+            @RequestBody Map<String, String> passwordData) {
+        
+        if (BearerHeader == null || !BearerHeader.startsWith(BearerPrefix)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Authorization header");
+        }
+        
+        String userUUID = BearerHeader.substring(BearerPrefix.length());
+        String newPassword = passwordData.get("newPassword");
+        
+        userService.changePassword(userUUID, newPassword);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Password changed successfully");
+        return ResponseEntity.ok(response);
+    }
 
-//    @PostMapping("updateBiography")
-//     public User updateBiography(@RequestHeader("Authorization") String BearerHeader,@RequestParam("biography") String biography) {
-//          String userUUID=BearerHeader.substring(BearerPrefix.length());
-//          return userService.updateBiography(userUUID,biography);
-//     }
-
-//     @PostMapping("updateParameters")
-//     public User updateParameters(@RequestHeader("Authorization") String BearerHeader,@RequestParam("isPublic") Boolean isPublic,@RequestParam("isNewsletter") Boolean isNewsletter) {
-//         String userUUID=BearerHeader.substring(BearerPrefix.length());
-//         return userService.updateParameters(userUUID,isPublic,isNewsletter);
-//     }
-
-//     @PostMapping("updateDisplayPseudo")
-//     public User updateDisplayPseudo(@RequestHeader("Authorization") String BearerHeader,@RequestParam("displayPseudo") String displayPseudo) {
-//         String userUUID=BearerHeader.substring(BearerPrefix.length());
-//         return userService.updateDisplayPseudo(userUUID,displayPseudo);
-//     }
-
-//     @PostMapping("updateProfilPicture")
-//     public User updateProfilPicture(@RequestHeader("Authorization") String BearerHeader,@RequestParam("profilPictureUrl") String profilPictureUrl) {
-//         String userUUID=BearerHeader.substring(BearerPrefix.length());
-//         return userService.updateProfilPicture(userUUID,profilPictureUrl);
-//     }   
+    @DeleteMapping("/deleteAccount")
+    public ResponseEntity<Map<String, String>> deleteAccount(
+            @RequestHeader("Authorization") String BearerHeader) {
+        
+        if (BearerHeader == null || !BearerHeader.startsWith(BearerPrefix)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Authorization header");
+        }
+        
+        String userUUID = BearerHeader.substring(BearerPrefix.length());
+        userService.deleteUser(userUUID);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Account deleted successfully");
+        return ResponseEntity.ok(response);
+    }
     
 }

@@ -13,7 +13,7 @@
     flex-direction: column;
     gap:0.3rem;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 2rem 2.5rem;
     color: #2d3748;
     position: relative;
     max-width: 600px;
@@ -22,6 +22,7 @@
     backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 .register-form h1 {
@@ -50,6 +51,7 @@
     white-space: nowrap;
     color: #4a5568;
     font-weight: 600;
+    font-size: 0.85rem;
 }
 
 .register-form input[type="text"],

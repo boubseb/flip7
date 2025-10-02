@@ -34,29 +34,66 @@ export class HeaderComponent {
 
   toggleIsRules() {
     this.isRules = !this.isRules;
+    // Fermer le profil quand on ouvre les règles
+    if (this.isRules) {
+      this.isProfil = false;
+    }
   }
+  
   toggleIsProfil() {
     this.isProfil = !this.isProfil;
   }
 
   toggleProfilMenu() {
     this.isProfilMenuOpen = !this.isProfilMenuOpen;
+    // Fermer les règles quand on ouvre le menu profil
+    if (this.isProfilMenuOpen) {
+      this.isRules = false;
+    }
   }
 
   openProfil() {
     this.isProfilMenuOpen = false;
     this.isProfil = true;
+    // Fermer les règles si elles sont ouvertes
+    this.isRules = false;
   }
 
   openStats() {
     this.isProfilMenuOpen = false;
     // TODO: Implement stats page
     console.log('Opening stats...');
+    // Fermer les règles et le profil si ouverts
+    this.isRules = false;
+    this.isProfil = false;
+  }
+
+  onTitleClick(event: Event) {
+    // Vérifier si on est sur la page game
+    const currentUrl = this.router.url;
+    if (currentUrl.includes('/game/')) {
+      // Empêcher la navigation si on est sur la page game
+      event.preventDefault();
+      console.log('Navigation désactivée sur la page game');
+      return;
+    }
+    
+    // Fermer tous les overlays quand on clique sur le titre
+    this.isProfil = false;
+    this.isRules = false;
+    this.isProfilMenuOpen = false;
   }
 
   onLogout(): void {
+    // Fermer tous les overlays
     this.isProfilMenuOpen = false;
+    this.isProfil = false;
+    this.isRules = false;
+    
+    // Supprimer le token
     this.authenticationService.removeToken();
+    
+    // Rediriger vers l'accueil
     this.router.navigateByUrl('/');
   }
 
