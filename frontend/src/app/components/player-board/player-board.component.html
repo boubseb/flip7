@@ -1,40 +1,77 @@
 <div class="player-board">
-  <div class="game-info" *ngIf="gameState">
-    <div class="info-item">
-      <span class="label">Round</span>
-      <span class="value">{{ gameState.currentRound || 1 }} / {{ gameState.totalRounds || 5 }}</span>
-    </div>
-    <div class="info-item">
-      <span class="label">Phase</span>
-      <span class="value">{{ gameState.currentPhase || 'EN_ATTENTE' }}</span>
-    </div>
-  </div>
-
-  <div class="center-area" *ngIf="gameState && gameState.centerCards">
-    <h3>Cartes au centre</h3>
-    <div class="center-cards">
-      <div class="card" *ngFor="let card of gameState.centerCards">
-        {{ card }}
+  <!-- Cartes révélées (max 33% hauteur) -->
+  <div class="revealed-cards-section">
+    <h3 class="section-title">Mes cartes révélées</h3>
+    <div class="revealed-cards-grid">
+      <div class="card revealed" *ngFor="let card of getMyRevealedCards()">
+        <span class="card-suit">{{ getCardSuit(card) }}</span>
+        <span class="card-value">{{ getCardValue(card) }}</span>
+      </div>
+      <div class="no-cards" *ngIf="getMyRevealedCards().length === 0">
+        <p>Aucune carte révélée</p>
       </div>
     </div>
   </div>
 
-  <div class="hand-area">
-    <div class="cards-hand" *ngIf="getMyHand().length > 0">
-      <div 
-        class="card" 
-        *ngFor="let card of getMyHand()"
-        [class.playable]="isMyTurn"
-        (click)="isMyTurn ? playCard(card) : null">
-        {{ card }}
+  <!-- Zone de jeu (67% hauteur restante) -->
+  <div class="game-section">
+    <div class="game-info" *ngIf="gameState">
+      <div class="info-item">
+        <span class="label">Round</span>
+        <span class="value">{{ gameState.currentRound || 1 }} / {{ gameState.totalRounds || 5 }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Phase</span>
+        <span class="value">{{ gameState.currentPhase || 'EN_ATTENTE' }}</span>
+      </div>
+      <div class="info-item" *ngIf="isMyTurn">
+        <span class="turn-indicator">🎯 Votre tour</span>
       </div>
     </div>
-    <div class="no-cards" *ngIf="getMyHand().length === 0">
-      <p>Aucune carte en main</p>
-    </div>
-  </div>
 
-  <div class="action-hint" *ngIf="isMyTurn">
-    <p>💡 Cliquez sur une carte pour la jouer</p>
+    <div class="center-area" *ngIf="gameState && gameState.centerCards">
+      <h3>Cartes au centre</h3>
+      <div class="center-cards">
+        <div class="card" *ngFor="let card of gameState.centerCards">
+          <span class="card-suit">{{ getCardSuit(card) }}</span>
+          <span class="card-value">{{ getCardValue(card) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hand-area">
+      <div class="current-card-container" *ngIf="getCurrentCard(); else noCard">
+        <div class="card-wrapper" [class.flipping]="isFlipping">
+          <!-- Face cachée (dos de carte) -->
+          <div class="card card-back" [class.hidden]="cardRevealed">
+            <div class="card-back-design">
+              <div class="pattern"></div>
+              <span class="logo">FLIP 7</span>
+            </div>
+          </div>
+          <!-- Face visible -->
+          <div class="card card-front" [class.visible]="cardRevealed">
+            <span class="card-suit">{{ getCardSuit(getCurrentCard()!) }}</span>
+            <span class="card-value">{{ getCardValue(getCurrentCard()!) }}</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #noCard>
+        <div class="no-cards">
+          <p>Aucune carte en main</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-continue" (click)="continueRevealing()" [disabled]="isFlipping || !isMyTurn || !getCurrentCard()">
+        <span class="icon">🎴</span>
+        <span>Hit</span>
+      </button>
+      <button class="btn btn-stop" (click)="stopRevealing()" [disabled]="isFlipping || !isMyTurn || !getCurrentCard()">
+        <span class="icon">✋</span>
+        <span>Stop</span>
+      </button>
+    </div>
   </div>
 </div>
