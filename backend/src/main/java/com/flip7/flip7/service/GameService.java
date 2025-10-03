@@ -343,6 +343,11 @@ public class GameService {
      * Crée un DTO de l'état du jeu
      */
     private GameStateDTO createGameStateDTO(Game game) {
+        System.out.println("\n🎮 === CREATE GAME STATE DTO ===");
+        System.out.println("   Round: " + game.getRoundNumber());
+        System.out.println("   Game State: " + game.getGameState());
+        System.out.println("   Players count: " + game.getPlayers().size());
+        
         GameStateDTO dto = new GameStateDTO();
         dto.setGameState(game.getGameState());
         dto.setRoundNumber(game.getRoundNumber());
@@ -351,6 +356,14 @@ public class GameService {
         
         // Convertir les joueurs
         for (GamePlayer player : game.getPlayers()) {
+            System.out.println("\n   👤 Player: " + player.getUsername() + " (ID: " + player.getUserId() + ")");
+            System.out.println("      Round Score: " + player.getRoundScore());
+            System.out.println("      Total Score (sécurité): " + player.getTotalScore());
+            System.out.println("      Theoretical Total: " + (player.getTotalScore() + player.getRoundScore()));
+            System.out.println("      Status: " + player.getStatus());
+            System.out.println("      Hand Size: " + player.getHandSize());
+            System.out.println("      Life Cards: " + player.getLifeCardsInHand());
+            
             PlayerDTO playerDTO = new PlayerDTO();
             playerDTO.setUserId(player.getUserId());
             playerDTO.setUsername(player.getUsername());
@@ -358,6 +371,7 @@ public class GameService {
             playerDTO.setHandSize(player.getHandSize());
             playerDTO.setRoundScore(player.getRoundScore());
             playerDTO.setTotalScore(player.getTotalScore());
+            playerDTO.setTheoreticalTotal(player.getTotalScore() + player.getRoundScore());
             playerDTO.setLifeCardsInHand(player.getLifeCardsInHand());
             
             // Ajouter les cartes de la main (révélées)
@@ -388,6 +402,43 @@ public class GameService {
             }
             playerDTO.setHand(handCards);
             System.out.println("      ✅ PlayerDTO.hand size: " + playerDTO.getHand().size());
+            
+            // Ajouter la liste des rounds du joueur
+            java.util.List<RoundDTO> roundDTOs = new java.util.ArrayList<>();
+            for (com.flip7.flip7.game.model.GamePlayer.RoundData roundData : player.getRounds()) {
+                RoundDTO roundDTO = new RoundDTO();
+                roundDTO.setRoundNumber(roundData.getRoundNumber());
+                roundDTO.setRoundScore(roundData.getRoundScore());
+                roundDTO.setTotalScore(roundData.getTotalScore());
+                roundDTO.setTheoreticalTotal(roundData.getTheoreticalTotal());
+                roundDTO.setStatus(roundData.getStatus());
+                
+                // Convertir les cartes du round
+                java.util.List<java.util.Map<String, Object>> roundHandCards = new java.util.ArrayList<>();
+                for (Card card : roundData.getHand()) {
+                    java.util.Map<String, Object> cardMap = new java.util.HashMap<>();
+                    cardMap.put("cardType", card.getCardType().toString());
+                    
+                    if (card instanceof NumberCard) {
+                        NumberCard numCard = (NumberCard) card;
+                        cardMap.put("value", numCard.getValue());
+                        cardMap.put("special", false);
+                    } else if (card instanceof OperatorCard) {
+                        OperatorCard opCard = (OperatorCard) card;
+                        cardMap.put("operator", opCard.getOperatorType().toString());
+                        cardMap.put("special", false);
+                    } else if (card instanceof SpecialCard) {
+                        SpecialCard specCard = (SpecialCard) card;
+                        cardMap.put("specialType", specCard.getSpecialType().toString());
+                        cardMap.put("special", true);
+                    }
+                    roundHandCards.add(cardMap);
+                }
+                roundDTO.setHand(roundHandCards);
+                roundDTOs.add(roundDTO);
+            }
+            playerDTO.setRounds(roundDTOs);
+            System.out.println("      📚 Player rounds: " + roundDTOs.size());
             
             dto.addPlayer(playerDTO);
         }
@@ -464,10 +515,12 @@ public class GameService {
         private String username;
         private com.flip7.flip7.game.model.PlayerStatus status;
         private int handSize;
-        private int roundScore;
-        private int totalScore;
+        private int roundScore;        // Score du round en cours
+        private int totalScore;        // Score sécurisé (rounds précédents)
+        private int theoreticalTotal;  // Score total théorique (totalScore + roundScore)
         private int lifeCardsInHand;
         private java.util.List<java.util.Map<String, Object>> hand = new java.util.ArrayList<>(); // Cartes révélées
+        private java.util.List<RoundDTO> rounds = new java.util.ArrayList<>(); // Liste des rounds (le dernier = actuel)
 
         // Getters et Setters
         public String getUserId() { return userId; }
@@ -482,10 +535,14 @@ public class GameService {
         public void setRoundScore(int roundScore) { this.roundScore = roundScore; }
         public int getTotalScore() { return totalScore; }
         public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
+        public int getTheoreticalTotal() { return theoreticalTotal; }
+        public void setTheoreticalTotal(int theoreticalTotal) { this.theoreticalTotal = theoreticalTotal; }
         public int getLifeCardsInHand() { return lifeCardsInHand; }
         public void setLifeCardsInHand(int lifeCardsInHand) { this.lifeCardsInHand = lifeCardsInHand; }
         public java.util.List<java.util.Map<String, Object>> getHand() { return hand; }
         public void setHand(java.util.List<java.util.Map<String, Object>> hand) { this.hand = hand; }
+        public java.util.List<RoundDTO> getRounds() { return rounds; }
+        public void setRounds(java.util.List<RoundDTO> rounds) { this.rounds = rounds; }
     }
 
     public static class RoundEndDTO {
@@ -752,5 +809,30 @@ public class GameService {
         public void setTotalRoundsPlayed(int totalRoundsPlayed) { this.totalRoundsPlayed = totalRoundsPlayed; }
         public int getTotalRoundsWon() { return totalRoundsWon; }
         public void setTotalRoundsWon(int totalRoundsWon) { this.totalRoundsWon = totalRoundsWon; }
+    }
+
+    /**
+     * DTO pour un round dans la liste des rounds d'un joueur
+     */
+    public static class RoundDTO {
+        private int roundNumber;
+        private int roundScore;
+        private int totalScore;
+        private int theoreticalTotal;
+        private com.flip7.flip7.game.model.PlayerStatus status;
+        private java.util.List<java.util.Map<String, Object>> hand = new java.util.ArrayList<>();
+
+        public int getRoundNumber() { return roundNumber; }
+        public void setRoundNumber(int roundNumber) { this.roundNumber = roundNumber; }
+        public int getRoundScore() { return roundScore; }
+        public void setRoundScore(int roundScore) { this.roundScore = roundScore; }
+        public int getTotalScore() { return totalScore; }
+        public void setTotalScore(int totalScore) { this.totalScore = totalScore; }
+        public int getTheoreticalTotal() { return theoreticalTotal; }
+        public void setTheoreticalTotal(int theoreticalTotal) { this.theoreticalTotal = theoreticalTotal; }
+        public com.flip7.flip7.game.model.PlayerStatus getStatus() { return status; }
+        public void setStatus(com.flip7.flip7.game.model.PlayerStatus status) { this.status = status; }
+        public java.util.List<java.util.Map<String, Object>> getHand() { return hand; }
+        public void setHand(java.util.List<java.util.Map<String, Object>> hand) { this.hand = hand; }
     }
 }

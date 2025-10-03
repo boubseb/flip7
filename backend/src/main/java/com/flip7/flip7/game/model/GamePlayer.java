@@ -19,6 +19,7 @@ public class GamePlayer {
     private int totalScore;                // Score total sur tous les rounds
     private boolean hasUsedLife;           // A utilisé une carte Vie ce round
     private int lifeCardsInHand;          // Nombre de cartes Vie disponibles
+    private List<RoundData> rounds;        // Liste de tous les rounds (le dernier = actuel)
 
     public GamePlayer(String userId, String username) {
         this.userId = userId;
@@ -28,6 +29,7 @@ public class GamePlayer {
         this.roundScore = 0;
         this.totalScore = 0;
         this.hasUsedLife = false;
+        this.rounds = new ArrayList<>();
         this.lifeCardsInHand = 0;
     }
 
@@ -39,6 +41,8 @@ public class GamePlayer {
         if (card instanceof SpecialCard && ((SpecialCard) card).getSpecialType() == SpecialType.LIFE) {
             lifeCardsInHand++;
         }
+        // Recalculer le score en temps réel
+        calculateRoundScore();
     }
 
     /**
@@ -91,16 +95,23 @@ public class GamePlayer {
         int score = 0;
         boolean hasMultiply = false;
 
+        System.out.println("      🧮 calculateRoundScore for " + username + " (hand size: " + hand.size() + ")");
+        
         // Somme des cartes numérotées et des bonus
         for (Card card : hand) {
             if (card instanceof NumberCard) {
-                score += ((NumberCard) card).getValue();
+                int value = ((NumberCard) card).getValue();
+                score += value;
+                System.out.println("         + NumberCard: " + value + " → score = " + score);
             } else if (card instanceof OperatorCard) {
                 OperatorCard opCard = (OperatorCard) card;
                 if (opCard.getOperatorType().isMultiply()) {
                     hasMultiply = true;
+                    System.out.println("         + OperatorCard: ×2 (will multiply at end)");
                 } else {
-                    score += opCard.getOperatorType().getValue();
+                    int value = opCard.getOperatorType().getValue();
+                    score += value;
+                    System.out.println("         + OperatorCard: " + opCard.getOperatorType() + " (" + value + ") → score = " + score);
                 }
             }
         }
@@ -108,9 +119,11 @@ public class GamePlayer {
         // Application du ×2 à la fin
         if (hasMultiply) {
             score *= 2;
+            System.out.println("         × 2 → final score = " + score);
         }
 
         this.roundScore = score;
+        System.out.println("      ✅ Final roundScore = " + this.roundScore);
         return score;
     }
 
@@ -185,5 +198,51 @@ public class GamePlayer {
 
     public int getHandSize() {
         return hand.size();
+    }
+
+    public List<RoundData> getRounds() {
+        return new ArrayList<>(rounds);
+    }
+
+    /**
+     * Sauvegarde l'état du round actuel dans la liste des rounds
+     */
+    public void saveRoundHistory(int roundNumber, List<Card> handSnapshot) {
+        RoundData roundData = new RoundData(
+            roundNumber,
+            this.roundScore,
+            this.totalScore,
+            this.status,
+            handSnapshot
+        );
+        rounds.add(roundData);
+    }
+
+    /**
+     * Classe interne pour stocker les données d'un round
+     */
+    public static class RoundData {
+        private int roundNumber;
+        private int roundScore;
+        private int totalScore;
+        private int theoreticalTotal;
+        private PlayerStatus status;
+        private List<Card> hand;
+
+        public RoundData(int roundNumber, int roundScore, int totalScore, PlayerStatus status, List<Card> hand) {
+            this.roundNumber = roundNumber;
+            this.roundScore = roundScore;
+            this.totalScore = totalScore;
+            this.theoreticalTotal = totalScore + roundScore;
+            this.status = status;
+            this.hand = hand;
+        }
+
+        public int getRoundNumber() { return roundNumber; }
+        public int getRoundScore() { return roundScore; }
+        public int getTotalScore() { return totalScore; }
+        public int getTheoreticalTotal() { return theoreticalTotal; }
+        public PlayerStatus getStatus() { return status; }
+        public List<Card> getHand() { return hand; }
     }
 }

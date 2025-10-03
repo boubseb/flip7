@@ -66,7 +66,7 @@ public class Game {
             Card card = deck.draw();
             player.addCard(card);
             player.setStatus(PlayerStatus.PLAYING);
-            System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ")");
+            System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ", roundScore: " + player.getRoundScore() + ")");
         }
 
         gameState = GameState.PLAYING;
@@ -261,6 +261,19 @@ public class Game {
                 }
             }
         }
+
+        // Sauvegarder l'état du round dans chaque joueur
+        saveRoundToPlayers();
+    }
+
+    /**
+     * Sauvegarde l'état du round actuel dans l'historique de chaque joueur
+     */
+    private void saveRoundToPlayers() {
+        for (GamePlayer player : players) {
+            player.saveRoundHistory(roundNumber, new ArrayList<>(player.getHand()));
+        }
+        System.out.println("💾 Round " + roundNumber + " saved to all players");
     }
 
     /**

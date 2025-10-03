@@ -1,4 +1,25 @@
 <div class="players-board">
+  <!-- Navigation par rounds -->
+  <div class="round-navigation">
+    <button 
+      class="nav-btn" 
+      (click)="previousRound()" 
+      [disabled]="selectedRound <= 1">
+      ←
+    </button>
+    <div class="round-display">
+      <span class="round-label">Round</span>
+      <span class="round-number">{{ selectedRound }}</span>
+      <span class="round-total">/ {{ maxRound }}</span>
+    </div>
+    <button 
+      class="nav-btn" 
+      (click)="nextRound()" 
+      [disabled]="selectedRound >= maxRound">
+      →
+    </button>
+  </div>
+
   @if (players.length > 0) {
     <div class="players-list">
       @for (playerId of players; track playerId; let i = $index) {
@@ -21,7 +42,9 @@
               }
             </div>
             <div class="player-right">
-              <span class="player-score">{{ getPlayerScore(playerId) }} pts</span>
+              <span class="player-score-safe">{{ getPlayerSafetyScore(playerId) }} pts</span>
+              <span class="score-separator">|</span>
+              <span class="player-score-total">{{ getPlayerTotalScore(playerId) }} pts</span>
             </div>
           </div>
 
@@ -30,7 +53,7 @@
             <div class="player-content">
               <app-revealed-cards 
                 [cards]="getRevealedCards(playerId)"
-                [score]="getPlayerScore(playerId)">
+                [score]="getPlayerRoundScore(playerId)">
               </app-revealed-cards>
             </div>
           }

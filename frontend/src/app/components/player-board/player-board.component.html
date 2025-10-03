@@ -6,17 +6,15 @@
         <div class="scores-info">
           <span class="round-info">Round {{ gameState.roundNumber || 1 }}</span>
           <span class="score-separator">|</span>
-          <span class="round-score">Round: {{ getMyScore() }} pts</span>
+          <span class="round-score">Score: {{ getMySafetyScore() }} pts</span>
           <span class="score-separator">|</span>
-          <span class="round-score">Score: {{ getMyScore() }} pts</span>
-          <span class="score-separator">|</span>
-          <span class="total-score">Total : {{ getMyTheoreticalTotal() }} pts</span>
+          <span class="total-score">Total: {{ getMyTheoreticalTotal() }} pts</span>
         </div>
       }
     </div>
     <app-revealed-cards 
       [cards]="getMyRevealedCards()"
-      [score]="getMyScore()">
+      [score]="getMyRoundScore()">
     </app-revealed-cards>
   </div>
 

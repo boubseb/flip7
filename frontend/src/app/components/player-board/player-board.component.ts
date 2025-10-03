@@ -34,13 +34,27 @@ export class PlayerBoardComponent {
     return myPlayer?.hand || [];
   }
 
-  getMyScore(): number {
+  /**
+   * Retourne le score du round en cours
+   */
+  getMyRoundScore(): number {
     if (!this.gameState || !this.gameState.players) {
       return 0;
     }
     // gameState.players est un tableau, chercher le joueur actuel
     const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
     return myPlayer?.roundScore || 0;
+  }
+
+  /**
+   * Retourne le score "sécurité" (totalScore des rounds précédents)
+   */
+  getMySafetyScore(): number {
+    if (!this.gameState || !this.gameState.players) {
+      return 0;
+    }
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    return myPlayer?.totalScore || 0;
   }
 
   getCardSuit(card: string): string {

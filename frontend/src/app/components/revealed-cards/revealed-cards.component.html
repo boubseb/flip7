@@ -1,10 +1,9 @@
 <div class="revealed-cards-container">
-  @if (score > 0 || cards.length > 0) {
+  @if (cards.length > 0) {
     <div class="cards-header">
       <span class="cards-count">{{ cards.length }} carte(s)</span>
-      @if (score > 0) {
-        <span class="cards-score">{{ score }} pts</span>
-      }
+      <span class="score-separator">-</span>
+      <span class="cards-score">{{ score }} pts</span>
     </div>
   }
   
