@@ -1,7 +1,7 @@
 export const environment = {
     production: false,
-    // IP publique pour accès depuis Internet
-    apiUrl: 'http://88.163.1.215:3200',
+    // localhost pour développement sur la même machine
+    apiUrl: 'http://localhost:3200',
     appVersion: '1.0.0',
     logLevel: 'debug'
   };

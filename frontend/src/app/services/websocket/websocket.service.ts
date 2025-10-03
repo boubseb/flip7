@@ -9,6 +9,7 @@ import {
   GameOverData, 
   CardDistributedEvent 
 } from '../../models/game/game.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -51,7 +52,8 @@ export class WebSocketService {
     }
 
     // Create WebSocket connection using SockJS
-    const socket = new SockJS('http://localhost:3200/ws');
+    // Utilise l'URL de l'API depuis l'environment
+    const socket = new SockJS(`${environment.apiUrl}/ws`);
     
     this.stompClient = new Client({
       webSocketFactory: () => socket as any,

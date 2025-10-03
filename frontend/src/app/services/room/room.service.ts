@@ -3,12 +3,13 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Room, RoomCreateRequest, RoomCreateResponse, RoomJoinRequest } from '../../models/room/room.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RoomService {
-  private apiUrl = 'http://localhost:3200/api/rooms';
+  private apiUrl = `${environment.apiUrl}/api/rooms`;
 
   constructor(
     private http: HttpClient,

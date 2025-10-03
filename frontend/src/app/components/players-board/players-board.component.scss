@@ -80,7 +80,7 @@
         flex-direction: column;
         gap: 0.75rem;
         flex: 1;
-        height: 100%;
+        min-height: 0; // ✅ IMPORTANT: permet au flex child de scroller
         overflow-y: auto;
         overflow-x: hidden;
 
