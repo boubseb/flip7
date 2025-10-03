@@ -52,3 +52,15 @@
   [gameViewMode]="gameViewMode" 
   (onSwitchView)="switchGameView($event)">
 </app-footer>
+
+<!-- Player Selector Modal (for Stop card and DrawThree) -->
+<app-player-selector
+  [show]="showStopCardModal"
+  [title]="'🛑 Carte Stop'"
+  [description]="'Choisissez le joueur qui recevra la carte Stop et sera forcé de s\'arrêter :'"
+  [players]="gameState?.players || []"
+  [currentUserId]="currentUserId"
+  [cardType]="'STOP'"
+  (onPlayerSelected)="assignStopToPlayer($event)"
+  (onCancel)="closeStopCardModal()">
+</app-player-selector>

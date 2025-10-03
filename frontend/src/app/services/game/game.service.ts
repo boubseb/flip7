@@ -91,6 +91,17 @@ export class GameService {
   }
 
   /**
+   * Assigne une carte Stop à un joueur
+   */
+  assignStopCard(roomId: string, cardId: string, targetPlayerId: string): Observable<ActionResult> {
+    return this.http.post<ActionResult>(
+      `${this.apiUrl}/${roomId}/assign-stop`,
+      { cardId, targetPlayerId },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
    * Joue une carte spéciale
    */
   playSpecialCard(roomId: string, request: PlaySpecialCardRequest): Observable<ActionResult> {

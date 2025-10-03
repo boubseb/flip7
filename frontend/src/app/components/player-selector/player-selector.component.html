@@ -1,0 +1,60 @@
+@if (show) {
+  <div class="modal-overlay" (click)="cancel()">
+    <div class="modal-content player-selector-modal" (click)="$event.stopPropagation()">
+      <!-- En-tête avec icône de carte -->
+      <div class="modal-header">
+        <div class="card-icon" [style.background-color]="getCardColor()">
+          {{ getCardIcon() }}
+        </div>
+        <h2>{{ title }}</h2>
+      </div>
+
+      <!-- Description -->
+      <p class="modal-description">{{ description }}</p>
+
+      <!-- Compteur de joueurs éligibles -->
+      <div class="eligible-count">
+        {{ getEligiblePlayersCount() }} joueur(s) éligible(s)
+      </div>
+
+      <!-- Liste des joueurs -->
+      <div class="player-list">
+        @for (player of players; track player.userId) {
+          <button 
+            class="player-button"
+            [class.current-user]="player.userId === currentUserId"
+            [class.disabled]="!isPlayerEligible(player)"
+            [disabled]="!isPlayerEligible(player)"
+            (click)="selectPlayer(player.userId)">
+            
+            <div class="player-info">
+              <span class="player-name">
+                {{ player.userId === currentUserId ? '🎮 Vous' : player.username }}
+              </span>
+              <span class="player-status" [class]="'status-' + player.status.toLowerCase()">
+                {{ getStatusLabel(player.status) }}
+              </span>
+            </div>
+
+            @if (isPlayerEligible(player)) {
+              <span class="select-arrow">→</span>
+            } @else {
+              <span class="disabled-icon">✖</span>
+            }
+          </button>
+        }
+
+        @if (getEligiblePlayersCount() === 0) {
+          <div class="no-players">
+            Aucun joueur éligible disponible
+          </div>
+        }
+      </div>
+
+      <!-- Bouton annuler -->
+      <button class="cancel-button" (click)="cancel()">
+        Annuler
+      </button>
+    </div>
+  </div>
+}

@@ -11,9 +11,10 @@ import { PlayersBoardComponent } from '../../components/players-board/players-bo
 import { PlayerBoardComponent } from '../../components/player-board/player-board.component';
 import { ScoreBoardComponent } from '../../components/score-board/score-board.component';
 import { FooterComponent } from '../../components/footer/footer.component';
+import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent, FooterComponent, PlayerSelectorComponent],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
@@ -40,6 +41,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
   // Error handling
   errorMessage: string = '';
   private errorTimeout: any = null;
+  
+  // Stop Card Selection
+  showStopCardModal: boolean = false;
+  stopCardToAssign: any = null;
   
   private subscriptions: Subscription[] = [];
 
@@ -257,7 +262,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
         next: (result) => {
           console.log('🃏 Card drawn:', result);
           
-          if (result.eliminated) {
+          if (result.needsStopAssignment) {
+            // Carte Stop piochée - afficher la sélection de joueur
+            console.log('🛑 Stop card drawn - showing player selection');
+            this.showStopCardSelection(result.card);
+          } else if (result.eliminated) {
             this.showError('Double ! Vous êtes éliminé !');
           } else if (result.lifeUsed) {
             console.log('⚡ Carte Vie utilisée automatiquement');
@@ -334,5 +343,49 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
   switchGameView(mode: 'all' | 'player' | 'score'): void {
     this.gameViewMode = mode;
+  }
+
+  /**
+   * Ouvre le modal de sélection de joueur pour la carte Stop
+   */
+  showStopCardSelection(card: any): void {
+    console.log('🛑 Opening Stop card selection modal', card);
+    this.stopCardToAssign = card;
+    this.showStopCardModal = true;
+  }
+
+  /**
+   * Assigne la carte Stop au joueur sélectionné
+   */
+  assignStopToPlayer(playerId: string): void {
+    if (!this.stopCardToAssign) {
+      this.showError('Aucune carte Stop à assigner');
+      return;
+    }
+
+    console.log('🛑 Assigning Stop card to player:', playerId);
+    
+    this.gameService.assignStopCard(
+      this.roomId, 
+      this.stopCardToAssign.id, 
+      playerId
+    ).subscribe({
+      next: (result) => {
+        console.log('✅ Stop card assigned successfully:', result);
+        this.closeStopCardModal();
+      },
+      error: (error) => {
+        console.error('❌ Error assigning Stop card:', error);
+        this.showError('Erreur lors de l\'assignation de la carte Stop');
+      }
+    });
+  }
+
+  /**
+   * Ferme le modal de sélection de joueur
+   */
+  closeStopCardModal(): void {
+    this.showStopCardModal = false;
+    this.stopCardToAssign = null;
   }
 }

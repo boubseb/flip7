@@ -71,6 +71,7 @@ export interface DrawResult {
   roundEnded?: boolean;
   lifeUsed?: boolean;
   eliminated?: boolean;
+  needsStopAssignment?: boolean; // Carte Stop piochée, nécessite un choix
 }
 
 /**
