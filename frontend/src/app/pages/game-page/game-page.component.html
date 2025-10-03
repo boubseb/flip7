@@ -7,6 +7,14 @@
     </div>
   }
 
+  <!-- Success message -->
+  @if (successMessage) {
+    <div class="success-banner">
+      <span>{{ successMessage }}</span>
+      <button (click)="clearSuccess()">✕</button>
+    </div>
+  }
+
   <!-- GAME VIEW -->
   @if (currentRoom) {
     <div class="game-view">
@@ -53,7 +61,7 @@
   (onSwitchView)="switchGameView($event)">
 </app-footer>
 
-<!-- Player Selector Modal (for Stop card and DrawThree) -->
+<!-- Player Selector Modal - Stop Card -->
 <app-player-selector
   [show]="showStopCardModal"
   [title]="'🛑 Carte Stop'"
@@ -63,6 +71,18 @@
   [cardType]="'STOP'"
   (onPlayerSelected)="assignStopToPlayer($event)"
   (onCancel)="closeStopCardModal()">
+</app-player-selector>
+
+<!-- Player Selector Modal - DrawThree Card -->
+<app-player-selector
+  [show]="showDrawThreeModal"
+  [title]="'➕3️⃣ Carte +3'"
+  [description]="'Choisissez le joueur qui recevra la carte +3 et devra piocher 3 cartes :'"
+  [players]="gameState?.players || []"
+  [currentUserId]="currentUserId"
+  [cardType]="'DRAW_THREE'"
+  (onPlayerSelected)="assignDrawThreeToPlayer($event)"
+  (onCancel)="closeDrawThreeModal()">
 </app-player-selector>
 
 <!-- Start Round Popup -->

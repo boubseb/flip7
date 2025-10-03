@@ -20,7 +20,8 @@ public class SpecialCard extends Card {
         super(CardType.SPECIAL);
         this.specialType = specialType;
         this.used = false;
-        this.pending = (specialType == SpecialType.STOP); // Les cartes Stop sont pending par défaut
+        // Les cartes Stop et DrawThree sont pending par défaut (nécessitent une assignation)
+        this.pending = (specialType == SpecialType.STOP || specialType == SpecialType.DRAW_THREE);
         this.assignedToPlayerId = null;
     }
 

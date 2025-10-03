@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/game")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(originPatterns = "*")
 public class GameController {
 
     @Autowired
@@ -119,6 +119,33 @@ public class GameController {
     }
 
     /**
+     * Assigner une carte DrawThree (+3) à un joueur (après pioche)
+     */
+    @PostMapping("/{roomId}/assign-draw-three")
+    public ResponseEntity<?> assignDrawThreeCard(
+            @PathVariable String roomId,
+            @RequestHeader("Authorization") String token,
+            @RequestBody AssignDrawThreeCardRequest request) {
+        try {
+            String userId = token.replace("Bearer ", "");
+            Game.ActionResult result = gameService.assignDrawThreeCard(
+                roomId, 
+                userId, 
+                request.getCardId(), 
+                request.getTargetPlayerId()
+            );
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", result.isSuccess());
+            response.put("message", result.getMessage());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Démarrer le prochain round (appelé par le joueur actif)
      */
     @PostMapping("/{roomId}/start-next-round")
@@ -186,6 +213,7 @@ public class GameController {
             response.setRoundNumber(game.getRoundNumber());
             response.setCurrentPlayerIndex(game.getCurrentPlayerIndex());
             response.setRemainingCards(game.getRemainingCards());
+            response.setWinnerId(game.getWinnerId());
 
             // Ajouter les informations des joueurs
             for (GamePlayer player : game.getPlayers()) {
@@ -253,6 +281,16 @@ public class GameController {
         public void setTargetPlayerId(String targetPlayerId) { this.targetPlayerId = targetPlayerId; }
     }
 
+    public static class AssignDrawThreeCardRequest {
+        private String cardId;
+        private String targetPlayerId;
+
+        public String getCardId() { return cardId; }
+        public void setCardId(String cardId) { this.cardId = cardId; }
+        public String getTargetPlayerId() { return targetPlayerId; }
+        public void setTargetPlayerId(String targetPlayerId) { this.targetPlayerId = targetPlayerId; }
+    }
+
     public static class PlaySpecialCardRequest {
         private String cardId;
         private String targetPlayerId;
@@ -268,6 +306,7 @@ public class GameController {
         private int roundNumber;
         private int currentPlayerIndex;
         private int remainingCards;
+        private String winnerId;
         private List<PlayerInfo> players = new java.util.ArrayList<>();
 
         public String getGameState() { return gameState; }
@@ -278,6 +317,8 @@ public class GameController {
         public void setCurrentPlayerIndex(int currentPlayerIndex) { this.currentPlayerIndex = currentPlayerIndex; }
         public int getRemainingCards() { return remainingCards; }
         public void setRemainingCards(int remainingCards) { this.remainingCards = remainingCards; }
+        public String getWinnerId() { return winnerId; }
+        public void setWinnerId(String winnerId) { this.winnerId = winnerId; }
         public List<PlayerInfo> getPlayers() { return players; }
         public void addPlayer(PlayerInfo player) { this.players.add(player); }
     }

@@ -199,6 +199,30 @@ public class GameService {
     }
 
     /**
+     * Assigner une carte DrawThree (+3) à un joueur
+     */
+    public Game.ActionResult assignDrawThreeCard(String roomId, String playerId, String cardId, String targetPlayerId) {
+        System.out.println("➕3️⃣ assignDrawThreeCard called - roomId: " + roomId + ", playerId: " + playerId + ", target: " + targetPlayerId);
+        
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return new Game.ActionResult(false, "Partie non trouvée");
+        }
+
+        Game.ActionResult result = game.assignDrawThreeCard(playerId, cardId, targetPlayerId);
+
+        // Broadcaster l'état du jeu
+        broadcastGameState(roomId, game);
+
+        // Si le round est terminé, calculer les scores
+        if (game.isRoundOver()) {
+            handleRoundEnd(roomId, game);
+        }
+
+        return result;
+    }
+
+    /**
      * Démarrer le prochain round
      */
     public String startNextRound(String roomId, String userId) {

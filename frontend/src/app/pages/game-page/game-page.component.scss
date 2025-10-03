@@ -38,6 +38,37 @@
   }
 }
 
+// Success banner
+.success-banner {
+  position: fixed;
+  top: $headerHeight;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  z-index: 999;
+  animation: slideDown 0.3s ease-out;
+
+  button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
 @keyframes slideDown {
   from {
     transform: translateY(-100%);

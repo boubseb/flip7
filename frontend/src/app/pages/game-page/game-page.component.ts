@@ -43,9 +43,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   private errorTimeout: any = null;
   
+  // Success messages
+  successMessage: string = '';
+  private successTimeout: any = null;
+  
   // Stop Card Selection
   showStopCardModal: boolean = false;
   stopCardToAssign: any = null;
+
+  // DrawThree Card Selection
+  showDrawThreeModal: boolean = false;
+  drawThreeCardToAssign: any = null;
 
   // Start Round Popup
   showStartRoundPopup: boolean = false;
@@ -185,12 +193,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
           this.showStartRoundPopup = false;
         }
 
-        // Détecter si le joueur actuel a une carte Stop pending
-        if (this.isMyTurn && response.players && response.players.length > 0) {
+        // Détecter si le joueur actuel a une carte Stop ou DrawThree pending
+        // Note: Pas besoin de vérifier isMyTurn car on peut avoir une carte Stop/DrawThree en distribution initiale
+        if (response.players && response.players.length > 0) {
           const myPlayer = response.players.find((p: any) => p.userId === this.currentUserId);
           if (myPlayer && myPlayer.hand) {
+            // Vérifier carte Stop (backend retourne "cardType" au lieu de "type")
             const pendingStopCard = myPlayer.hand.find((card: any) => 
-              card.type === 'SPECIAL' && 
+              (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
               card.specialType === 'STOP' && 
               card.pending === true
             );
@@ -198,6 +208,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
             if (pendingStopCard && !this.showStopCardModal) {
               console.log('🛑 Pending Stop card detected in hand - showing player selection');
               this.showStopCardSelection(pendingStopCard);
+            }
+
+            // Vérifier carte DrawThree (backend retourne "cardType" au lieu de "type")
+            const pendingDrawThreeCard = myPlayer.hand.find((card: any) => 
+              (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
+              card.specialType === 'DRAW_THREE' && 
+              card.pending === true
+            );
+            
+            if (pendingDrawThreeCard && !this.showDrawThreeModal) {
+              console.log('➕3️⃣ Pending DrawThree card detected in hand - showing player selection');
+              this.showDrawThreeCardSelection(pendingDrawThreeCard);
             }
           }
         }
@@ -291,17 +313,36 @@ export class GamePageComponent implements OnInit, OnDestroy {
       this.gameService.drawCard(this.roomId).subscribe({
         next: (result) => {
           console.log('🃏 Card drawn:', result);
+          console.log('   - needsStopAssignment:', result.needsStopAssignment);
+          console.log('   - card:', result.card);
           
-          if (result.needsStopAssignment) {
-            // Carte Stop piochée - afficher la sélection de joueur
-            console.log('🛑 Stop card drawn - showing player selection');
-            this.showStopCardSelection(result.card);
+          if (result.needsStopAssignment && result.card) {
+            // Carte Stop ou DrawThree piochée - afficher la sélection de joueur
+            const cardData = result.card as any;
+            console.log('🎴 Card needs assignment, cardType:', cardData.cardType);
+            
+            // Le backend retourne "cardType" au lieu de "type"
+            if (cardData.cardType === 'SPECIAL' || cardData.type === 'SPECIAL') {
+              console.log('   Special type:', cardData.specialType);
+              if (cardData.specialType === 'STOP') {
+                console.log('🛑 Stop card drawn - showing player selection');
+                this.showStopCardSelection(result.card);
+              } else if (cardData.specialType === 'DRAW_THREE') {
+                console.log('➕3️⃣ DrawThree card drawn - showing player selection');
+                this.showDrawThreeCardSelection(result.card);
+              } else {
+                console.warn('⚠️ Unknown special type:', cardData.specialType);
+              }
+            } else {
+              console.warn('⚠️ needsStopAssignment but card is not SPECIAL:', cardData);
+            }
           } else if (result.eliminated) {
             this.showError('Double ! Vous êtes éliminé !');
           } else if (result.lifeUsed) {
             console.log('⚡ Carte Vie utilisée automatiquement');
           } else if (result.roundEnded) {
-            console.log('🏆 7 cartes différentes ! Round gagné !');
+            console.log('� FLIP7 ! 7 cartes numérotées différentes ! Le round s\'arrête et vous gagnez +15 points !');
+            this.showSuccess('🎯 FLIP7 ! 7 cartes numérotées différentes ! +15 points bonus !');
           }
           
           // L'état sera mis à jour via WebSocket
@@ -371,6 +412,28 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
   }
 
+  showSuccess(message: string): void {
+    // Effacer le timer précédent si existe
+    if (this.successTimeout) {
+      clearTimeout(this.successTimeout);
+    }
+    
+    this.successMessage = message;
+    
+    // Auto-effacer après 5 secondes
+    this.successTimeout = setTimeout(() => {
+      this.clearSuccess();
+    }, 5000);
+  }
+
+  clearSuccess(): void {
+    if (this.successTimeout) {
+      clearTimeout(this.successTimeout);
+      this.successTimeout = null;
+    }
+    this.successMessage = '';
+  }
+
   switchGameView(mode: 'all' | 'player' | 'score'): void {
     this.gameViewMode = mode;
   }
@@ -423,11 +486,55 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Ferme le modal de sélection de joueur
+   * Ferme le modal de sélection de joueur (Stop card)
    */
   closeStopCardModal(): void {
     this.showStopCardModal = false;
     this.stopCardToAssign = null;
+  }
+
+  /**
+   * Affiche le modal de sélection de joueur pour la carte DrawThree
+   */
+  showDrawThreeCardSelection(card: any): void {
+    console.log('➕3️⃣ Opening DrawThree card selection modal', card);
+    this.drawThreeCardToAssign = card;
+    this.showDrawThreeModal = true;
+  }
+
+  /**
+   * Assigne la carte DrawThree au joueur sélectionné
+   */
+  assignDrawThreeToPlayer(playerId: string): void {
+    if (!this.drawThreeCardToAssign) {
+      this.showError('Aucune carte DrawThree à assigner');
+      return;
+    }
+
+    console.log('➕3️⃣ Assigning DrawThree card to player:', playerId);
+    
+    this.gameService.assignDrawThreeCard(
+      this.roomId, 
+      this.drawThreeCardToAssign.id, 
+      playerId
+    ).subscribe({
+      next: (result) => {
+        console.log('✅ DrawThree card assigned successfully:', result);
+        this.closeDrawThreeModal();
+      },
+      error: (error) => {
+        console.error('❌ Error assigning DrawThree card:', error);
+        this.showError('Erreur lors de l\'assignation de la carte DrawThree');
+      }
+    });
+  }
+
+  /**
+   * Ferme le modal de sélection de joueur (DrawThree card)
+   */
+  closeDrawThreeModal(): void {
+    this.showDrawThreeModal = false;
+    this.drawThreeCardToAssign = null;
   }
 
   /**

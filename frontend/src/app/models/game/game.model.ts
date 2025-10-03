@@ -20,7 +20,8 @@ export enum PlayerStatus {
   STOPPED = 'STOPPED',
   FORCED_STOP = 'FORCED_STOP', // Forcé de s'arrêter par une carte Stop
   ELIMINATED = 'ELIMINATED',
-  WAITING = 'WAITING'
+  WAITING = 'WAITING',
+  FLIP7_STOP = 'FLIP7_STOP' // A réalisé un Flip7 (7 cartes numérotées différentes)
 }
 
 /**
@@ -59,6 +60,7 @@ export interface GameStateResponse {
   roundNumber: number;
   currentPlayerIndex: number;
   remainingCards: number;
+  winnerId?: string;
   players: GamePlayer[];
 }
 

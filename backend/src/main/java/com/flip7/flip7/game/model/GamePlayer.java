@@ -4,8 +4,10 @@ import com.flip7.flip7.game.card.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Représente un joueur dans le contexte du jeu
@@ -20,6 +22,7 @@ public class GamePlayer {
     private boolean hasUsedLife;           // A utilisé une carte Vie ce round
     private int lifeCardsInHand;          // Nombre de cartes Vie disponibles
     private List<RoundData> rounds;        // Liste de tous les rounds (le dernier = actuel)
+    private int remainingForcedDraws;      // Nombre de cartes restant à piocher (pour DrawThree interrompu)
 
     public GamePlayer(String userId, String username) {
         this.userId = userId;
@@ -31,6 +34,7 @@ public class GamePlayer {
         this.hasUsedLife = false;
         this.rounds = new ArrayList<>();
         this.lifeCardsInHand = 0;
+        this.remainingForcedDraws = 0;
     }
 
     /**
@@ -89,10 +93,28 @@ public class GamePlayer {
     }
 
     /**
+     * Vérifie si le joueur a réalisé un Flip7
+     * Condition : 7 cartes numérotées (NumberCard) différentes, non barrées
+     * Les +2, +10, ×2 et cartes spéciales ne comptent PAS
+     */
+    public boolean hasFlip7() {
+        Set<Integer> uniqueNumbers = new HashSet<>();
+        for (Card card : hand) {
+            // Seulement les NumberCard non-barrées
+            if (card instanceof NumberCard && !card.isCancelled()) {
+                int value = ((NumberCard) card).getValue();
+                uniqueNumbers.add(value);
+            }
+        }
+        return uniqueNumbers.size() >= 7;
+    }
+
+    /**
      * Calcule le score du round
      */
     public int calculateRoundScore() {
-        int score = 0;
+        int numberCardsScore = 0;  // Score des cartes numérotées (peut être multiplié par ×2)
+        int operatorCardsScore = 0; // Score des cartes opérateurs (+2, +10, etc. - JAMAIS multiplié)
         boolean hasMultiply = false;
 
         System.out.println("      🧮 calculateRoundScore for " + username + " (hand size: " + hand.size() + ")");
@@ -106,30 +128,35 @@ public class GamePlayer {
             
             if (card instanceof NumberCard) {
                 int value = ((NumberCard) card).getValue();
-                score += value;
-                System.out.println("         + NumberCard: " + value + " → score = " + score);
+                numberCardsScore += value;
+                System.out.println("         + NumberCard: " + value + " → numberCardsScore = " + numberCardsScore);
             } else if (card instanceof OperatorCard) {
                 OperatorCard opCard = (OperatorCard) card;
                 if (opCard.getOperatorType().isMultiply()) {
                     hasMultiply = true;
-                    System.out.println("         + OperatorCard: ×2 (will multiply at end)");
+                    System.out.println("         + OperatorCard: ×2 (will multiply numberCards only)");
                 } else {
                     int value = opCard.getOperatorType().getValue();
-                    score += value;
-                    System.out.println("         + OperatorCard: " + opCard.getOperatorType() + " (" + value + ") → score = " + score);
+                    operatorCardsScore += value;
+                    System.out.println("         + OperatorCard: " + opCard.getOperatorType() + " (" + value + ") → operatorCardsScore = " + operatorCardsScore);
                 }
             }
         }
 
-        // Application du ×2 à la fin
+        // Application du ×2 UNIQUEMENT sur les cartes numérotées
+        int finalScore = operatorCardsScore; // Les opérateurs ne sont JAMAIS multipliés
         if (hasMultiply) {
-            score *= 2;
-            System.out.println("         × 2 → final score = " + score);
+            finalScore += (numberCardsScore * 2);
+            System.out.println("         ×2 appliqué uniquement aux NumberCards: " + numberCardsScore + " × 2 = " + (numberCardsScore * 2));
+            System.out.println("         Score final = operatorCards(" + operatorCardsScore + ") + numberCards×2(" + (numberCardsScore * 2) + ") = " + finalScore);
+        } else {
+            finalScore += numberCardsScore;
+            System.out.println("         Score final = operatorCards(" + operatorCardsScore + ") + numberCards(" + numberCardsScore + ") = " + finalScore);
         }
 
-        this.roundScore = score;
+        this.roundScore = finalScore;
         System.out.println("      ✅ Final roundScore = " + this.roundScore);
-        return score;
+        return finalScore;
     }
 
     /**
@@ -226,6 +253,10 @@ public class GamePlayer {
         return roundScore;
     }
 
+    public void setRoundScore(int roundScore) {
+        this.roundScore = roundScore;
+    }
+
     public void resetRoundScore() {
         this.roundScore = 0;
     }
@@ -248,6 +279,14 @@ public class GamePlayer {
 
     public List<RoundData> getRounds() {
         return new ArrayList<>(rounds);
+    }
+
+    public int getRemainingForcedDraws() {
+        return remainingForcedDraws;
+    }
+
+    public void setRemainingForcedDraws(int remainingForcedDraws) {
+        this.remainingForcedDraws = remainingForcedDraws;
     }
 
     /**

@@ -102,6 +102,17 @@ export class GameService {
   }
 
   /**
+   * Assigne une carte DrawThree (+3) à un joueur
+   */
+  assignDrawThreeCard(roomId: string, cardId: string, targetPlayerId: string): Observable<ActionResult> {
+    return this.http.post<ActionResult>(
+      `${this.apiUrl}/${roomId}/assign-draw-three`,
+      { cardId, targetPlayerId },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
    * Démarre le prochain round
    */
   startNextRound(roomId: string): Observable<ActionResult> {

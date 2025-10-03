@@ -21,6 +21,13 @@
     border-left: 4px solid #f97316;
   }
 
+  // Statut: Flip7 réussi (bleu clair)
+  &.status-flip7_stop {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-left: 4px solid #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  }
+
   // Statut: Éliminé (rouge clair)
   &.status-eliminated {
     background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
