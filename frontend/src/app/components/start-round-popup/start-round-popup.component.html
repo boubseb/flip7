@@ -1,0 +1,35 @@
+@if (show) {
+  <div class="popup-overlay">
+    <div class="popup-content start-round-popup">
+      <!-- Icône -->
+      <div class="popup-icon" [class.active]="isCurrentPlayer">
+        {{ getIcon() }}
+      </div>
+
+      <!-- Round Number -->
+      <div class="round-badge">
+        Round {{ roundNumber }}
+      </div>
+
+      <!-- Message -->
+      <h2 class="popup-title">{{ getMessage() }}</h2>
+
+      <!-- Action button (only for current player) -->
+      @if (isCurrentPlayer) {
+        <button class="start-button" (click)="startRound()">
+          <span class="button-icon">🚀</span>
+          <span>Commencer le round</span>
+        </button>
+        <p class="help-text">Cliquez quand vous êtes prêt</p>
+      } @else {
+        <!-- Waiting animation -->
+        <div class="waiting-animation">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <p class="waiting-text">Veuillez patienter...</p>
+      }
+    </div>
+  </div>
+}

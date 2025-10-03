@@ -102,6 +102,17 @@ export class GameService {
   }
 
   /**
+   * Démarre le prochain round
+   */
+  startNextRound(roomId: string): Observable<ActionResult> {
+    return this.http.post<ActionResult>(
+      `${this.apiUrl}/${roomId}/start-next-round`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
    * Joue une carte spéciale
    */
   playSpecialCard(roomId: string, request: PlaySpecialCardRequest): Observable<ActionResult> {

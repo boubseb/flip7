@@ -119,6 +119,27 @@ public class GameController {
     }
 
     /**
+     * Démarrer le prochain round (appelé par le joueur actif)
+     */
+    @PostMapping("/{roomId}/start-next-round")
+    public ResponseEntity<?> startNextRound(
+            @PathVariable String roomId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String userId = token.replace("Bearer ", "");
+            String message = gameService.startNextRound(roomId, userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", message);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Un joueur joue une carte spéciale
      */
     @PostMapping("/{roomId}/play-special")

@@ -35,6 +35,13 @@ public class Game {
     }
 
     /**
+     * Démarre la partie (round 1)
+     */
+    public void startGame() {
+        startNewRound();
+    }
+
+    /**
      * Démarre un nouveau round
      */
     public void startNewRound() {
@@ -61,13 +68,7 @@ public class Game {
         deck.reset();
 
         // Distribution initiale : 1 carte par joueur
-        System.out.println("🎴 Distributing initial cards to all players...");
-        for (GamePlayer player : players) {
-            Card card = deck.draw();
-            player.addCard(card);
-            player.setStatus(PlayerStatus.PLAYING);
-            System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ", roundScore: " + player.getRoundScore() + ")");
-        }
+        dealInitialCards();
 
         gameState = GameState.PLAYING;
         System.out.println("✅ Round " + roundNumber + " started! Current player: " + getCurrentPlayer().getUsername());
@@ -333,6 +334,12 @@ public class Game {
 
         // Sauvegarder l'état du round dans chaque joueur
         saveRoundToPlayers();
+
+        // Si le jeu continue, passer en attente du prochain round
+        if (gameState != GameState.GAME_OVER) {
+            gameState = GameState.WAITING_NEXT_ROUND;
+            System.out.println("⏳ En attente que " + getCurrentPlayer().getUsername() + " démarre le round " + (roundNumber + 1));
+        }
     }
 
     /**
@@ -365,6 +372,50 @@ public class Game {
      */
     public boolean isGameOver() {
         return gameState == GameState.GAME_OVER;
+    }
+
+    /**
+     * Démarre le prochain round (appelé par le joueur actif)
+     */
+    public String startNextRound(String userId) {
+        if (gameState != GameState.WAITING_NEXT_ROUND) {
+            throw new IllegalStateException("Le jeu n'est pas en attente du prochain round");
+        }
+
+        GamePlayer currentPlayer = getCurrentPlayer();
+        if (currentPlayer == null || !currentPlayer.getUserId().equals(userId)) {
+            throw new IllegalStateException("Ce n'est pas à vous de démarrer le round");
+        }
+
+        // Appeler la méthode commune qui incrémente le round et distribue les cartes
+        startNewRound();
+
+        System.out.println("🎮 C'est au tour de " + currentPlayer.getUsername());
+        return "Round " + roundNumber + " démarré !";
+    }
+
+    /**
+     * Distribue les cartes initiales (1 carte par joueur)
+     * Si une carte Stop est distribuée, elle reste en pending pour assignation
+     */
+    private void dealInitialCards() {
+        System.out.println("🎴 Distributing initial cards to all players...");
+        for (GamePlayer player : players) {
+            if (player.getStatus() != PlayerStatus.ELIMINATED) {
+                Card card = deck.draw();
+                
+                // Si c'est une carte Stop, la marquer comme pending
+                if (card instanceof SpecialCard && ((SpecialCard) card).getSpecialType() == SpecialType.STOP) {
+                    SpecialCard stopCard = (SpecialCard) card;
+                    stopCard.setPending(true);
+                    System.out.println("   🛑 " + player.getUsername() + " received a STOP card (pending assignment)");
+                }
+                
+                player.addCard(card);
+                player.setStatus(PlayerStatus.PLAYING);
+                System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ", roundScore: " + player.getRoundScore() + ")");
+            }
+        }
     }
 
     /**

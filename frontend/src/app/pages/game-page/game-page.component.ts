@@ -12,9 +12,10 @@ import { PlayerBoardComponent } from '../../components/player-board/player-board
 import { ScoreBoardComponent } from '../../components/score-board/score-board.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
+import { StartRoundPopupComponent } from '../../components/start-round-popup/start-round-popup.component';
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent, FooterComponent, PlayerSelectorComponent],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent, FooterComponent, PlayerSelectorComponent, StartRoundPopupComponent],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
@@ -45,6 +46,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
   // Stop Card Selection
   showStopCardModal: boolean = false;
   stopCardToAssign: any = null;
+
+  // Start Round Popup
+  showStartRoundPopup: boolean = false;
   
   private subscriptions: Subscription[] = [];
 
@@ -155,6 +159,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.wsService.gameStateUpdates$.subscribe(response => {
         console.log('🎮 Game state update received:', response);
+        console.log('   - Game State:', response.gameState);
         console.log('   - Players:', response.players);
         if (response.players && response.players.length > 0) {
           response.players.forEach((p: any) => {
@@ -170,6 +175,31 @@ export class GamePageComponent implements OnInit, OnDestroy {
           this.currentPlayerId = currentPlayer.userId;
           this.isMyTurn = this.currentPlayerId === this.currentUserId;
           console.log('🎯 Current player:', this.currentPlayerId, '- My turn:', this.isMyTurn);
+        }
+
+        // Détecter l'état WAITING_NEXT_ROUND pour afficher le popup
+        if (response.gameState === 'WAITING_NEXT_ROUND') {
+          console.log('⏳ Waiting for next round - showing popup');
+          this.showStartRoundPopup = true;
+        } else {
+          this.showStartRoundPopup = false;
+        }
+
+        // Détecter si le joueur actuel a une carte Stop pending
+        if (this.isMyTurn && response.players && response.players.length > 0) {
+          const myPlayer = response.players.find((p: any) => p.userId === this.currentUserId);
+          if (myPlayer && myPlayer.hand) {
+            const pendingStopCard = myPlayer.hand.find((card: any) => 
+              card.type === 'SPECIAL' && 
+              card.specialType === 'STOP' && 
+              card.pending === true
+            );
+            
+            if (pendingStopCard && !this.showStopCardModal) {
+              console.log('🛑 Pending Stop card detected in hand - showing player selection');
+              this.showStopCardSelection(pendingStopCard);
+            }
+          }
         }
       })
     );
@@ -346,6 +376,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Retourne le username du joueur actuel
+   */
+  getCurrentPlayerUsername(): string {
+    if (this.gameState?.players && this.gameState.currentPlayerIndex >= 0) {
+      const currentPlayer = this.gameState.players[this.gameState.currentPlayerIndex];
+      return currentPlayer?.username || '';
+    }
+    return '';
+  }
+
+  /**
    * Ouvre le modal de sélection de joueur pour la carte Stop
    */
   showStopCardSelection(card: any): void {
@@ -387,5 +428,28 @@ export class GamePageComponent implements OnInit, OnDestroy {
   closeStopCardModal(): void {
     this.showStopCardModal = false;
     this.stopCardToAssign = null;
+  }
+
+  /**
+   * Démarre le prochain round (appelé par le joueur actif)
+   */
+  startRound(): void {
+    if (!this.isMyTurn) {
+      this.showError('Ce n\'est pas à vous de démarrer le round');
+      return;
+    }
+
+    console.log('🚀 Starting next round...');
+    
+    this.gameService.startNextRound(this.roomId).subscribe({
+      next: (result) => {
+        console.log('✅ Round started:', result);
+        this.showStartRoundPopup = false;
+      },
+      error: (error) => {
+        console.error('❌ Error starting round:', error);
+        this.showError('Erreur lors du démarrage du round');
+      }
+    });
   }
 }

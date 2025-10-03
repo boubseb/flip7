@@ -199,6 +199,25 @@ public class GameService {
     }
 
     /**
+     * Démarrer le prochain round
+     */
+    public String startNextRound(String roomId, String userId) {
+        System.out.println("🚀 startNextRound called - roomId: " + roomId + ", userId: " + userId);
+        
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            throw new IllegalStateException("Partie non trouvée");
+        }
+
+        String message = game.startNextRound(userId);
+
+        // Broadcaster l'état du jeu mis à jour
+        broadcastGameState(roomId, game);
+
+        return message;
+    }
+
+    /**
      * Un joueur joue une carte spéciale
      */
     public Game.ActionResult playSpecialCard(String roomId, String playerId, String cardId, String targetPlayerId) {
@@ -241,25 +260,16 @@ public class GameService {
             activeGames.remove(roomId);
             gameHistoryIds.remove(roomId);
         } else {
-            // Personne n'a atteint 200 points, démarrer un nouveau round après un délai
+            // Personne n'a atteint 200 points, passer en attente du prochain round
             System.out.println("🔄 Round " + game.getRoundNumber() + " ended, no winner yet.");
             System.out.println("   Current scores:");
             for (GamePlayer player : game.getPlayers()) {
                 System.out.println("   - " + player.getUsername() + ": " + player.getTotalScore() + " points");
             }
-            System.out.println("   Starting new round in 5 seconds...");
+            System.out.println("⏳ Waiting for " + game.getCurrentPlayer().getUsername() + " to start round " + (game.getRoundNumber() + 1));
             
-            // Délai de 5 secondes pour laisser les joueurs voir les scores
-            new Thread(() -> {
-                try {
-                    Thread.sleep(5000);
-                    System.out.println("🎮 Starting new round for room: " + roomId);
-                    startNewRound(roomId);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    System.err.println("❌ Error starting new round: " + e.getMessage());
-                }
-            }).start();
+            // Broadcaster l'état WAITING_NEXT_ROUND pour afficher le popup
+            broadcastGameState(roomId, game);
         }
     }
 

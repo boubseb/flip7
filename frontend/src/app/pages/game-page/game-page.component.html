@@ -64,3 +64,12 @@
   (onPlayerSelected)="assignStopToPlayer($event)"
   (onCancel)="closeStopCardModal()">
 </app-player-selector>
+
+<!-- Start Round Popup -->
+<app-start-round-popup
+  [show]="showStartRoundPopup"
+  [roundNumber]="gameState?.roundNumber || 1"
+  [playerUsername]="getCurrentPlayerUsername()"
+  [isCurrentPlayer]="isMyTurn"
+  (onStartRound)="startRound()">
+</app-start-round-popup>
