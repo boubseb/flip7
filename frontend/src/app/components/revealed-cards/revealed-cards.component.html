@@ -1,4 +1,4 @@
-<div class="revealed-cards-container">
+<div class="revealed-cards-container" [ngClass]="'status-' + playerStatus.toLowerCase()">
   @if (cards.length > 0) {
     <div class="cards-header">
       <span class="cards-count">{{ cards.length }} carte(s)</span>

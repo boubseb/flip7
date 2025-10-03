@@ -55,7 +55,8 @@
             <div class="player-content">
               <app-revealed-cards 
                 [cards]="getRevealedCards(playerId)"
-                [score]="getPlayerRoundScore(playerId)">
+                [score]="getPlayerRoundScore(playerId)"
+                [playerStatus]="getPlayerStatus(playerId)">
               </app-revealed-cards>
             </div>
           }

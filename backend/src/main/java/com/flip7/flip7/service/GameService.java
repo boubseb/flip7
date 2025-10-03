@@ -175,6 +175,30 @@ public class GameService {
     }
 
     /**
+     * Assigner une carte Stop à un joueur
+     */
+    public Game.ActionResult assignStopCard(String roomId, String playerId, String cardId, String targetPlayerId) {
+        System.out.println("🛑 assignStopCard called - roomId: " + roomId + ", playerId: " + playerId + ", target: " + targetPlayerId);
+        
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return new Game.ActionResult(false, "Partie non trouvée");
+        }
+
+        Game.ActionResult result = game.assignStopCard(playerId, cardId, targetPlayerId);
+
+        // Broadcaster l'état du jeu
+        broadcastGameState(roomId, game);
+
+        // Si le round est terminé, calculer les scores
+        if (game.isRoundOver()) {
+            handleRoundEnd(roomId, game);
+        }
+
+        return result;
+    }
+
+    /**
      * Un joueur joue une carte spéciale
      */
     public Game.ActionResult playSpecialCard(String roomId, String playerId, String cardId, String targetPlayerId) {

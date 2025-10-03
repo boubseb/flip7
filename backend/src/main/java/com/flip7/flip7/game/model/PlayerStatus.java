@@ -5,7 +5,8 @@ package com.flip7.flip7.game.model;
  */
 public enum PlayerStatus {
     PLAYING,      // En train de jouer
-    STOPPED,      // A décidé de s'arrêter
+    STOPPED,      // A décidé volontairement de s'arrêter
+    FORCED_STOP,  // Forcé de s'arrêter par une carte Stop (carte ajoutée à son jeu)
     ELIMINATED,   // Éliminé (double carte)
     WAITING       // En attente (pas encore son tour ou doit piocher suite à une carte spéciale)
 }

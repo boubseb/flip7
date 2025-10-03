@@ -17,8 +17,21 @@ export enum GameState {
 export enum PlayerStatus {
   PLAYING = 'PLAYING',
   STOPPED = 'STOPPED',
+  FORCED_STOP = 'FORCED_STOP', // Forcé de s'arrêter par une carte Stop
   ELIMINATED = 'ELIMINATED',
   WAITING = 'WAITING'
+}
+
+/**
+ * Données d'un round historique
+ */
+export interface RoundData {
+  roundNumber: number;
+  roundScore: number;
+  totalScore: number;
+  theoreticalTotal: number;
+  status: PlayerStatus;
+  hand?: AnyCard[];
 }
 
 /**
@@ -31,8 +44,10 @@ export interface GamePlayer {
   handSize: number;
   roundScore: number;
   totalScore: number;
+  theoreticalTotal?: number;
   lifeCardsInHand?: number;
-  hand?: AnyCard[]; // Seulement pour le joueur actuel
+  hand?: AnyCard[]; // Main actuelle
+  rounds?: RoundData[]; // Historique des rounds
 }
 
 /**

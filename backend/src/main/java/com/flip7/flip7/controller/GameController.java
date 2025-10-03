@@ -62,6 +62,7 @@ public class GameController {
             response.put("roundEnded", result.isRoundEnded());
             response.put("lifeUsed", result.isLifeUsed());
             response.put("eliminated", result.isEliminated());
+            response.put("needsStopAssignment", result.isNeedsStopAssignment());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -79,6 +80,33 @@ public class GameController {
         try {
             String userId = token.replace("Bearer ", "");
             Game.ActionResult result = gameService.stopDrawing(roomId, userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", result.isSuccess());
+            response.put("message", result.getMessage());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Assigner une carte Stop à un joueur (après pioche)
+     */
+    @PostMapping("/{roomId}/assign-stop")
+    public ResponseEntity<?> assignStopCard(
+            @PathVariable String roomId,
+            @RequestHeader("Authorization") String token,
+            @RequestBody AssignStopCardRequest request) {
+        try {
+            String userId = token.replace("Bearer ", "");
+            Game.ActionResult result = gameService.assignStopCard(
+                roomId, 
+                userId, 
+                request.getCardId(), 
+                request.getTargetPlayerId()
+            );
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", result.isSuccess());
@@ -167,7 +195,9 @@ public class GameController {
      */
     private Map<String, Object> mapCardToDTO(Card card) {
         Map<String, Object> dto = new HashMap<>();
+        dto.put("id", card.getId());
         dto.put("cardType", card.getCardType().toString());
+        dto.put("cancelled", card.isCancelled());
         
         if (card instanceof NumberCard) {
             NumberCard numCard = (NumberCard) card;
@@ -181,12 +211,27 @@ public class GameController {
             SpecialCard specCard = (SpecialCard) card;
             dto.put("specialType", specCard.getSpecialType().toString());
             dto.put("special", true);
+            dto.put("used", specCard.isUsed());
+            dto.put("pending", specCard.isPending());
+            if (specCard.getAssignedToPlayerId() != null) {
+                dto.put("assignedToPlayerId", specCard.getAssignedToPlayerId());
+            }
         }
 
         return dto;
     }
 
     // DTOs de requête/réponse
+    public static class AssignStopCardRequest {
+        private String cardId;
+        private String targetPlayerId;
+
+        public String getCardId() { return cardId; }
+        public void setCardId(String cardId) { this.cardId = cardId; }
+        public String getTargetPlayerId() { return targetPlayerId; }
+        public void setTargetPlayerId(String targetPlayerId) { this.targetPlayerId = targetPlayerId; }
+    }
+
     public static class PlaySpecialCardRequest {
         private String cardId;
         private String targetPlayerId;

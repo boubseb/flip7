@@ -142,4 +142,15 @@ export class PlayerBoardComponent {
     }
     return (myPlayer.totalScore || 0) + (myPlayer.roundScore || 0);
   }
+
+  /**
+   * Retourne le statut du joueur actuel
+   */
+  getMyStatus(): string {
+    if (!this.gameState || !this.gameState.players) {
+      return 'PLAYING';
+    }
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    return myPlayer?.status || 'PLAYING';
+  }
 }

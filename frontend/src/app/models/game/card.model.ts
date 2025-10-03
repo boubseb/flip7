@@ -35,6 +35,7 @@ export interface Card {
   id: string;
   type: CardType;
   displayName: string;
+  cancelled?: boolean; // Carte barrée (annulée par une carte Vie)
 }
 
 /**
@@ -59,6 +60,9 @@ export interface OperatorCard extends Card {
 export interface SpecialCard extends Card {
   type: CardType.SPECIAL;
   specialType: SpecialType;
+  used?: boolean; // Carte Vie utilisée (devient noire)
+  pending?: boolean; // Carte Stop en attente d'assignation
+  assignedToPlayerId?: string; // ID du joueur qui reçoit la carte Stop
 }
 
 /**

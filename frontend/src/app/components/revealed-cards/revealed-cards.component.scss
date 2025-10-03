@@ -1,6 +1,38 @@
 .revealed-cards-container {
   width: 100%;
   padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  
+  // Statut: En cours de jeu (blanc/neutre)
+  &.status-playing {
+    background: #ffffff;
+  }
+
+  // Statut: Arrêt volontaire (vert clair)
+  &.status-stopped {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left: 4px solid #10b981;
+  }
+
+  // Statut: Arrêt forcé par carte Stop (orange clair)
+  &.status-forced_stop {
+    background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    border-left: 4px solid #f97316;
+  }
+
+  // Statut: Éliminé (rouge clair)
+  &.status-eliminated {
+    background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+    border-left: 4px solid #ef4444;
+    opacity: 0.85;
+  }
+
+  // Statut: En attente (gris clair)
+  &.status-waiting {
+    background: #f3f4f6;
+    opacity: 0.7;
+  }
   
   .cards-header {
     display: flex;

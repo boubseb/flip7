@@ -6,16 +6,22 @@ package com.flip7.flip7.game.card;
 public class SpecialCard extends Card {
     private SpecialType specialType;
     private boolean used; // Carte Vie utilisée (devient noire)
+    private boolean pending; // Carte Stop en attente d'assignation
+    private String assignedToPlayerId; // ID du joueur qui recevra la carte Stop
 
     public SpecialCard() {
         super(CardType.SPECIAL);
         this.used = false;
+        this.pending = false;
+        this.assignedToPlayerId = null;
     }
 
     public SpecialCard(SpecialType specialType) {
         super(CardType.SPECIAL);
         this.specialType = specialType;
         this.used = false;
+        this.pending = (specialType == SpecialType.STOP); // Les cartes Stop sont pending par défaut
+        this.assignedToPlayerId = null;
     }
 
     public SpecialType getSpecialType() {
@@ -32,6 +38,22 @@ public class SpecialCard extends Card {
 
     public void setUsed(boolean used) {
         this.used = used;
+    }
+
+    public boolean isPending() {
+        return pending;
+    }
+
+    public void setPending(boolean pending) {
+        this.pending = pending;
+    }
+
+    public String getAssignedToPlayerId() {
+        return assignedToPlayerId;
+    }
+
+    public void setAssignedToPlayerId(String assignedToPlayerId) {
+        this.assignedToPlayerId = assignedToPlayerId;
     }
 
     @Override

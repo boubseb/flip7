@@ -120,6 +120,16 @@ public class Game {
         Card drawnCard = deck.draw();
         player.addCard(drawnCard);
 
+        // Vérification si c'est une carte Stop (nécessite un choix)
+        if (drawnCard instanceof SpecialCard) {
+            SpecialCard specialCard = (SpecialCard) drawnCard;
+            if (specialCard.getSpecialType() == SpecialType.STOP) {
+                System.out.println("🛑 " + player.getUsername() + " a pioché une carte STOP (en attente d'assignation)");
+                // La carte reste pending, le joueur doit choisir à qui l'assigner
+                return new DrawResult(true, "Carte Stop piochée ! Choisissez un joueur.", drawnCard, false, false, false, true);
+            }
+        }
+
         // Vérification du double
         if (player.hasDouble()) {
             return handleDouble(player, drawnCard);
@@ -180,6 +190,68 @@ public class Game {
     }
 
     /**
+     * Assigner une carte Stop à un joueur (appelé après que le joueur ait fait son choix)
+     */
+    public ActionResult assignStopCard(String playerId, String cardId, String targetPlayerId) {
+        GamePlayer player = getPlayerById(playerId);
+        if (player == null) {
+            return new ActionResult(false, "Joueur non trouvé");
+        }
+
+        if (!player.getUserId().equals(getCurrentPlayer().getUserId())) {
+            return new ActionResult(false, "Ce n'est pas votre tour");
+        }
+
+        // Trouver la carte Stop dans la main du joueur
+        Card card = player.getHand().stream()
+            .filter(c -> c.getId().equals(cardId))
+            .findFirst()
+            .orElse(null);
+
+        if (card == null || !(card instanceof SpecialCard)) {
+            return new ActionResult(false, "Carte Stop non trouvée");
+        }
+
+        SpecialCard stopCard = (SpecialCard) card;
+        if (stopCard.getSpecialType() != SpecialType.STOP) {
+            return new ActionResult(false, "Cette carte n'est pas une carte Stop");
+        }
+
+        if (!stopCard.isPending()) {
+            return new ActionResult(false, "Cette carte Stop a déjà été assignée");
+        }
+
+        GamePlayer targetPlayer = getPlayerById(targetPlayerId);
+        if (targetPlayer == null) {
+            return new ActionResult(false, "Joueur cible non trouvé");
+        }
+
+        // Assigner la carte au joueur cible
+        stopCard.setPending(false);
+        stopCard.setAssignedToPlayerId(targetPlayerId);
+        
+        // Retirer la carte de la main du joueur qui l'a piochée
+        player.removeCard(card);
+        
+        // Ajouter la carte à la main du joueur cible et le forcer à s'arrêter
+        targetPlayer.addCard(card);
+        targetPlayer.setStatus(PlayerStatus.FORCED_STOP); // FORCED_STOP au lieu de STOPPED
+        
+        System.out.println("🛑 " + player.getUsername() + " a assigné la carte STOP à " + targetPlayer.getUsername());
+        System.out.println("   Score de " + targetPlayer.getUsername() + " : " + targetPlayer.getRoundScore() + " (incluant la carte Stop)");
+        
+        // Si le joueur s'est stoppé lui-même ou si c'est le joueur actuel qui est stoppé
+        if (targetPlayer.getUserId().equals(getCurrentPlayer().getUserId())) {
+            nextPlayer();
+        } else {
+            // Sinon, passer simplement au joueur suivant
+            nextPlayer();
+        }
+        
+        return new ActionResult(true, targetPlayer.getUsername() + " a reçu la carte Stop et est forcé de s'arrêter !");
+    }
+
+    /**
      * Joue une carte spéciale
      */
     public ActionResult playSpecialCard(String playerId, String cardId, String targetPlayerId) {
@@ -208,13 +280,8 @@ public class Game {
         // Application de l'effet de la carte
         switch (specialCard.getSpecialType()) {
             case STOP:
-                targetPlayer.setStatus(PlayerStatus.STOPPED);
-                player.removeCard(card);
-                deck.discard(card);
-                if (targetPlayer.getUserId().equals(getCurrentPlayer().getUserId())) {
-                    nextPlayer();
-                }
-                return new ActionResult(true, targetPlayer.getUsername() + " a été forcé de s'arrêter");
+                // Les cartes Stop doivent être assignées via assignStopCard
+                return new ActionResult(false, "Utilisez assignStopCard pour assigner une carte Stop");
 
             case DRAW_THREE:
                 for (int i = 0; i < 3; i++) {
@@ -355,26 +422,32 @@ public class Game {
         private boolean roundEnded;
         private boolean lifeUsed;
         private boolean eliminated;
+        private boolean needsStopAssignment; // Carte Stop piochée, nécessite un choix
 
         public DrawResult(boolean success, String message, Card drawnCard) {
-            this(success, message, drawnCard, false, false, false);
+            this(success, message, drawnCard, false, false, false, false);
         }
 
         public DrawResult(boolean success, String message, Card drawnCard, boolean roundEnded) {
-            this(success, message, drawnCard, roundEnded, false, false);
+            this(success, message, drawnCard, roundEnded, false, false, false);
         }
 
         public DrawResult(boolean success, String message, Card drawnCard, boolean roundEnded, boolean lifeUsed) {
-            this(success, message, drawnCard, roundEnded, lifeUsed, false);
+            this(success, message, drawnCard, roundEnded, lifeUsed, false, false);
         }
 
         public DrawResult(boolean success, String message, Card drawnCard, boolean roundEnded, boolean lifeUsed, boolean eliminated) {
+            this(success, message, drawnCard, roundEnded, lifeUsed, eliminated, false);
+        }
+
+        public DrawResult(boolean success, String message, Card drawnCard, boolean roundEnded, boolean lifeUsed, boolean eliminated, boolean needsStopAssignment) {
             this.success = success;
             this.message = message;
             this.drawnCard = drawnCard;
             this.roundEnded = roundEnded;
             this.lifeUsed = lifeUsed;
             this.eliminated = eliminated;
+            this.needsStopAssignment = needsStopAssignment;
         }
 
         public boolean isSuccess() { return success; }
@@ -383,6 +456,7 @@ public class Game {
         public boolean isRoundEnded() { return roundEnded; }
         public boolean isLifeUsed() { return lifeUsed; }
         public boolean isEliminated() { return eliminated; }
+        public boolean isNeedsStopAssignment() { return needsStopAssignment; }
     }
 
     /**

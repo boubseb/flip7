@@ -205,6 +205,36 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
     return roundData.hand || [];
   }
 
+  /**
+   * Retourne le statut du joueur pour le round sélectionné
+   */
+  getPlayerStatus(playerId: string): string {
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
+      return 'WAITING';
+    }
+    return roundData.status || 'PLAYING';
+  }
+
+  /**
+   * Retourne la classe CSS en fonction du statut du joueur
+   */
+  getPlayerStatusClass(playerId: string): string {
+    const status = this.getPlayerStatus(playerId);
+    switch (status) {
+      case 'PLAYING':
+        return 'status-playing';
+      case 'STOPPED':
+        return 'status-stopped';
+      case 'FORCED_STOP':
+        return 'status-forced-stop';
+      case 'ELIMINATED':
+        return 'status-eliminated';
+      default:
+        return 'status-waiting';
+    }
+  }
+
   getSuitSymbol(suit: string): string {
     const suitMap: { [key: string]: string } = {
       'HEARTS': '♥',

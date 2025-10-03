@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 export class RevealedCardsComponent {
   @Input() cards: any[] = [];
   @Input() score: number = 0;
+  @Input() playerStatus: string = 'PLAYING'; // Statut du joueur pour la couleur de fond
 
   /**
    * Obtient la valeur d'affichage de la carte
