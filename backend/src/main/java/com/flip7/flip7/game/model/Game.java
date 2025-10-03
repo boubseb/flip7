@@ -147,8 +147,10 @@ public class Game {
             player.useLifeCard();
             return new DrawResult(true, "Double ! Carte Vie utilisée pour survivre.", drawnCard, false, true);
         } else {
-            // Le joueur est éliminé
+            // Le joueur est éliminé - son score de round passe à 0
             player.setStatus(PlayerStatus.ELIMINATED);
+            player.resetRoundScore();
+            System.out.println("💀 " + player.getUsername() + " éliminé ! Score du round remis à 0.");
             nextPlayer();
             return new DrawResult(true, "Double ! Vous êtes éliminé du round.", drawnCard, false, false, true);
         }
@@ -271,7 +273,12 @@ public class Game {
      */
     private void saveRoundToPlayers() {
         for (GamePlayer player : players) {
-            player.saveRoundHistory(roundNumber, new ArrayList<>(player.getHand()));
+            List<Card> handSnapshot = new ArrayList<>(player.getHand());
+            System.out.println("   💾 Saving " + player.getUsername() + " round " + roundNumber + " with " + handSnapshot.size() + " cards");
+            for (Card card : handSnapshot) {
+                System.out.println("      - " + card.getDisplayName());
+            }
+            player.saveRoundHistory(roundNumber, handSnapshot);
         }
         System.out.println("💾 Round " + roundNumber + " saved to all players");
     }

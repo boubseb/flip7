@@ -380,12 +380,13 @@ public class GameService {
             for (Card card : player.getHand()) {
                 java.util.Map<String, Object> cardMap = new java.util.HashMap<>();
                 cardMap.put("cardType", card.getCardType().toString());
+                cardMap.put("cancelled", card.isCancelled());
                 
                 if (card instanceof NumberCard) {
                     NumberCard numCard = (NumberCard) card;
                     cardMap.put("value", numCard.getValue());
                     cardMap.put("special", false);
-                    System.out.println("         - NumberCard: " + numCard.getValue());
+                    System.out.println("         - NumberCard: " + numCard.getValue() + (card.isCancelled() ? " (barrée)" : ""));
                 } else if (card instanceof OperatorCard) {
                     OperatorCard opCard = (OperatorCard) card;
                     cardMap.put("operator", opCard.getOperatorType().toString());
@@ -395,7 +396,8 @@ public class GameService {
                     SpecialCard specCard = (SpecialCard) card;
                     cardMap.put("specialType", specCard.getSpecialType().toString());
                     cardMap.put("special", true);
-                    System.out.println("         - SpecialCard: " + specCard.getSpecialType());
+                    cardMap.put("used", specCard.isUsed());
+                    System.out.println("         - SpecialCard: " + specCard.getSpecialType() + (specCard.isUsed() ? " (utilisée)" : ""));
                 }
                 
                 handCards.add(cardMap);
@@ -418,6 +420,7 @@ public class GameService {
                 for (Card card : roundData.getHand()) {
                     java.util.Map<String, Object> cardMap = new java.util.HashMap<>();
                     cardMap.put("cardType", card.getCardType().toString());
+                    cardMap.put("cancelled", card.isCancelled());
                     
                     if (card instanceof NumberCard) {
                         NumberCard numCard = (NumberCard) card;
@@ -431,6 +434,7 @@ public class GameService {
                         SpecialCard specCard = (SpecialCard) card;
                         cardMap.put("specialType", specCard.getSpecialType().toString());
                         cardMap.put("special", true);
+                        cardMap.put("used", specCard.isUsed());
                     }
                     roundHandCards.add(cardMap);
                 }

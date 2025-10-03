@@ -5,14 +5,17 @@ package com.flip7.flip7.game.card;
  */
 public class SpecialCard extends Card {
     private SpecialType specialType;
+    private boolean used; // Carte Vie utilisée (devient noire)
 
     public SpecialCard() {
         super(CardType.SPECIAL);
+        this.used = false;
     }
 
     public SpecialCard(SpecialType specialType) {
         super(CardType.SPECIAL);
         this.specialType = specialType;
+        this.used = false;
     }
 
     public SpecialType getSpecialType() {
@@ -21,6 +24,14 @@ public class SpecialCard extends Card {
 
     public void setSpecialType(SpecialType specialType) {
         this.specialType = specialType;
+    }
+
+    public boolean isUsed() {
+        return used;
+    }
+
+    public void setUsed(boolean used) {
+        this.used = used;
     }
 
     @Override

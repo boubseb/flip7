@@ -29,10 +29,14 @@ export class ScoreBoardComponent implements OnInit, OnChanges {
   }
 
   updateMaxRound(): void {
-    if (this.gameState && this.gameState.currentRound) {
-      this.maxRound = this.gameState.currentRound;
+    if (this.gameState && this.gameState.roundNumber) {
+      this.maxRound = this.gameState.roundNumber;
       this.selectedRound = this.maxRound; // Par défaut sur le round actuel
     }
+  }
+
+  isCurrentRound(): boolean {
+    return this.selectedRound === this.maxRound;
   }
 
   previousRound(): void {
@@ -55,18 +59,34 @@ export class ScoreBoardComponent implements OnInit, OnChanges {
     return playerInfo ? playerInfo.pseudo : playerId.substring(0, 8) + '...';
   }
 
-  getPlayerScore(playerId: string): number {
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
-      return 0;
+  /**
+   * Récupère les données du round sélectionné pour un joueur
+   */
+  private getPlayerRoundData(playerId: string): any {
+    if (!this.gameState || !this.gameState.players) {
+      return null;
     }
-    return this.gameState.players[playerId].score || 0;
+    
+    const player = this.gameState.players.find((p: any) => p.userId === playerId);
+    if (!player) {
+      return null;
+    }
+
+    // Si on regarde un round dans l'historique
+    if (player.rounds && player.rounds.length > 0 && this.selectedRound <= player.rounds.length) {
+      return player.rounds[this.selectedRound - 1];
+    }
+    
+    // Sinon, retourner les données actuelles du joueur
+    return player;
   }
 
-  getPlayerTricks(playerId: string): number {
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
+  getPlayerScore(playerId: string): number {
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
       return 0;
     }
-    return this.gameState.players[playerId].tricks || 0;
+    return roundData.theoreticalTotal || 0;
   }
 
   getSortedPlayers(): string[] {
@@ -80,25 +100,29 @@ export class ScoreBoardComponent implements OnInit, OnChanges {
     return sorted.indexOf(playerId) + 1;
   }
 
+  /**
+   * Score réalisé durant le round sélectionné
+   * - Round terminé : roundScore du round
+   * - Round en cours : roundScore actuel
+   */
   getPlayerRoundScore(playerId: string): number {
-    // Score gagné pendant le round sélectionné
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
       return 0;
     }
-    const roundScores = this.gameState.players[playerId].roundScores || [];
-    return roundScores[this.selectedRound - 1] || 0;
+    return roundData.roundScore || 0;
   }
 
+  /**
+   * Score cumulé jusqu'au round sélectionné (incluant ce round)
+   * - Round terminé : theoreticalTotal du round (= totalScore à la fin du round)
+   * - Round en cours : theoreticalTotal actuel (score théorique si on s'arrête maintenant)
+   */
   getPlayerCumulativeScore(playerId: string): number {
-    // Score cumulé jusqu'au round sélectionné
-    if (!this.gameState || !this.gameState.players || !this.gameState.players[playerId]) {
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
       return 0;
     }
-    const roundScores = this.gameState.players[playerId].roundScores || [];
-    let cumulative = 0;
-    for (let i = 0; i < this.selectedRound && i < roundScores.length; i++) {
-      cumulative += roundScores[i] || 0;
-    }
-    return cumulative;
+    return roundData.theoreticalTotal || 0;
   }
 }

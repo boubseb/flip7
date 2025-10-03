@@ -97,8 +97,13 @@ public class GamePlayer {
 
         System.out.println("      🧮 calculateRoundScore for " + username + " (hand size: " + hand.size() + ")");
         
-        // Somme des cartes numérotées et des bonus
+        // Somme des cartes numérotées et des bonus (ignorer les cartes barrées)
         for (Card card : hand) {
+            if (card.isCancelled()) {
+                System.out.println("         ✖️ " + card.getDisplayName() + " (barrée, ignorée)");
+                continue;
+            }
+            
             if (card instanceof NumberCard) {
                 int value = ((NumberCard) card).getValue();
                 score += value;
@@ -129,16 +134,53 @@ public class GamePlayer {
 
     /**
      * Utilise une carte Vie pour survivre à un double
+     * Marque la carte Vie comme utilisée et la carte du double comme barrée
      */
     public boolean useLifeCard() {
+        SpecialCard lifeCard = null;
+        Card doubleCard = null;
+        
+        // Trouver la carte Vie
         for (Card card : hand) {
-            if (card instanceof SpecialCard && ((SpecialCard) card).getSpecialType() == SpecialType.LIFE) {
-                removeCard(card);
-                hasUsedLife = true;
-                return true;
+            if (card instanceof SpecialCard && ((SpecialCard) card).getSpecialType() == SpecialType.LIFE && !((SpecialCard) card).isUsed()) {
+                lifeCard = (SpecialCard) card;
+                break;
             }
         }
-        return false;
+        
+        if (lifeCard == null) {
+            return false;
+        }
+        
+        // Trouver la carte qui a causé le double (dernière carte ajoutée qui crée un double)
+        Map<Integer, Card> numberCards = new HashMap<>();
+        for (Card card : hand) {
+            if (card instanceof NumberCard) {
+                int value = ((NumberCard) card).getValue();
+                if (numberCards.containsKey(value) && !card.isCancelled()) {
+                    // C'est la carte du double
+                    doubleCard = card;
+                } else {
+                    numberCards.put(value, card);
+                }
+            }
+        }
+        
+        // Marquer la carte Vie comme utilisée (ne plus compter dans lifeCardsInHand)
+        lifeCard.setUsed(true);
+        lifeCardsInHand--;
+        hasUsedLife = true;
+        
+        // Barrer la carte qui a causé le double
+        if (doubleCard != null) {
+            doubleCard.setCancelled(true);
+            System.out.println("      ❤️ Carte Vie utilisée ! Carte " + doubleCard.getDisplayName() + " barrée.");
+        }
+        
+        // Recalculer le score sans la carte barrée
+        calculateRoundScore();
+        
+        return true;
     }
 
     /**
@@ -184,6 +226,10 @@ public class GamePlayer {
         return roundScore;
     }
 
+    public void resetRoundScore() {
+        this.roundScore = 0;
+    }
+
     public int getTotalScore() {
         return totalScore;
     }
@@ -206,12 +252,29 @@ public class GamePlayer {
 
     /**
      * Sauvegarde l'état du round actuel dans la liste des rounds
+     * À ce stade, totalScore contient déjà le score du round (addRoundScoreToTotal a été appelé)
      */
     public void saveRoundHistory(int roundNumber, List<Card> handSnapshot) {
+        // À ce stade, this.totalScore contient déjà this.roundScore (après addRoundScoreToTotal)
+        // On veut sauvegarder :
+        // - totalScore du round précédent = this.totalScore - this.roundScore
+        // - roundScore du round actuel = this.roundScore
+        // - theoreticalTotal = totalScore précédent + roundScore actuel = this.totalScore
+        
+        int previousTotalScore = this.totalScore - this.roundScore;  // Score cumulé AVANT ce round
+        int currentRoundScore = this.roundScore;                      // Score de CE round
+        int currentTheoreticalTotal = this.totalScore;                // Score cumulé APRÈS ce round
+        
+        System.out.println("      📝 saveRoundHistory for " + username + " round " + roundNumber + ":");
+        System.out.println("         totalScore (précédent): " + previousTotalScore);
+        System.out.println("         roundScore (actuel): " + currentRoundScore);
+        System.out.println("         theoreticalTotal: " + currentTheoreticalTotal);
+        
         RoundData roundData = new RoundData(
             roundNumber,
-            this.roundScore,
-            this.totalScore,
+            currentRoundScore,
+            previousTotalScore,
+            currentTheoreticalTotal,
             this.status,
             handSnapshot
         );
@@ -229,11 +292,11 @@ public class GamePlayer {
         private PlayerStatus status;
         private List<Card> hand;
 
-        public RoundData(int roundNumber, int roundScore, int totalScore, PlayerStatus status, List<Card> hand) {
+        public RoundData(int roundNumber, int roundScore, int totalScore, int theoreticalTotal, PlayerStatus status, List<Card> hand) {
             this.roundNumber = roundNumber;
             this.roundScore = roundScore;
             this.totalScore = totalScore;
-            this.theoreticalTotal = totalScore + roundScore;
+            this.theoreticalTotal = theoreticalTotal;
             this.status = status;
             this.hand = hand;
         }

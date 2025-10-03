@@ -15,10 +15,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public abstract class Card {
     private String id; // Identifiant unique de la carte
     private CardType cardType;
+    private boolean cancelled; // Carte barrée (annulée par une carte Vie)
 
     public Card(CardType cardType) {
         this.cardType = cardType;
         this.id = java.util.UUID.randomUUID().toString();
+        this.cancelled = false;
     }
 
     public String getId() {
@@ -35,6 +37,14 @@ public abstract class Card {
 
     public void setCardType(CardType cardType) {
         this.cardType = cardType;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
     }
 
     /**

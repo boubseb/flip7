@@ -43,8 +43,10 @@
             </div>
             <div class="player-right">
               <span class="player-score-safe">{{ getPlayerSafetyScore(playerId) }} pts</span>
-              <span class="score-separator">|</span>
-              <span class="player-score-total">{{ getPlayerTotalScore(playerId) }} pts</span>
+              @if (isCurrentRound()) {
+                <span class="score-separator">|</span>
+                <span class="player-score-total">{{ getPlayerTotalScore(playerId) }} pts</span>
+              }
             </div>
           </div>
 

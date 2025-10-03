@@ -65,7 +65,20 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
       this.maxRound = this.gameState.roundNumber;
       this.selectedRound = this.maxRound; // Par défaut sur le round actuel
       console.log(`📅 updateMaxRound: maxRound = ${this.maxRound}, selectedRound = ${this.selectedRound}`);
+      
+      // Log pour debug : afficher le nombre de rounds dans l'historique du premier joueur
+      if (this.gameState.players && this.gameState.players.length > 0) {
+        const firstPlayer = this.gameState.players[0];
+        console.log(`   Premier joueur a ${firstPlayer.rounds?.length || 0} rounds dans l'historique`);
+      }
     }
+  }
+
+  /**
+   * Vérifie si on affiche le round en cours (pas un round historique)
+   */
+  isCurrentRound(): boolean {
+    return this.selectedRound === this.maxRound;
   }
 
   previousRound(): void {
@@ -101,33 +114,71 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   }
 
   /**
+   * Récupère les données du round sélectionné pour un joueur
+   * Si le round n'existe pas encore dans l'historique, retourne les données actuelles
+   */
+  private getPlayerRoundData(playerId: string): any {
+    if (!this.gameState || !this.gameState.players) {
+      console.log('⚠️ getPlayerRoundData: pas de gameState');
+      return null;
+    }
+    
+    const player = this.gameState.players.find((p: any) => p.userId === playerId);
+    if (!player) {
+      console.log('⚠️ getPlayerRoundData: joueur non trouvé', playerId);
+      return null;
+    }
+
+    console.log(`🔍 getPlayerRoundData pour ${player.username}:`);
+    console.log(`   - selectedRound: ${this.selectedRound}`);
+    console.log(`   - player.rounds length: ${player.rounds?.length || 0}`);
+    
+    // Si on regarde un round dans l'historique (pas le dernier)
+    if (player.rounds && player.rounds.length > 0 && this.selectedRound <= player.rounds.length) {
+      const roundData = player.rounds[this.selectedRound - 1];
+      console.log(`   ✅ Retourne round historique ${this.selectedRound}:`, {
+        roundScore: roundData.roundScore,
+        totalScore: roundData.totalScore,
+        theoreticalTotal: roundData.theoreticalTotal,
+        cardsCount: roundData.hand?.length || 0
+      });
+      return roundData;
+    }
+    
+    // Sinon, retourner les données actuelles du joueur
+    console.log(`   ✅ Retourne données actuelles du joueur:`, {
+      roundScore: player.roundScore,
+      totalScore: player.totalScore,
+      theoreticalTotal: player.theoreticalTotal,
+      cardsCount: player.hand?.length || 0
+    });
+    return player;
+  }
+
+  /**
    * Retourne le score sécurisé (totalScore des rounds précédents)
    */
   getPlayerSafetyScore(playerId: string): number {
-    if (!this.gameState || !this.gameState.players) {
-      console.log('⚠️ getPlayerSafetyScore: gameState ou players manquant', this.gameState);
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
+      console.log('⚠️ getPlayerSafetyScore: roundData manquant pour', playerId);
       return 0;
     }
-    const player = this.gameState.players.find((p: any) => p.userId === playerId);
-    console.log(`📊 getPlayerSafetyScore pour ${playerId}:`, player?.totalScore, 'Player:', player);
-    return player?.totalScore || 0;
+    console.log(`📊 getPlayerSafetyScore pour ${playerId} round ${this.selectedRound}:`, roundData.totalScore);
+    return roundData.totalScore || 0;
   }
 
   /**
    * Retourne le score total théorique (calculé côté backend)
    */
   getPlayerTotalScore(playerId: string): number {
-    if (!this.gameState || !this.gameState.players) {
-      console.log('⚠️ getPlayerTotalScore: gameState ou players manquant');
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
+      console.log(`⚠️ getPlayerTotalScore: roundData manquant pour ${playerId}`);
       return 0;
     }
-    const player = this.gameState.players.find((p: any) => p.userId === playerId);
-    if (!player) {
-      console.log(`⚠️ getPlayerTotalScore: Joueur ${playerId} non trouvé`);
-      return 0;
-    }
-    const theoreticalTotal = player.theoreticalTotal || 0;
-    console.log(`📊 getPlayerTotalScore pour ${playerId}: theoreticalTotal = ${theoreticalTotal}`);
+    const theoreticalTotal = roundData.theoreticalTotal || 0;
+    console.log(`📊 getPlayerTotalScore pour ${playerId} round ${this.selectedRound}: theoreticalTotal = ${theoreticalTotal}`);
     return theoreticalTotal;
   }
 
@@ -135,24 +186,23 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
    * Retourne le score du round en cours (pour les cartes révélées)
    */
   getPlayerRoundScore(playerId: string): number {
-    if (!this.gameState || !this.gameState.players) {
-      console.log('⚠️ getPlayerRoundScore: gameState ou players manquant');
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
+      console.log('⚠️ getPlayerRoundScore: roundData manquant pour', playerId);
       return 0;
     }
-    const player = this.gameState.players.find((p: any) => p.userId === playerId);
-    console.log(`📊 getPlayerRoundScore pour ${playerId}:`, player?.roundScore, 'Player:', player);
-    return player?.roundScore || 0;
+    console.log(`📊 getPlayerRoundScore pour ${playerId} round ${this.selectedRound}:`, roundData.roundScore);
+    return roundData.roundScore || 0;
   }
 
   getRevealedCards(playerId: string): any[] {
-    if (!this.gameState || !this.gameState.players) {
-      console.log('⚠️ getRevealedCards: gameState ou players manquant');
+    const roundData = this.getPlayerRoundData(playerId);
+    if (!roundData) {
+      console.log('⚠️ getRevealedCards: roundData manquant pour', playerId);
       return [];
     }
-    // gameState.players est un tableau
-    const player = this.gameState.players.find((p: any) => p.userId === playerId);
-    console.log(`🎴 getRevealedCards pour ${playerId}:`, player?.hand?.length || 0, 'cartes');
-    return player?.hand || [];
+    console.log(`🎴 getRevealedCards pour ${playerId} round ${this.selectedRound}:`, roundData.hand?.length || 0, 'cartes');
+    return roundData.hand || [];
   }
 
   getSuitSymbol(suit: string): string {

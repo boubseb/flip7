@@ -12,8 +12,13 @@
       @for (card of cards; track card) {
         <div 
           class="card"
-          [ngClass]="getCardTypeClass(card)">
+          [ngClass]="getCardTypeClass(card)"
+          [class.cancelled]="card.cancelled"
+          [class.used]="card.used">
           <div class="card-value">{{ getCardDisplay(card) }}</div>
+          @if (card.cancelled) {
+            <div class="cancel-line"></div>
+          }
         </div>
       }
     </div>

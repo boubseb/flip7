@@ -57,9 +57,18 @@ export class RevealedCardsComponent {
    * Obtient la classe CSS pour le type de carte spéciale
    */
   getCardTypeClass(card: any): string {
+    const classes: string[] = [];
+    
     if (card.special || card.cardType === 'SPECIAL') {
-      return `card-special card-${card.specialType?.toLowerCase() || 'unknown'}`;
+      classes.push('card-special');
+      classes.push(`card-${card.specialType?.toLowerCase() || 'unknown'}`);
+      
+      // Carte Vie utilisée devient noire
+      if (card.specialType === 'LIFE' && card.used) {
+        classes.push('life-used');
+      }
     }
-    return '';
+    
+    return classes.join(' ');
   }
 }

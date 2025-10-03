@@ -68,9 +68,17 @@
         border-width: 3px;
         
         &.card-life {
-          border-color: #27ae60;
-          color: #27ae60;
-          background: linear-gradient(135deg, #e8f8f5 0%, #d5f4e6 100%);
+          border-color: #dc2626;
+          color: white;
+          background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+          font-weight: 600;
+          
+          // Carte Vie utilisée : devient noire
+          &.life-used {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border-color: #374151;
+            opacity: 0.8;
+          }
         }
         
         &.card-stop {
@@ -83,6 +91,25 @@
           border-color: #3498db;
           color: #3498db;
           background: linear-gradient(135deg, #d6eaf8 0%, #aed6f1 100%);
+        }
+      }
+      
+      // Carte barrée (annulée par la carte Vie)
+      &.cancelled {
+        opacity: 0.6;
+        position: relative;
+        filter: grayscale(30%);
+        
+        .cancel-line {
+          position: absolute;
+          top: 50%;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: #ef4444;
+          transform: translateY(-50%) rotate(-15deg);
+          box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+          z-index: 10;
         }
       }
     }
