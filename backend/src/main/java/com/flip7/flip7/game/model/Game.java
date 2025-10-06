@@ -17,7 +17,6 @@ public class Game {
     private int roundNumber;
     private String winnerId;
     private static final int WINNING_SCORE = 200;
-    private static final int DISTRIBUTION_DELAY_MS = 5000; // 5 secondes entre chaque distribution
 
     public Game(String roomId, List<String> playerIds, Map<String, String> playerNames) {
         this.roomId = roomId;
@@ -67,11 +66,8 @@ public class Game {
         // Réinitialiser et mélanger le deck
         deck.reset();
 
-        // Distribution initiale : 1 carte par joueur
-        dealInitialCards();
-
-        gameState = GameState.PLAYING;
-        System.out.println("✅ Round " + roundNumber + " started! Current player: " + getCurrentPlayer().getUsername());
+        // Note: La distribution initiale sera lancée par GameService.startNewRound()
+        // qui appellera continueInitialDistribution() avec broadcast WebSocket après chaque carte
     }
 
     /**
@@ -207,7 +203,8 @@ public class Game {
             return new ActionResult(false, "Joueur non trouvé");
         }
 
-        if (!player.getUserId().equals(getCurrentPlayer().getUserId())) {
+        // Pendant la distribution (DISTRIBUTING), permettre l'assignation sans vérifier le tour
+        if (gameState != GameState.DISTRIBUTING && !player.getUserId().equals(getCurrentPlayer().getUserId())) {
             return new ActionResult(false, "Ce n'est pas votre tour");
         }
 
@@ -244,6 +241,10 @@ public class Game {
         
         // Ajouter la carte à la main du joueur cible et le forcer à s'arrêter
         targetPlayer.addCard(card);
+        // Pendant la distribution, initialiser le status si besoin
+        if (gameState == GameState.DISTRIBUTING && targetPlayer.getStatus() != PlayerStatus.PLAYING) {
+            targetPlayer.setStatus(PlayerStatus.PLAYING);
+        }
         targetPlayer.setStatus(PlayerStatus.FORCED_STOP); // FORCED_STOP au lieu de STOPPED
         
         System.out.println("🛑 " + player.getUsername() + " a assigné la carte STOP à " + targetPlayer.getUsername());
@@ -255,12 +256,17 @@ public class Game {
             targetPlayer.setRemainingForcedDraws(0);
         }
         
-        // Si le joueur s'est stoppé lui-même ou si c'est le joueur actuel qui est stoppé
-        if (targetPlayer.getUserId().equals(getCurrentPlayer().getUserId())) {
-            nextPlayer();
+        // Si on est en phase de distribution, GameService reprendra la distribution
+        if (gameState == GameState.DISTRIBUTING) {
+            // Ne rien faire - GameService appellera continueInitialDistribution() après broadcast
         } else {
-            // Sinon, passer simplement au joueur suivant
-            nextPlayer();
+            // Pendant le jeu normal, appeler nextPlayer()
+            if (targetPlayer.getUserId().equals(getCurrentPlayer().getUserId())) {
+                nextPlayer();
+            } else {
+                // Sinon, passer simplement au joueur suivant
+                nextPlayer();
+            }
         }
         
         return new ActionResult(true, targetPlayer.getUsername() + " a reçu la carte Stop et est forcé de s'arrêter !");
@@ -271,6 +277,11 @@ public class Game {
         GamePlayer player = getPlayerById(playerId);
         if (player == null) {
             return new ActionResult(false, "Joueur non trouvé");
+        }
+        
+        // Pendant la distribution (DISTRIBUTING), permettre l'assignation sans vérifier le tour
+        if (gameState != GameState.DISTRIBUTING && !player.getUserId().equals(getCurrentPlayer().getUserId())) {
+            return new ActionResult(false, "Ce n'est pas votre tour");
         }
 
         Card card = player.getHand().stream()
@@ -310,6 +321,11 @@ public class Game {
         // Ajouter la carte à la main du joueur cible
         targetPlayer.addCard(card);
         
+        // Pendant la distribution, initialiser le status si besoin
+        if (gameState == GameState.DISTRIBUTING && targetPlayer.getStatus() != PlayerStatus.PLAYING) {
+            targetPlayer.setStatus(PlayerStatus.PLAYING);
+        }
+        
         System.out.println("➕3️⃣ " + player.getUsername() + " a assigné la carte DRAW_THREE à " + targetPlayer.getUsername());
         
         // Vérifier s'il y a une pioche forcée en cours à reprendre
@@ -330,7 +346,11 @@ public class Game {
                      (((SpecialCard) c).getSpecialType() == SpecialType.STOP || 
                       ((SpecialCard) c).getSpecialType() == SpecialType.DRAW_THREE));
         
-        if (!hasPendingSpecial) {
+        // Si on est en phase de distribution, GameService reprendra la distribution
+        if (gameState == GameState.DISTRIBUTING && !hasPendingSpecial) {
+            // Ne rien faire - GameService appellera continueInitialDistribution() après broadcast
+        } else if (!hasPendingSpecial) {
+            // Pendant le jeu normal, appeler nextPlayer()
             nextPlayer();
         }
         
@@ -583,55 +603,59 @@ public class Game {
         System.out.println("🎮 GAME OVER - Partie terminée !");
     }
 
-    /**
-     * Démarre le prochain round (appelé par le joueur actif)
-     */
-    public String startNextRound(String userId) {
-        if (gameState != GameState.WAITING_NEXT_ROUND) {
-            throw new IllegalStateException("Le jeu n'est pas en attente du prochain round");
-        }
 
-        GamePlayer currentPlayer = getCurrentPlayer();
-        if (currentPlayer == null || !currentPlayer.getUserId().equals(userId)) {
-            throw new IllegalStateException("Ce n'est pas à vous de démarrer le round");
-        }
-
-        // Appeler la méthode commune qui incrémente le round et distribue les cartes
-        startNewRound();
-
-        System.out.println("🎮 C'est au tour de " + currentPlayer.getUsername());
-        return "Round " + roundNumber + " démarré !";
-    }
 
     /**
-     * Distribue les cartes initiales (1 carte par joueur)
-     * Si une carte Stop est distribuée, elle reste en pending pour assignation
+     * Continue la distribution initiale des cartes (1 carte par joueur)
+     * Distribue UNE carte au prochain joueur qui n'en a pas encore.
+     * Si c'est une carte spéciale (Stop/DrawThree), s'arrête et attend l'assignation.
+     * Sinon, continue automatiquement jusqu'à ce que tous aient une carte.
+     * 
+     * PUBLIC pour permettre à GameService de broadcaster après chaque carte distribuée.
+     * Retourne true si la distribution continue, false si elle est terminée ou en pause.
      */
-    private void dealInitialCards() {
-        System.out.println("🎴 Distributing initial cards to all players...");
-        for (GamePlayer player : players) {
-            if (player.getStatus() != PlayerStatus.ELIMINATED) {
+    public boolean continueInitialDistribution() {
+        System.out.println("🎴 Continuing initial distribution...");
+        
+        // Trouver le prochain joueur sans carte
+        for (int i = 0; i < players.size(); i++) {
+            GamePlayer player = players.get(i);
+            if (player.getStatus() != PlayerStatus.ELIMINATED && player.getHand().isEmpty()) {
                 Card card = deck.draw();
+                player.addCard(card);
+                player.setStatus(PlayerStatus.PLAYING);
                 
-                // Si c'est une carte Stop ou DrawThree, la marquer comme pending
+                System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ", roundScore: " + player.getRoundScore() + ")");
+                
+                // Si c'est une carte Stop ou DrawThree, marquer comme pending et ARRÊTER
                 if (card instanceof SpecialCard) {
                     SpecialCard specialCard = (SpecialCard) card;
                     SpecialType type = specialCard.getSpecialType();
                     
                     if (type == SpecialType.STOP) {
                         specialCard.setPending(true);
-                        System.out.println("   🛑 " + player.getUsername() + " received a STOP card (pending assignment)");
+                        // IMPORTANT : Mettre à jour currentPlayerIndex pour que le frontend sache qui doit assigner
+                        currentPlayerIndex = i;
+                        System.out.println("   🛑 STOP card - distribution paused, waiting for " + player.getUsername() + " to assign (index " + i + ")");
+                        return false; // ARRÊT ICI - attente de l'assignation
                     } else if (type == SpecialType.DRAW_THREE) {
                         specialCard.setPending(true);
-                        System.out.println("   ➕3️⃣ " + player.getUsername() + " received a DRAW_THREE card (pending assignment)");
+                        // IMPORTANT : Mettre à jour currentPlayerIndex pour que le frontend sache qui doit assigner
+                        currentPlayerIndex = i;
+                        System.out.println("   ➕3️⃣ DRAW_THREE card - distribution paused, waiting for " + player.getUsername() + " to assign (index " + i + ")");
+                        return false; // ARRÊT ICI - attente de l'assignation
                     }
                 }
                 
-                player.addCard(card);
-                player.setStatus(PlayerStatus.PLAYING);
-                System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ", roundScore: " + player.getRoundScore() + ")");
+                // Pas de carte spéciale, continuer (GameService rappellera cette méthode)
+                return true; // Indique qu'il faut continuer la distribution
             }
         }
+        
+        // Tous les joueurs ont reçu leur carte initiale
+        gameState = GameState.PLAYING;
+        System.out.println("✅ Initial distribution complete! Round " + roundNumber + " started! Current player: " + getCurrentPlayer().getUsername());
+        return false; // Distribution terminée
     }
 
     /**

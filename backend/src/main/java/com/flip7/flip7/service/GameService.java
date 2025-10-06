@@ -6,6 +6,7 @@ import com.flip7.flip7.game.card.Card;
 import com.flip7.flip7.game.card.NumberCard;
 import com.flip7.flip7.game.card.OperatorCard;
 import com.flip7.flip7.game.card.SpecialCard;
+import com.flip7.flip7.entity.User;
 import com.flip7.flip7.game.model.Game;
 import com.flip7.flip7.game.model.GamePlayer;
 import com.flip7.flip7.game.model.GameState;
@@ -56,7 +57,7 @@ public class GameService {
         Map<String, String> playerNames = new HashMap<>();
         for (String playerId : room.getPlayers()) {
             try {
-                com.flip7.flip7.entity.User user = roomService.getUserRepository()
+                User user = roomService.getUserRepository()
                     .findById(playerId)
                     .orElse(null);
                 if (user != null) {
@@ -98,7 +99,7 @@ public class GameService {
     }
     
     /**
-     * Démarre un nouveau round avec distribution progressive (5 secondes entre chaque carte)
+     * Démarre un nouveau round avec distribution progressive carte par carte
      */
     public void startNewRound(String roomId) {
         Game game = activeGames.get(roomId);
@@ -108,19 +109,34 @@ public class GameService {
 
         game.startNewRound();
         
-        System.out.println("📋 After startNewRound(), checking player hands:");
-        for (GamePlayer player : game.getPlayers()) {
-            System.out.println("   - " + player.getUsername() + ": " + player.getHand().size() + " cards");
-        }
-        
         // Sauvegarder le début du round dans l'historique
         saveRoundStart(roomId, game);
 
-        // Broadcaster l'état avec la carte initiale pour tous les joueurs
-        // Tous les joueurs ont déjà reçu 1 carte dans game.startNewRound()
+        // Lancer la distribution initiale avec broadcast après chaque carte
+        continueDistributionWithBroadcast(roomId, game);
+    }
+    
+    /**
+     * Continue la distribution en appelant game.continueInitialDistribution()
+     * et broadcaste l'état après chaque carte distribuée
+     */
+    private void continueDistributionWithBroadcast(String roomId, Game game) {
+        System.out.println("📡 Distributing next card and broadcasting...");
+        
+        boolean shouldContinue = game.continueInitialDistribution();
+        
+        // Broadcaster l'état après la distribution de cette carte
         broadcastGameState(roomId, game);
         
-        System.out.println("✅ Round started - All players received their first card");
+        // Si la distribution doit continuer (pas de carte spéciale, pas terminé)
+        if (shouldContinue) {
+            System.out.println("   ✅ Card distributed, continuing...");
+            continueDistributionWithBroadcast(roomId, game); // Récursion
+        } else if (game.getGameState() == GameState.DISTRIBUTING) {
+            System.out.println("   ⏸️  Distribution paused - waiting for special card assignment");
+        } else {
+            System.out.println("   ✅ Distribution complete - game started!");
+        }
     }
     
     /**
@@ -189,6 +205,12 @@ public class GameService {
 
         // Broadcaster l'état du jeu
         broadcastGameState(roomId, game);
+        
+        // Si on est en phase de distribution, reprendre la distribution
+        if (game.getGameState() == GameState.DISTRIBUTING) {
+            System.out.println("▶️  Resuming distribution after Stop card assignment");
+            continueDistributionWithBroadcast(roomId, game);
+        }
 
         // Si le round est terminé, calculer les scores
         if (game.isRoundOver()) {
@@ -213,6 +235,12 @@ public class GameService {
 
         // Broadcaster l'état du jeu
         broadcastGameState(roomId, game);
+        
+        // Si on est en phase de distribution, reprendre la distribution
+        if (game.getGameState() == GameState.DISTRIBUTING) {
+            System.out.println("▶️  Resuming distribution after DrawThree card assignment");
+            continueDistributionWithBroadcast(roomId, game);
+        }
 
         // Si le round est terminé, calculer les scores
         if (game.isRoundOver()) {
@@ -233,12 +261,23 @@ public class GameService {
             throw new IllegalStateException("Partie non trouvée");
         }
 
-        String message = game.startNextRound(userId);
+        // Vérifier que le jeu est en attente du prochain round
+        if (game.getGameState() != GameState.WAITING_NEXT_ROUND) {
+            throw new IllegalStateException("Le jeu n'est pas en attente du prochain round");
+        }
 
-        // Broadcaster l'état du jeu mis à jour
-        broadcastGameState(roomId, game);
+        GamePlayer currentPlayer = game.getCurrentPlayer();
+        if (currentPlayer == null || !currentPlayer.getUserId().equals(userId)) {
+            throw new IllegalStateException("Ce n'est pas à vous de démarrer le round");
+        }
 
-        return message;
+        // Appeler la méthode startNewRound avec distribution progressive
+        game.startNewRound(); // Initialise le round
+        saveRoundStart(roomId, game); // Sauvegarde
+        continueDistributionWithBroadcast(roomId, game); // Lance la distribution
+
+        System.out.println("🎮 C'est au tour de " + currentPlayer.getUsername());
+        return "Round " + game.getRoundNumber() + " démarré !";
     }
 
     /**
@@ -455,7 +494,8 @@ public class GameService {
                     cardMap.put("specialType", specCard.getSpecialType().toString());
                     cardMap.put("special", true);
                     cardMap.put("used", specCard.isUsed());
-                    System.out.println("         - SpecialCard: " + specCard.getSpecialType() + (specCard.isUsed() ? " (utilisée)" : ""));
+                    cardMap.put("pending", specCard.isPending());
+                    System.out.println("         - SpecialCard: " + specCard.getSpecialType() + (specCard.isUsed() ? " (utilisée)" : "") + (specCard.isPending() ? " (pending)" : ""));
                 }
                 
                 handCards.add(cardMap);
@@ -493,6 +533,7 @@ public class GameService {
                         cardMap.put("specialType", specCard.getSpecialType().toString());
                         cardMap.put("special", true);
                         cardMap.put("used", specCard.isUsed());
+                        cardMap.put("pending", specCard.isPending());
                     }
                     roundHandCards.add(cardMap);
                 }
