@@ -32,15 +32,15 @@
             <div class="dropdown-menu">
               <button class="menu-item" (click)="openProfil()">
                 <span class="menu-icon">👤</span>
-                <span>Profil</span>
+                <span>{{ 'header.profile' | translate }}</span>
               </button>
               <button class="menu-item" (click)="openStats()">
                 <span class="menu-icon">📊</span>
-                <span>Stats</span>
+                <span>{{ 'profile.stats' | translate }}</span>
               </button>
               <button class="menu-item logout" (click)="onLogout()">
                 <span class="menu-icon">🚪</span>
-                <span>Log out</span>
+                <span>{{ 'header.logout' | translate }}</span>
               </button>
             </div>
           }

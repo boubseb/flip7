@@ -1,12 +1,12 @@
 <div class="login-container">
     <form class="login-form">
         <h1 class="connect">
-            Login
+            {{ 'login.title' | translate }}
         </h1>
         <div class="input-container">
             <div class="inputLogin">
                 <label for="login" class="formatText">
-                    Username :
+                    {{ 'login.username' | translate }} :
                 </label>
             </div>
 
@@ -17,7 +17,7 @@
 
             <div class="inputLogin">
                 <label for="password" class="formatText">
-                    Password :
+                    {{ 'login.password' | translate }} :
                 </label>
             </div>
 
@@ -26,12 +26,12 @@
                     [ngModelOptions]="{standalone: true}" />
             </div>
         </div>
-        <button (click)="onLogin(login.login,login.password)" class="connectButton">Connexion</button>
+        <button (click)="onLogin(login.login,login.password)" class="connectButton">{{ 'login.loginButton' | translate }}</button>
         <div>
-            <a class="registerButton" routerLink="/register">register</a>
+            <a class="registerButton" routerLink="/register">{{ 'login.register' | translate }}</a>
 
             <a class="forgot-password">
-                forget password ?
+                {{ 'login.forgotPassword' | translate }}
             </a>
         </div>
 

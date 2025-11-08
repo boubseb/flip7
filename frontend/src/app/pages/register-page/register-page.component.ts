@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { User } from '../../models/user/user';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
 import { FooterComponent } from '../../components/footer/footer.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-register-page',
   standalone: true,
-  imports: [ReactiveFormsModule, FooterComponent],
+  imports: [ReactiveFormsModule, FooterComponent, TranslateModule],
   templateUrl: './register-page.component.html',
   styleUrl: './register-page.component.scss'
 })

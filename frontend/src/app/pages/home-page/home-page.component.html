@@ -1,9 +1,9 @@
 @if(isLogin$| async){
     <div class="main-container">
     <div class="buttons-container">
-        <button [routerLink]="['/room']" [queryParams]="{mode: 'create'}" class="button-home">Create room</button>
-        <button [routerLink]="['/room']" [queryParams]="{mode: 'join'}" class="button-home">Join Room</button>
-        <button routerLink="/offline" class="button-home">offline</button>
+        <button [routerLink]="['/room']" [queryParams]="{mode: 'create'}" class="button-home">{{ 'home.createRoom' | translate }}</button>
+        <button [routerLink]="['/room']" [queryParams]="{mode: 'join'}" class="button-home">{{ 'home.joinRoom' | translate }}</button>
+        <button routerLink="/offline" class="button-home">Offline</button>
 
     </div>
 </div>
@@ -11,9 +11,9 @@
 @else {
 <div class="main-container">
     <div class="buttons-container">
-        <button routerLink="/login" class="button-home">login</button>
-        <button routerLink="/register" class="button-home">register</button>
-        <button routerLink="/offline" class="button-home">offline</button>
+        <button routerLink="/login" class="button-home">{{ 'login.title' | translate }}</button>
+        <button routerLink="/register" class="button-home">{{ 'register.title' | translate }}</button>
+        <button routerLink="/offline" class="button-home">Offline</button>
 
     </div>
 </div>

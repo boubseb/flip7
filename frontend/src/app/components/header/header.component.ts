@@ -7,6 +7,7 @@ import { AuthenticationService } from '../../services/authentication/authentific
 import { ProfilComponent } from '../profil/profil.component';
 import { ThemeService, Theme } from '../../services/theme/theme.service';
 import { LanguageService, Language } from '../../services/language/language.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-header',
@@ -15,7 +16,8 @@ import { LanguageService, Language } from '../../services/language/language.serv
     CommonModule,
     RulesComponent,
     ProfilComponent,
-    RouterLink
+    RouterLink,
+    TranslateModule
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',

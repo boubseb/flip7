@@ -1,9 +1,9 @@
 <div class="register-container">
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-        <h1>INSCRIPTION</h1>
+        <h1>{{ 'register.title' | translate }}</h1>
 
-        <label for="name">Nom *</label>
-        <input id="name" formControlName="name" type="text" required title="Veuillez entrer votre nom.">
+        <label for="name">{{ 'register.username' | translate }} *</label>
+        <input id="name" formControlName="name" type="text" required [title]="'register.username' | translate">
 
         <label for="lastName">Prénom *</label>
         <input id="lastName" formControlName="lastName" type="text" required title="Veuillez entrer votre prénom.">
@@ -15,19 +15,19 @@
         <label for="pseudo">Pseudo *</label>
         <input id="pseudo" formControlName="pseudo" type="text" required title="Veuillez entrer votre pseudo.">
 
-        <label for="Mail">Adresse mail *</label>
+        <label for="Mail">{{ 'register.email' | translate }} *</label>
         <input id="Mail" formControlName="mailAddress" type="email" required
-            title="Veuillez entrer votre adresse mail.">
+            [title]="'register.email' | translate">
 
-        <label for="password">Mot de passe * (8 caractères min, num, maj, spé)</label>
+        <label for="password">{{ 'register.password' | translate }} * (8 caractères min, num, maj, spé)</label>
         <input id="password" formControlName="password" type="password" required
-            title="Veuillez entrer un mot de passe.">
+            [title]="'register.password' | translate">
 
-        <label for="confirmationPassword">Confirmation du mot de passe *</label>
+        <label for="confirmationPassword">{{ 'register.confirmPassword' | translate }} *</label>
         <input id="confirmationPassword" formControlName="passwordConfirmation" type="password" required
-            title="Veuillez confirmer votre mot de passe.">
+            [title]="'register.confirmPassword' | translate">
 
-        <button id="register-button" type="submit">S'INSCRIRE</button>
+        <button id="register-button" type="submit">{{ 'register.registerButton' | translate }}</button>
 </form>
 </div>
 <app-footer></app-footer>

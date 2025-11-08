@@ -6,13 +6,14 @@ import { Router, RouterLink,  } from '@angular/router';
 import { Login } from '../../models/login/login.model';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
 import { FooterComponent } from '../../components/footer/footer.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 
 @Component({
   selector: 'app-popup',
   standalone: true,
-  imports: [ MatButtonModule, FormsModule, RouterLink, FooterComponent],
+  imports: [ MatButtonModule, FormsModule, RouterLink, FooterComponent, TranslateModule],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss'
 })
