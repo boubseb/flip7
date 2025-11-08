@@ -13,6 +13,7 @@ public class Game {
     private Deck deck;
     private List<GamePlayer> players;
     private int currentPlayerIndex;
+    private int initialPlayerIndexForRound; // Sauvegarde du joueur de départ du round
     private GameState gameState;
     private int roundNumber;
     private String winnerId;
@@ -53,10 +54,13 @@ public class Game {
             currentPlayerIndex = new java.util.Random().nextInt(players.size());
             System.out.println("🎲 First round - Random starting player: " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
         } else {
-            // Rounds suivants : faire tourner le joueur de départ
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+            // Rounds suivants : faire tourner le joueur de départ à partir du joueur initial du round précédent
+            currentPlayerIndex = (initialPlayerIndexForRound + 1) % players.size();
             System.out.println("🔄 Round " + roundNumber + " - Starting player rotated to: " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
         }
+
+        // Sauvegarder le joueur de départ pour le restaurer après la distribution
+        initialPlayerIndexForRound = currentPlayerIndex;
 
         // Réinitialiser les joueurs
         for (GamePlayer player : players) {
@@ -160,6 +164,7 @@ public class Game {
         if (player.getLifeCardsInHand() > 0) {
             // Le joueur peut utiliser sa carte Vie
             player.useLifeCard();
+            nextPlayer(); // Passer au joueur suivant après utilisation de la carte Vie
             return new DrawResult(true, "Double ! Carte Vie utilisée pour survivre.", drawnCard, false, true);
         } else {
             // Le joueur est éliminé - son score de round passe à 0
@@ -239,16 +244,25 @@ public class Game {
         // Retirer la carte de la main du joueur qui l'a piochée
         player.removeCard(card);
         
-        // Ajouter la carte à la main du joueur cible et le forcer à s'arrêter
+        // Ajouter la carte Stop à la main du joueur cible et le forcer à s'arrêter
         targetPlayer.addCard(card);
-        // Pendant la distribution, initialiser le status si besoin
-        if (gameState == GameState.DISTRIBUTING && targetPlayer.getStatus() != PlayerStatus.PLAYING) {
+        
+        // Initialiser le status si besoin (même s'il n'a pas encore de carte initiale)
+        if (targetPlayer.getStatus() != PlayerStatus.PLAYING && targetPlayer.getStatus() != PlayerStatus.ELIMINATED) {
             targetPlayer.setStatus(PlayerStatus.PLAYING);
         }
-        targetPlayer.setStatus(PlayerStatus.FORCED_STOP); // FORCED_STOP au lieu de STOPPED
+        
+        // Le forcer à s'arrêter immédiatement (même avec 0 carte si pas encore distribué)
+        targetPlayer.setStatus(PlayerStatus.FORCED_STOP);
         
         System.out.println("🛑 " + player.getUsername() + " a assigné la carte STOP à " + targetPlayer.getUsername());
-        System.out.println("   Score de " + targetPlayer.getUsername() + " : " + targetPlayer.getRoundScore() + " (incluant la carte Stop)");
+        
+        // Si le joueur n'avait pas encore de carte, il reste avec 0 point + la Stop
+        if (gameState == GameState.DISTRIBUTING && targetPlayer.getHand().size() == 1) {
+            System.out.println("   ⚠️  " + targetPlayer.getUsername() + " n'avait pas encore de carte - il est stoppé avec 0 point (seulement la carte Stop)");
+        } else {
+            System.out.println("   Score de " + targetPlayer.getUsername() + " : " + targetPlayer.getRoundScore() + " (incluant la carte Stop)");
+        }
         
         // Vérifier s'il y avait une pioche forcée en cours - la Stop l'annule
         if (targetPlayer.getRemainingForcedDraws() > 0) {
@@ -350,7 +364,8 @@ public class Game {
         if (gameState == GameState.DISTRIBUTING && !hasPendingSpecial) {
             // Ne rien faire - GameService appellera continueInitialDistribution() après broadcast
         } else if (!hasPendingSpecial) {
-            // Pendant le jeu normal, appeler nextPlayer()
+            // Pendant le jeu normal, passer au joueur suivant dans l'ordre
+            // Exemple: A donne +3 à C, alors: A → pioche → C pioche 3 → tour de B → tour de C
             nextPlayer();
         }
         
@@ -617,13 +632,26 @@ public class Game {
     public boolean continueInitialDistribution() {
         System.out.println("🎴 Continuing initial distribution...");
         
-        // Trouver le prochain joueur sans carte
+        // Trouver le prochain joueur sans carte ET qui n'est pas déjà stoppé/éliminé
         for (int i = 0; i < players.size(); i++) {
             GamePlayer player = players.get(i);
-            if (player.getStatus() != PlayerStatus.ELIMINATED && player.getHand().isEmpty()) {
-                Card card = deck.draw();
-                player.addCard(card);
-                player.setStatus(PlayerStatus.PLAYING);
+            
+            // Skip les joueurs éliminés, stoppés, ou qui ont déjà une carte
+            if (player.getStatus() == PlayerStatus.ELIMINATED) {
+                continue;
+            }
+            if (player.getStatus() == PlayerStatus.FORCED_STOP || player.getStatus() == PlayerStatus.STOPPED) {
+                System.out.println("   ⏭️  Skipping " + player.getUsername() + " - already stopped (no initial card)");
+                continue;
+            }
+            if (!player.getHand().isEmpty()) {
+                continue;
+            }
+            
+            // Ce joueur a besoin d'une carte
+            Card card = deck.draw();
+            player.addCard(card);
+            player.setStatus(PlayerStatus.PLAYING);
                 
                 System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ", roundScore: " + player.getRoundScore() + ")");
                 
@@ -649,11 +677,15 @@ public class Game {
                 
                 // Pas de carte spéciale, continuer (GameService rappellera cette méthode)
                 return true; // Indique qu'il faut continuer la distribution
-            }
         }
         
         // Tous les joueurs ont reçu leur carte initiale
         gameState = GameState.PLAYING;
+        
+        // Restaurer le joueur de départ initial du round
+        // (car currentPlayerIndex a pu changer pendant la distribution pour les assignations)
+        currentPlayerIndex = initialPlayerIndexForRound;
+        
         System.out.println("✅ Initial distribution complete! Round " + roundNumber + " started! Current player: " + getCurrentPlayer().getUsername());
         return false; // Distribution terminée
     }
