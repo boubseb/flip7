@@ -54,9 +54,9 @@ public class Game {
             currentPlayerIndex = new java.util.Random().nextInt(players.size());
             System.out.println("🎲 First round - Random starting player: " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
         } else {
-            // Rounds suivants : faire tourner le joueur de départ à partir du joueur initial du round précédent
-            currentPlayerIndex = (initialPlayerIndexForRound + 1) % players.size();
-            System.out.println("🔄 Round " + roundNumber + " - Starting player rotated to: " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
+            // Rounds suivants : currentPlayerIndex a déjà été calculé dans endRound()
+            // On le garde tel quel
+            System.out.println("🔄 Round " + roundNumber + " - Starting player (already set): " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
         }
 
         // Sauvegarder le joueur de départ pour le restaurer après la distribution
@@ -237,15 +237,26 @@ public class Game {
             return new ActionResult(false, "Joueur cible non trouvé");
         }
 
+        System.out.println("🛑 AVANT assignation:");
+        System.out.println("   - Assigneur: " + player.getUsername() + " (main: " + player.getHand().size() + " cartes)");
+        System.out.println("   - Cible: " + targetPlayer.getUsername() + " (main: " + targetPlayer.getHand().size() + " cartes, status: " + targetPlayer.getStatus() + ")");
+        System.out.println("   - Carte Stop ID: " + card.getId());
+
         // Assigner la carte au joueur cible
         stopCard.setPending(false);
         stopCard.setAssignedToPlayerId(targetPlayerId);
         
         // Retirer la carte de la main du joueur qui l'a piochée
-        player.removeCard(card);
+        boolean removed = player.removeCard(card);
+        System.out.println("   - Carte retirée de " + player.getUsername() + " ? " + removed);
         
         // Ajouter la carte Stop à la main du joueur cible et le forcer à s'arrêter
         targetPlayer.addCard(card);
+        System.out.println("   - Carte ajoutée à " + targetPlayer.getUsername());
+        
+        System.out.println("🛑 APRÈS assignation:");
+        System.out.println("   - Assigneur: " + player.getUsername() + " (main: " + player.getHand().size() + " cartes)");
+        System.out.println("   - Cible: " + targetPlayer.getUsername() + " (main: " + targetPlayer.getHand().size() + " cartes)");
         
         // Initialiser le status si besoin (même s'il n'a pas encore de carte initiale)
         if (targetPlayer.getStatus() != PlayerStatus.PLAYING && targetPlayer.getStatus() != PlayerStatus.ELIMINATED) {
@@ -528,8 +539,20 @@ public class Game {
 
         // Si le jeu continue, passer en attente du prochain round
         if (gameState != GameState.GAME_OVER) {
+            // Calculer qui va commencer le prochain round AVANT de passer à WAITING_NEXT_ROUND
+            // pour que le frontend affiche la bonne personne
+            int nextRoundStarterIndex;
+            if (roundNumber == 0) {
+                // Cas impossible normalement, mais on gère par sécurité
+                nextRoundStarterIndex = new java.util.Random().nextInt(players.size());
+            } else {
+                // Faire tourner à partir du joueur qui a commencé ce round
+                nextRoundStarterIndex = (initialPlayerIndexForRound + 1) % players.size();
+            }
+            
+            currentPlayerIndex = nextRoundStarterIndex;
             gameState = GameState.WAITING_NEXT_ROUND;
-            System.out.println("⏳ En attente que " + getCurrentPlayer().getUsername() + " démarre le round " + (roundNumber + 1));
+            System.out.println("⏳ En attente que " + getCurrentPlayer().getUsername() + " démarre le round " + (roundNumber + 1) + " (index " + currentPlayerIndex + ")");
         }
     }
 

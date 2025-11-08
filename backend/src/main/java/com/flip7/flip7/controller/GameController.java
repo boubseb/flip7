@@ -380,4 +380,20 @@ public class GameController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    /**
+     * ENDPOINT DE TEST - Force une distribution avec carte Stop au 2ème joueur
+     * Usage: POST /api/game/{roomId}/test/distribution-stop
+     */
+    @PostMapping("/{roomId}/test/distribution-stop")
+    public ResponseEntity<?> testDistributionWithStop(
+            @PathVariable String roomId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            gameService.testDistributionWithStopCard(roomId);
+            return ResponseEntity.ok(Map.of("message", "Test: Distribution avec carte Stop au 2ème joueur"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

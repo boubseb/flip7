@@ -938,4 +938,67 @@ public class GameService {
         public java.util.List<java.util.Map<String, Object>> getHand() { return hand; }
         public void setHand(java.util.List<java.util.Map<String, Object>> hand) { this.hand = hand; }
     }
+
+    /**
+     * MÉTHODE DE TEST - Simule une distribution avec une carte Stop au 2ème joueur
+     * Cette méthode permet de tester facilement le scénario:
+     * - Joueur 1 reçoit une carte normale
+     * - Joueur 2 reçoit une carte Stop (distribution s'arrête)
+     * - Joueur 2 doit pouvoir assigner à TOUS les autres joueurs (même ceux sans carte)
+     */
+    public void testDistributionWithStopCard(String roomId) {
+        Game game = getGame(roomId);
+        if (game == null) {
+            throw new RuntimeException("Game not found");
+        }
+
+        System.out.println("\n🧪 === TEST: Distribution avec carte Stop ===");
+        
+        // 1. Vérifier qu'on est dans le bon état
+        if (game.getGameState() != GameState.WAITING && game.getGameState() != GameState.WAITING_NEXT_ROUND) {
+            throw new RuntimeException("Le jeu doit être en attente pour lancer ce test");
+        }
+
+        // 2. Démarrer un nouveau round normalement
+        game.startNewRound();
+        System.out.println("✅ Round démarré");
+        
+        // 3. Forcer la distribution manuelle:
+        //    - Joueur 1: carte normale (NumberCard 1)
+        //    - Joueur 2: carte Stop
+        
+        if (game.getPlayers().size() < 2) {
+            throw new RuntimeException("Il faut au moins 2 joueurs pour ce test");
+        }
+
+        // Donner une carte normale au joueur 1
+        GamePlayer player1 = game.getPlayers().get(0);
+        Card normalCard = new NumberCard(1);
+        player1.addCard(normalCard);
+        player1.setStatus(PlayerStatus.PLAYING);
+        System.out.println("   ✅ " + player1.getUsername() + " a reçu: " + normalCard.getDisplayName());
+
+        // Donner une carte Stop au joueur 2
+        GamePlayer player2 = game.getPlayers().get(1);
+        SpecialCard stopCard = new SpecialCard(com.flip7.flip7.game.card.SpecialType.STOP);
+        stopCard.setPending(true); // IMPORTANT: marquer comme pending
+        player2.addCard(stopCard);
+        player2.setStatus(PlayerStatus.PLAYING);
+        game.setCurrentPlayerIndex(1); // C'est le joueur 2 qui doit assigner
+        System.out.println("   🛑 " + player2.getUsername() + " a reçu: CARTE STOP (pending=true)");
+        System.out.println("   ⏸️  Distribution en pause - " + player2.getUsername() + " doit assigner");
+        
+        // Les autres joueurs restent en WAITING (pas encore de carte)
+        for (int i = 2; i < game.getPlayers().size(); i++) {
+            System.out.println("   ⏳ " + game.getPlayers().get(i).getUsername() + " attend sa carte...");
+        }
+
+        // 4. Broadcaster l'état
+        broadcastGameState(roomId);
+        
+        System.out.println("🧪 === TEST PRÊT ===");
+        System.out.println("   " + player2.getUsername() + " doit maintenant assigner la carte Stop");
+        System.out.println("   Il devrait voir TOUS les joueurs (sauf lui-même) dans la modale");
+        System.out.println("   Y compris ceux qui n'ont pas encore de carte");
+    }
 }

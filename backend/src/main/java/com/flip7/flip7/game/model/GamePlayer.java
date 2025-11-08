@@ -52,11 +52,12 @@ public class GamePlayer {
     /**
      * Retire une carte de la main
      */
-    public void removeCard(Card card) {
-        hand.remove(card);
-        if (card instanceof SpecialCard && ((SpecialCard) card).getSpecialType() == SpecialType.LIFE) {
+    public boolean removeCard(Card card) {
+        boolean removed = hand.remove(card);
+        if (removed && card instanceof SpecialCard && ((SpecialCard) card).getSpecialType() == SpecialType.LIFE) {
             lifeCardsInHand--;
         }
+        return removed;
     }
 
     /**

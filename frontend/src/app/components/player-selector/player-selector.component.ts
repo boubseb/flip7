@@ -21,10 +21,16 @@ export class PlayerSelectorComponent {
   @Output() onCancel = new EventEmitter<void>();
 
   /**
-   * Vérifie si un joueur est éligible (statut PLAYING uniquement)
+   * Vérifie si un joueur est éligible
+   * Tous les joueurs SAUF les éliminés et soi-même
    */
   isPlayerEligible(player: any): boolean {
-    return player.status === PlayerStatus.PLAYING;
+    // Ne peut pas s'assigner à soi-même
+    if (player.userId === this.currentUserId) {
+      return false;
+    }
+    // Tous les joueurs sauf les éliminés sont éligibles
+    return player.status !== PlayerStatus.ELIMINATED;
   }
 
   /**

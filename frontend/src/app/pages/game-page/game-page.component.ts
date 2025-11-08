@@ -181,8 +181,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
         }
 
         // Détecter l'état WAITING_NEXT_ROUND pour afficher le popup
+        // Pour le joueur actuel : popup avec bouton "Commencer"
+        // Pour les autres : popup d'attente
         if (response.gameState === 'WAITING_NEXT_ROUND') {
-          console.log('⏳ Waiting for next round - showing popup');
+          if (this.isMyTurn) {
+            console.log('⏳ Waiting for next round - showing START button (YOUR turn)');
+          } else {
+            console.log('⏳ Waiting for next round - showing WAITING message for', this.getCurrentPlayerUsername());
+          }
           this.showStartRoundPopup = true;
         } else {
           this.showStartRoundPopup = false;
