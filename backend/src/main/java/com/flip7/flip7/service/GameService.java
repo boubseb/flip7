@@ -112,8 +112,10 @@ public class GameService {
         // Sauvegarder le début du round dans l'historique
         saveRoundStart(roomId, game);
 
-        // Lancer la distribution initiale avec broadcast après chaque carte
-        continueDistributionWithBroadcast(roomId, game);
+        // NOUVEAU: Pas de distribution automatique - broadcaster directement l'état PLAYING
+        // Les joueurs peuvent maintenant HIT ou STOP
+        System.out.println("📡 Broadcasting game state - round started, players can HIT/STOP");
+        broadcastGameState(roomId, game);
     }
     
     /**

@@ -46,7 +46,6 @@ public class Game {
      */
     public void startNewRound() {
         roundNumber++;
-        gameState = GameState.DISTRIBUTING;
         
         // Déterminer le joueur de départ
         if (roundNumber == 1) {
@@ -59,7 +58,7 @@ public class Game {
             System.out.println("🔄 Round " + roundNumber + " - Starting player (already set): " + getCurrentPlayer().getUsername() + " (index " + currentPlayerIndex + ")");
         }
 
-        // Sauvegarder le joueur de départ pour le restaurer après la distribution
+        // Sauvegarder le joueur de départ
         initialPlayerIndexForRound = currentPlayerIndex;
 
         // Réinitialiser les joueurs
@@ -70,8 +69,10 @@ public class Game {
         // Réinitialiser et mélanger le deck
         deck.reset();
 
-        // Note: La distribution initiale sera lancée par GameService.startNewRound()
-        // qui appellera continueInitialDistribution() avec broadcast WebSocket après chaque carte
+        // NOUVEAU: Pas de distribution automatique - commencer directement en mode PLAYING
+        // Chaque joueur pioche sa première carte avec HIT
+        gameState = GameState.PLAYING;
+        System.out.println("✅ Round " + roundNumber + " started! Players can now HIT or STOP. First player: " + getCurrentPlayer().getUsername());
     }
 
     /**

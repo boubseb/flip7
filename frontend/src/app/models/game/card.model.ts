@@ -90,10 +90,7 @@ export class CardHelper {
     if (this.isNumberCard(card)) {
       return '#3b82f6'; // Bleu pour les nombres
     } else if (this.isOperatorCard(card)) {
-      const operatorCard = card as OperatorCard;
-      return operatorCard.operatorType === OperatorType.MULTIPLY_2 
-        ? '#ef4444' // Rouge pour ×2
-        : '#10b981'; // Vert pour les additions
+      return '#f97316'; // Orange pour tous les opérateurs (×2, +2, +4, +6, +8, +10)
     } else {
       // Couleurs différentes pour chaque carte spéciale
       const specialCard = card as SpecialCard;

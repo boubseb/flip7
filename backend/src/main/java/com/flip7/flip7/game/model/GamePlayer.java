@@ -215,11 +215,13 @@ public class GamePlayer {
      * Réinitialise pour un nouveau round
      */
     public void resetForNewRound() {
+        System.out.println("      🧹 RESET " + username + ": clearing " + hand.size() + " cards, status was " + status);
         hand.clear();
-        status = PlayerStatus.WAITING;
+        status = PlayerStatus.PLAYING; // NOUVEAU: Les joueurs commencent directement en PLAYING (pas de distribution)
         roundScore = 0;
         hasUsedLife = false;
         lifeCardsInHand = 0;
+        System.out.println("      ✅ RESET " + username + ": hand cleared, status=" + status);
     }
 
     /**
