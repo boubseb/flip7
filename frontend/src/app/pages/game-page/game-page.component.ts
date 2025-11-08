@@ -10,10 +10,11 @@ import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
 import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
 import { StartRoundPopupComponent } from '../../components/start-round-popup/start-round-popup.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, StartRoundPopupComponent],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, StartRoundPopupComponent, TranslateModule],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })

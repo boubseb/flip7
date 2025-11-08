@@ -13,7 +13,7 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--card-bg);
   border-radius: 16px;
   max-width: 500px;
   width: 90%;
@@ -97,7 +97,7 @@
   padding: 1rem;
   border: 2px solid #e5e7eb;
   border-radius: 10px;
-  background: white;
+  background: var(--card-bg);
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -112,12 +112,12 @@
     box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 
     .player-name {
-      color: white;
+      color: var(--text-primary);
     }
 
     .select-arrow {
       transform: translateX(4px);
-      color: white;
+      color: var(--text-primary);
     }
   }
 

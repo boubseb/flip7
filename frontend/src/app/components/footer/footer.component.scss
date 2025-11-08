@@ -104,7 +104,7 @@
 
       .btn-hit {
         background: linear-gradient(135deg, #3b82f6, #2563eb);
-        color: white;
+        color: var(--text-primary);
 
         &:not(:disabled):hover {
           background: linear-gradient(135deg, #2563eb, #1d4ed8);
@@ -113,7 +113,7 @@
 
       .btn-stop {
         background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
+        color: var(--text-primary);
 
         &:not(:disabled):hover {
           background: linear-gradient(135deg, #dc2626, #b91c1c);

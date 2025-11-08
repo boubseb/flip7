@@ -11,7 +11,7 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1rem;
-    background: white;
+    background: var(--card-bg);
     padding: 0.5rem;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -24,14 +24,14 @@
         border-radius: 8px;
         font-weight: 600;
         font-size: 0.875rem;
-        color: #6b7280;
+        color: var(--text-secondary);
         cursor: pointer;
         transition: all 0.2s ease;
         white-space: nowrap;
 
         &:hover {
-            background: #f3f4f6;
-            color: #374151;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
         }
 
         &.active {
@@ -67,7 +67,7 @@
 
 // Card
 .card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -78,7 +78,7 @@
 
     h2 {
         font-size: 1.25rem;
-        color: #1f2937;
+        color: var(--text-primary);
         margin: 0 0 1rem 0;
     }
 
@@ -91,7 +91,7 @@
         label {
             font-size: 0.875rem;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-primary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -101,9 +101,11 @@
             max-width: 100%;
             box-sizing: border-box;
             padding: 0.875rem 1rem;
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             transition: all 0.2s ease;
 
             &:focus {
@@ -113,11 +115,11 @@
             }
 
             &::placeholder {
-                color: #9ca3af;
+                color: var(--text-tertiary);
             }
 
             &[readonly] {
-                background: #f9fafb;
+                background: var(--bg-tertiary);
                 cursor: not-allowed;
             }
         }
@@ -135,9 +137,12 @@
 .input-with-clear {
     position: relative;
     width: 100%;
+    box-sizing: border-box;
 
     input {
+        width: 100%;
         padding-right: 2.5rem;
+        box-sizing: border-box;
     }
 
     .btn-clear-input {
@@ -146,7 +151,7 @@
         top: 50%;
         background: #ef4444;
         border: none;
-        color: white;
+        color: var(--text-primary);
         width: 1.75rem;
         height: 1.75rem;
         border-radius: 50%;
@@ -177,12 +182,13 @@
     }
 
     .btn-refresh {
-        background: #f3f4f6;
+        background: var(--bg-secondary);
         border: none;
         padding: 0.5rem;
         border-radius: 8px;
         cursor: pointer;
         font-size: 1.25rem;
+        color: var(--text-primary);
         transition: all 0.2s ease;
         width: 2.5rem;
         height: 2.5rem;
@@ -191,7 +197,7 @@
         justify-content: center;
 
         &:hover {
-            background: #e5e7eb;
+            background: var(--bg-tertiary);
             transform: rotate(180deg);
         }
     }
@@ -200,20 +206,29 @@
 // Search Bar
 .search-bar {
     margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 
     .search-input {
         width: 100%;
         padding: 0.875rem 1rem;
         padding-right: 2.5rem;
-        border: 2px solid #e5e7eb;
+        border: 2px solid var(--border-color);
         border-radius: 8px;
         font-size: 0.875rem;
         transition: all 0.2s ease;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        box-sizing: border-box;
 
         &:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        &::placeholder {
+            color: var(--text-tertiary);
         }
     }
 }
@@ -242,25 +257,25 @@
     }
 
     &::-webkit-scrollbar-track {
-        background: #f3f4f6;
+        background: var(--bg-secondary);
         border-radius: 4px;
     }
 
     &::-webkit-scrollbar-thumb {
-        background: #d1d5db;
+        background: var(--border-color);
         border-radius: 4px;
 
         &:hover {
-            background: #9ca3af;
+            background: var(--border-hover);
         }
     }
 }
 
 .room-item {
-    background: #f9fafb;
+    background: var(--card-bg);
     padding: 1rem;
     border-radius: 12px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border-color);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -272,7 +287,7 @@
 
     &:hover {
         border-color: #667eea;
-        background: #f0f4ff;
+        background: var(--bg-secondary);
         transform: translateX(4px);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         
@@ -289,7 +304,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: white;
+        background: var(--card-bg);
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         flex-shrink: 0;
@@ -308,13 +323,13 @@
 
             .room-id-label {
                 font-size: 0.75rem;
-                color: #6b7280;
+                color: var(--text-secondary);
                 font-weight: 600;
             }
 
             .room-id {
                 font-family: 'Courier New', monospace;
-                background: white;
+                background: var(--card-bg);
                 padding: 0.25rem 0.5rem;
                 border-radius: 4px;
                 font-size: 0.875rem;
@@ -331,7 +346,7 @@
 
             .room-players {
                 font-size: 0.875rem;
-                color: #6b7280;
+                color: var(--text-secondary);
                 font-weight: 500;
                 white-space: nowrap;
             }
@@ -347,17 +362,17 @@
 
                 &.waiting {
                     background: #10b981;
-                    color: white;
+                    color: var(--text-primary);
                 }
 
                 &.in_game {
                     background: #f59e0b;
-                    color: white;
+                    color: var(--text-primary);
                 }
 
                 &.finished {
                     background: #6b7280;
-                    color: white;
+                    color: var(--text-primary);
                 }
             }
         }
@@ -365,7 +380,7 @@
 
     .room-arrow {
         font-size: 1.5rem;
-        color: #9ca3af;
+        color: var(--text-tertiary);
         transition: all 0.3s;
         flex-shrink: 0;
     }
@@ -387,13 +402,13 @@
     }
 
     .text {
-        color: #6b7280;
+        color: var(--text-secondary);
         font-size: 1rem;
         margin: 0 0 0.5rem 0;
     }
 
     .subtext {
-        color: #9ca3af;
+        color: var(--text-tertiary);
         font-size: 0.875rem;
         margin: 0;
     }
@@ -416,7 +431,7 @@
 
     &.btn-success {
         background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
+        color: var(--text-primary);
         box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 
         &:hover:not(:disabled) {

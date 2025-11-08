@@ -60,32 +60,32 @@
 
 .round-badge {
   display: inline-block;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(102, 126, 234, 0.25);
   backdrop-filter: blur(10px);
   padding: 0.5rem 1.5rem;
   border-radius: 50px;
   font-weight: 700;
   font-size: 1rem;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(102, 126, 234, 0.3);
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px var(--shadow);
 }
 
 .popup-title {
-  color: white;
+  color: var(--text-primary);
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0 0 2rem 0;
   line-height: 1.4;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 8px var(--shadow);
 }
 
 .start-button {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+  color: var(--text-primary);
   border: none;
   padding: 1.25rem 3rem;
   border-radius: 50px;
@@ -135,7 +135,7 @@
 }
 
 .help-text {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   font-size: 0.95rem;
   margin: 0;
   font-style: italic;
@@ -150,10 +150,10 @@
   .dot {
     width: 16px;
     height: 16px;
-    background: white;
+    background: var(--text-primary);
     border-radius: 50%;
     animation: wave 1.4s ease-in-out infinite;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px var(--shadow);
 
     &:nth-child(1) {
       animation-delay: 0s;
@@ -170,7 +170,7 @@
 }
 
 .waiting-text {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   font-size: 1rem;
   margin: 0;
   font-weight: 500;

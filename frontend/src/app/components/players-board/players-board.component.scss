@@ -36,7 +36,7 @@
 
             &:hover:not(:disabled) {
                 background: var(--btn-primary-bg);
-                color: white;
+                color: var(--text-primary);
                 border-color: var(--btn-primary-bg);
                 transform: translateY(-1px);
                 box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
@@ -107,7 +107,7 @@
             &.active {
                 background: linear-gradient(135deg, #667eea, #764ba2);
                 border-color: #667eea;
-                color: white;
+                color: var(--text-primary);
                 box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
             }
         }
@@ -127,22 +127,22 @@
         }
 
         &::-webkit-scrollbar-track {
-            background: #f3f4f6;
+            background: var(--bg-secondary);
             border-radius: 4px;
         }
 
         &::-webkit-scrollbar-thumb {
-            background: #d1d5db;
+            background: var(--border-color);
             border-radius: 4px;
 
             &:hover {
-                background: #9ca3af;
+                background: var(--border-hover);
             }
         }
     }
 
     .player-item {
-        background: white;
+        background: var(--card-bg);
         border: 2px solid #e5e7eb;
         border-radius: 8px;
         overflow: hidden;
@@ -150,7 +150,7 @@
         cursor: pointer;
 
         &:hover {
-            border-color: #cbd5e1;
+            border-color: var(--border-color);
         }
 
         &.current-player {
@@ -179,7 +179,7 @@
                 gap: 0.75rem;
 
                 .expand-icon {
-                    color: #6b7280;
+                    color: var(--text-secondary);
                     font-size: 0.75rem;
                     width: 12px;
                     transition: transform 0.2s;
@@ -192,7 +192,7 @@
                     align-items: center;
                     justify-content: center;
                     background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: white;
+                    color: var(--text-primary);
                     border-radius: 50%;
                     font-weight: 700;
                     font-size: 0.8rem;
@@ -200,7 +200,7 @@
 
                 .player-name {
                     font-weight: 600;
-                    color: #1f2937;
+                    color: var(--text-primary);
                     font-size: 1rem;
                 }
 
@@ -237,8 +237,8 @@
 
         .player-content {
             padding: 0 1rem 1rem 1rem;
-            border-top: 1px solid #e5e7eb;
-            background: #f9fafb;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
             animation: slideDown 0.2s ease;
 
             .revealed-cards {
@@ -246,7 +246,7 @@
 
                 .cards-label {
                     font-size: 0.875rem;
-                    color: #6b7280;
+                    color: var(--text-secondary);
                     font-weight: 600;
                     margin-bottom: 0.75rem;
                 }
@@ -259,7 +259,7 @@
                     .card {
                         width: 60px;
                         height: 84px;
-                        background: white;
+                        background: var(--card-bg);
                         border: 2px solid #e5e7eb;
                         border-radius: 8px;
                         display: flex;
@@ -277,7 +277,7 @@
                         .card-value {
                             font-size: 1.5rem;
                             font-weight: 700;
-                            color: #1f2937;
+                            color: var(--text-primary);
                         }
 
                         .card-suit {
@@ -294,7 +294,7 @@
                 .no-cards {
                     padding: 1rem;
                     text-align: center;
-                    color: #9ca3af;
+                    color: var(--text-tertiary);
                     font-size: 0.875rem;
                     font-style: italic;
                 }
@@ -307,7 +307,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #9ca3af;
+        color: var(--text-tertiary);
         font-size: 1rem;
     }
 }

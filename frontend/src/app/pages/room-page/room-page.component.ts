@@ -8,10 +8,11 @@ import { WebSocketService } from '../../services/websocket/websocket.service';
 import { Room, RoomStatus, RoomCreateRequest, RoomJoinRequest } from '../../models/room/room.model';
 import { RoomBrowserComponent } from '../../components/room-browser/room-browser.component';
 import { Subscription } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-room-page',
-  imports: [CommonModule, FormsModule, RoomBrowserComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RoomBrowserComponent, FooterComponent, TranslateModule],
   templateUrl: './room-page.component.html',
   styleUrl: './room-page.component.scss'
 })

@@ -1,11 +1,12 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RevealedCardsComponent } from '../revealed-cards/revealed-cards.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-players-board',
   standalone: true,
-  imports: [CommonModule, RevealedCardsComponent],
+  imports: [CommonModule, RevealedCardsComponent, TranslateModule],
   templateUrl: './players-board.component.html',
   styleUrl: './players-board.component.scss'
 })

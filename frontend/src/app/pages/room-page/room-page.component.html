@@ -18,22 +18,22 @@
   @if (currentView === 'create') {
     <div class="create-view">
       <div class="view-header">
-        <button class="btn-back" (click)="backToHome()">← Back</button>
-        <h1>🆕 Create room</h1>
-        <button class="btn-switch" (click)="switchToJoin()">🚺 Join</button>
+        <button class="btn-back" (click)="backToHome()">← {{ 'room.back' | translate }}</button>
+        <h1>🆕 {{ 'room.createRoom' | translate }}</h1>
+        <button class="btn-switch" (click)="switchToJoin()">🚺 {{ 'room.join' | translate }}</button>
       </div>
 
       <div class="form-container">
         <div class="form-group">
-          <label>Room password</label>
+          <label>{{ 'room.roomPassword' | translate }}</label>
           <input 
             type="password" 
             [(ngModel)]="createRoomPassword" 
-            placeholder="Enter a password"
+            [placeholder]="'room.enterPassword' | translate"
             (keyup.enter)="createRoom()">
         </div>
         <div class="form-group">
-          <label>Maximum number of players</label>
+          <label>{{ 'room.maxPlayers' | translate }}</label>
           <input 
             type="number" 
             [(ngModel)]="createRoomMaxPlayers" 
@@ -42,7 +42,7 @@
             placeholder="4">
         </div>
         <button class="btn btn-primary btn-large" (click)="createRoom()">
-          🎯 Crete room
+          🎯 {{ 'room.createRoom' | translate }}
         </button>
       </div>
     </div>
@@ -52,9 +52,9 @@
   @if (currentView === 'join') {
     <div class="join-view">
       <div class="view-header">
-        <button class="btn-back" (click)="backToHome()">← Back</button>
-        <h1>🚪 Join Room</h1>
-        <button class="btn-switch" (click)="switchToCreate()">🆕 Create</button>
+        <button class="btn-back" (click)="backToHome()">← {{ 'room.back' | translate }}</button>
+        <h1>🚪 {{ 'room.joinRoom' | translate }}</h1>
+        <button class="btn-switch" (click)="switchToCreate()">🆕 {{ 'room.create' | translate }}</button>
       </div>
 
       <div class="join-content">
@@ -71,22 +71,22 @@
   @if (currentView === 'waiting' && currentRoom) {
     <div class="waiting-room">
       <div class="room-header">
-        <h1>🎮 Waiting room</h1>
+        <h1>🎮 {{ 'room.waitingRoom' | translate }}</h1>
         <button class="btn-leave" (click)="leaveRoom()">❌</button>
       </div>
 
       <div class="room-id-display">
-        <label>Room ID:</label>
+        <label>{{ 'room.roomId' | translate }}:</label>
         <code class="room-id-code">{{ currentRoom.id }}</code>
-        <button class="btn-copy-id" (click)="copyRoomId()" title="Copier l'ID">
-          📋 Copy
+        <button class="btn-copy-id" (click)="copyRoomId()" [title]="'room.copyRoomId' | translate">
+          📋 {{ 'room.copy' | translate }}
         </button>
       </div>
 
       <div class="players-section">
         <div class="players-header">
-          <h2>Joueurs dans la room ({{ currentRoom.players.length }}/{{ currentRoom.maxPlayers }})</h2>
-          <button class="btn-refresh" (click)="refreshCurrentRoom()" title="Rafraîchir">🔄</button>
+          <h2>{{ 'room.playersInRoom' | translate }} ({{ currentRoom.players.length }}/{{ currentRoom.maxPlayers }})</h2>
+          <button class="btn-refresh" (click)="refreshCurrentRoom()" [title]="'room.browseTab.refresh' | translate">🔄</button>
         </div>
         <div class="players-list">
           @for (playerId of currentRoom.players; track playerId; let i = $index) {
@@ -94,16 +94,16 @@
               <span class="player-number">{{ i + 1 }}</span>
               <span class="player-id">{{ getPlayerPseudo(playerId) }}</span>
               @if (playerId === currentUserId) {
-                <span class="badge-you">Vous</span>
+                <span class="badge-you">{{ 'room.you' | translate }}</span>
               }
               @if (playerId === currentRoom.adminId) {
-                <span class="badge-admin">👑 Admin</span>
+                <span class="badge-admin">👑 {{ 'room.admin' | translate }}</span>
               }
               @if (isAdmin && playerId !== currentUserId) {
                 <button 
                   class="btn-kick" 
                   (click)="kickPlayer(playerId)"
-                  title="Retirer ce joueur">
+                  [title]="'room.kickPlayer' | translate">
                   ❌
                 </button>
               }
@@ -119,10 +119,10 @@
           [disabled]="currentRoom.players.length < 2"
           (click)="startGame()">
           @if (currentRoom.players.length >= 2) {
-            <span>🎮 Lancer la partie</span>
+            <span>🎮 {{ 'room.startGame' | translate }}</span>
           }
           @if (currentRoom.players.length < 2) {
-            <span>⏳ En attente d'un autre joueur...</span>
+            <span>⏳ {{ 'room.waitingForPlayers' | translate }}</span>
           }
         </button>
       }
@@ -131,10 +131,10 @@
       @if (!isAdmin) {
         <p class="waiting-admin">
           @if (currentRoom.players.length < 2) {
-            <span>⏳ En attente d'autres joueurs...</span>
+            <span>⏳ {{ 'room.waitingForMorePlayers' | translate }}</span>
           }
           @if (currentRoom.players.length >= 2) {
-            <span>En attente que l'admin lance la partie...</span>
+            <span>{{ 'room.waitingForAdmin' | translate }}</span>
           }
         </p>
       }

@@ -8,7 +8,7 @@
       ←
     </button>
     <div class="round-display">
-      <span class="round-label">Round</span>
+      <span class="round-label">{{ 'game.round' | translate }}</span>
       <span class="round-number">{{ selectedRound }}</span>
       <span class="round-total">/ {{ maxRound }}</span>
     </div>
@@ -26,19 +26,19 @@
       class="sort-btn"
       [class.active]="sortOrder === 'game'"
       (click)="setSortOrder('game')">
-      🎮 Ordre de jeu
+      🎮 {{ 'game.gameOrder' | translate }}
     </button>
     <button 
       class="sort-btn"
       [class.active]="sortOrder === 'current'"
       (click)="setSortOrder('current')">
-      🏆 Classement actuel
+      🏆 {{ 'game.currentRanking' | translate }}
     </button>
     <button 
       class="sort-btn"
       [class.active]="sortOrder === 'theoretical'"
       (click)="setSortOrder('theoretical')">
-      📊 Classement théorique
+      📊 {{ 'game.theoreticalRanking' | translate }}
     </button>
   </div>
 
@@ -57,7 +57,7 @@
               <span class="expand-icon">{{ isExpanded(playerId) ? '▼' : '▶' }}</span>
               <span class="player-number">#{{ i + 1 }}</span>
               <span class="player-name">
-                {{ playerId === currentUserId ? 'Vous' : getPlayerPseudo(playerId) }}
+                {{ playerId === currentUserId ? ('game.you' | translate) : getPlayerPseudo(playerId) }}
               </span>
               @if (playerId === currentPlayerId) {
                 <span class="badge-turn">🎯</span>

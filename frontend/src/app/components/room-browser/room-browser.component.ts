@@ -1,12 +1,13 @@
 import { Component, EventEmitter, Input, Output, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { Room } from '../../models/room/room.model';
 
 @Component({
   selector: 'app-room-browser',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './room-browser.component.html',
   styleUrls: ['./room-browser.component.scss']
 })

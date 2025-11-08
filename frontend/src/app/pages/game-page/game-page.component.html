@@ -38,7 +38,7 @@
           [class.active]="isMyTurn && !isPlayerEliminated()"
           (click)="drawCard()">
           <span class="icon">🎴</span>
-          <span>Hit</span>
+          <span>{{ 'game.hit' | translate }}</span>
         </button>
         <button 
           class="btn btn-stop"
@@ -46,7 +46,7 @@
           [class.active]="isMyTurn && !isPlayerEliminated()"
           (click)="stopDrawing()">
           <span class="icon">✋</span>
-          <span>Stop</span>
+          <span>{{ 'game.stop' | translate }}</span>
         </button>
       </div>
     </div>

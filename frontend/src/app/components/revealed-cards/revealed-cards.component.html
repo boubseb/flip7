@@ -1,7 +1,7 @@
 <div class="revealed-cards-container" [ngClass]="'status-' + playerStatus.toLowerCase()">
   @if (cards.length > 0) {
     <div class="cards-header">
-      <span class="cards-count">{{ cards.length }} carte(s)</span>
+      <span class="cards-count">{{ cards.length }} {{ 'game.cardsCount' | translate }}</span>
       <span class="score-separator">-</span>
       <span class="cards-score">{{ score }} pts</span>
     </div>
@@ -26,7 +26,7 @@
 
   @if (cards.length === 0) {
     <div class="no-cards">
-      <span class="placeholder-text">Aucune carte découverte</span>
+      <span class="placeholder-text">{{ 'game.noCardsRevealed' | translate }}</span>
     </div>
   }
 </div>

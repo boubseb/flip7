@@ -15,10 +15,10 @@
 .profil-content {
   max-width: 600px;
   width: 100%;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px var(--shadow);
   padding: 2rem;
   margin-bottom: 2rem;
   box-sizing: border-box;
@@ -27,7 +27,7 @@
 .profil-title {
   font-size: 2rem;
   font-weight: 900;
-  color: #2d3748;
+  color: var(--text-primary);
   margin: 0 0 1.5rem 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -69,7 +69,7 @@
 }
 
 .profil-section {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -84,11 +84,19 @@
 .section-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
   margin: 0 0 1.25rem 0;
 }
 
 .profil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+.form-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -108,7 +116,7 @@
 
   label {
     font-weight: 600;
-    color: #4a5568;
+    color: var(--text-secondary);
     font-size: 0.9rem;
   }
 
@@ -118,8 +126,8 @@
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     font-size: 1rem;
-    background: rgba(255, 255, 255, 0.9);
-    color: #2d3748;
+    background: var(--card-bg);
+    color: var(--text-primary);
     transition: all 0.2s ease;
     box-sizing: border-box;
 
@@ -127,11 +135,11 @@
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-      background: rgba(255, 255, 255, 1);
+      background: var(--bg-secondary);
     }
 
     &::placeholder {
-      color: rgba(0, 0, 0, 0.4);
+      color: var(--text-tertiary);
     }
   }
 
@@ -155,6 +163,7 @@
   transition: all 0.2s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   box-sizing: border-box;
+  margin-top: auto;
 
   &:hover:not(:disabled) {
     transform: translateY(-3px);
@@ -167,7 +176,8 @@
   }
 
   &:disabled {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-secondary);
+    opacity: 0.5;
     color: rgba(0, 0, 0, 0.4);
     cursor: not-allowed;
     box-shadow: none;
@@ -195,13 +205,13 @@
   h3 {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--text-primary);
     margin: 0 0 0.5rem 0;
   }
 
   p {
     font-size: 0.9rem;
-    color: #4a5568;
+    color: var(--text-secondary);
     margin: 0;
     line-height: 1.5;
   }
@@ -211,7 +221,7 @@
   width: 100%;
   padding: 0.8rem 1.1rem;
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
+  color: var(--text-primary);
   border: none;
   border-radius: 10px;
   font-size: 1rem;

@@ -5,13 +5,13 @@
       class="tab-btn"
       [class.active]="activeTab === 'browse'"
       (click)="switchTab('browse')">
-      📋 Browse Rooms
+      📋 {{ 'room.browseTabs.browse' | translate }}
     </button>
       <button 
       class="tab-btn"
       [class.active]="activeTab === 'byId'"
       (click)="switchTab('byId')">
-      🔑 Join by ID
+      🔑 {{ 'room.browseTabs.joinById' | translate }}
     </button>
   </div>
 
@@ -22,14 +22,14 @@
     @if (activeTab === 'byId') {
       <div class="tab-panel">
         <div class="card">
-          <h2>🔑 Join by ID</h2>
+          <h2>🔑 {{ 'room.joinByIdTab.title' | translate }}</h2>
           <div class="form-group">
-            <label>Room ID</label>
+            <label>{{ 'room.joinByIdTab.roomIdLabel' | translate }}</label>
             <div class="input-with-clear">
               <input 
                 type="text" 
                 [(ngModel)]="joinRoomId" 
-                placeholder="Paste room ID"
+                [placeholder]="'room.joinByIdTab.roomIdPlaceholder' | translate"
                 [readonly]="joinRoomId.length > 0">
               @if (joinRoomId.length > 0) {
                 <button 
@@ -41,18 +41,18 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Password</label>
+            <label>{{ 'room.joinByIdTab.passwordLabel' | translate }}</label>
             <input 
               type="password" 
               [(ngModel)]="joinRoomPassword" 
-              placeholder="Room password"
+              [placeholder]="'room.joinByIdTab.passwordPlaceholder' | translate"
               (keyup.enter)="joinById()">
           </div>
           <button 
             class="btn btn-success btn-large" 
             (click)="joinById()"
             [disabled]="!joinRoomId || !joinRoomPassword">
-            ➡️ Join Room
+            ➡️ {{ 'room.joinByIdTab.joinButton' | translate }}
           </button>
         </div>
       </div>
@@ -64,8 +64,8 @@
         <div class="card">
           <!-- Search and Refresh Header -->
           <div class="browse-header">
-            <h2>📋 Available Rooms</h2>
-            <button class="btn-refresh" (click)="refreshRooms()" title="Refresh">
+            <h2>📋 {{ 'room.browseTab.title' | translate }}</h2>
+            <button class="btn-refresh" (click)="refreshRooms()" [title]="'room.browseTab.refresh' | translate">
               🔄
             </button>
           </div>
@@ -76,7 +76,7 @@
               <input 
                 type="text" 
                 [(ngModel)]="searchQuery" 
-                placeholder="🔍 Search by ID or status..."
+                [placeholder]="'room.browseTab.searchPlaceholder' | translate"
                 class="search-input">
               @if (searchQuery.length > 0) {
                 <button 
@@ -96,12 +96,12 @@
                   <div 
                     class="room-item"
                     (click)="selectRoom(room.id)"
-                    title="Click to join this room">
+                    [title]="'room.browseTab.clickToJoin' | translate">
                     
                     <div class="room-icon">🎮</div>
                     <div class="room-details">
                       <div class="room-id-line">
-                        <span class="room-id-label">ID:</span>
+                        <span class="room-id-label">{{ 'room.browseTab.roomIdLabel' | translate }}:</span>
                         <span class="room-id">{{ room.id.substring(0, 8) }}...</span>
                       </div>
                       <div class="room-meta">
@@ -126,7 +126,7 @@
             @if (filteredRooms.length === 0 && availableRooms.length > 0) {
               <div class="no-rooms">
                 <p class="emoji">🔍</p>
-                <p class="text">No rooms found matching "{{ searchQuery }}"</p>
+                <p class="text">{{ 'room.browseTab.noResults' | translate:{ query: searchQuery } }}</p>
               </div>
             }
 
@@ -134,8 +134,8 @@
             @if (availableRooms.length === 0) {
               <div class="no-rooms">
                 <p class="emoji">😴</p>
-                <p class="text">No rooms available</p>
-                <p class="subtext">Be the first to create one!</p>
+                <p class="text">{{ 'room.browseTab.noRooms' | translate }}</p>
+                <p class="subtext">{{ 'room.browseTab.noRoomsSubtext' | translate }}</p>
               </div>
             }
           </div>

@@ -146,7 +146,7 @@
         .forgot-password {
             padding: 0.45rem 0.9rem;
             border-radius: 999px;
-            color: #4a5568;
+            color: var(--text-secondary);
             font-size: 0.95rem;
             transition: color 0.2s ease;
         }

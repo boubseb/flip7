@@ -1,6 +1,6 @@
 <div class="profil-container">
   <div class="profil-content">
-    <h1 class="profil-title">Mon Profil</h1>
+    <h1 class="profil-title">{{ 'profile.title' | translate }}</h1>
 
     @if(successMessage) {
       <div class="message success-message">{{ successMessage }}</div>
@@ -11,57 +11,57 @@
 
     <!-- Section 1: Informations personnelles -->
     <section class="profil-section">
-      <h2 class="section-title">Informations personnelles</h2>
+      <h2 class="section-title">{{ 'profile.personalInfo' | translate }}</h2>
       <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()" class="profil-form">
         <div class="form-row">
           <div class="form-group">
-            <label for="firstName">Prénom</label>
+            <label for="firstName">{{ 'profile.firstName' | translate }}</label>
             <input 
               type="text" 
               id="firstName" 
               formControlName="firstName"
-              placeholder="Votre prénom"
+              [placeholder]="'profile.firstNamePlaceholder' | translate"
             >
             @if(profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
-              <span class="error-text">Le prénom est requis (min. 2 caractères)</span>
+              <span class="error-text">{{ 'profile.firstNameError' | translate }}</span>
             }
           </div>
           <div class="form-group">
-            <label for="lastName">Nom</label>
+            <label for="lastName">{{ 'profile.lastName' | translate }}</label>
             <input 
               type="text" 
               id="lastName" 
               formControlName="lastName"
-              placeholder="Votre nom"
+              [placeholder]="'profile.lastNamePlaceholder' | translate"
             >
             @if(profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
-              <span class="error-text">Le nom est requis (min. 2 caractères)</span>
+              <span class="error-text">{{ 'profile.lastNameError' | translate }}</span>
             }
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label for="birthDate">Date de naissance</label>
+            <label for="birthDate">{{ 'profile.birthDate' | translate }}</label>
             <input 
               type="date" 
               id="birthDate" 
               formControlName="birthDate"
             >
             @if(profileForm.get('birthDate')?.invalid && profileForm.get('birthDate')?.touched) {
-              <span class="error-text">La date de naissance est requise</span>
+              <span class="error-text">{{ 'profile.birthDateError' | translate }}</span>
             }
           </div>
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="email">{{ 'register.email' | translate }}</label>
             <input 
               type="email" 
               id="email" 
               formControlName="email"
-              placeholder="votre.email@exemple.com"
+              [placeholder]="'profile.emailPlaceholder' | translate"
             >
             @if(profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
-              <span class="error-text">L'email est invalide</span>
+              <span class="error-text">{{ 'register.emailError' | translate }}</span>
             }
           </div>
         </div>
@@ -71,18 +71,18 @@
           class="btn-primary"
           [disabled]="profileForm.invalid"
         >
-          Mettre à jour le profil
+          {{ 'common.save' | translate }}
         </button>
       </form>
     </section>
 
     <!-- Section 2: Changer le mot de passe -->
     <section class="profil-section">
-      <h2 class="section-title">Changer le mot de passe</h2>
+      <h2 class="section-title">{{ 'profile.changePassword' | translate }}</h2>
       <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="profil-form">
         <div class="form-row">
           <div class="form-group">
-            <label for="newPassword">Nouveau mot de passe</label>
+            <label for="newPassword">{{ 'register.password' | translate }}</label>
             <input 
               type="password" 
               id="newPassword" 
@@ -90,11 +90,11 @@
               placeholder="••••••••"
             >
             @if(passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched) {
-              <span class="error-text">Minimum 6 caractères</span>
+              <span class="error-text">{{ 'register.passwordError' | translate }}</span>
             }
           </div>
           <div class="form-group">
-            <label for="confirmPassword">Confirmer le mot de passe</label>
+            <label for="confirmPassword">{{ 'register.confirmPassword' | translate }}</label>
             <input 
               type="password" 
               id="confirmPassword" 
@@ -102,7 +102,7 @@
               placeholder="••••••••"
             >
             @if(passwordForm.get('confirmPassword')?.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched) {
-              <span class="error-text">Les mots de passe ne correspondent pas</span>
+              <span class="error-text">{{ 'register.passwordMatchError' | translate }}</span>
             }
           </div>
         </div>
@@ -112,25 +112,25 @@
           class="btn-primary"
           [disabled]="passwordForm.invalid"
         >
-          Changer le mot de passe
+          {{ 'profile.changePassword' | translate }}
         </button>
       </form>
     </section>
 
     <!-- Section 3: Supprimer le compte -->
     <section class="profil-section danger-section">
-      <h2 class="section-title">Zone de danger</h2>
+      <h2 class="section-title">{{ 'profile.dangerZone' | translate }}</h2>
       <div class="danger-content">
         <div class="danger-info">
-          <h3>Supprimer mon compte</h3>
-          <p>Une fois supprimé, votre compte ne pourra pas être récupéré. Cette action est irréversible.</p>
+          <h3>{{ 'profile.deleteAccount' | translate }}</h3>
+          <p>{{ 'profile.deleteAccountWarning' | translate }}</p>
         </div>
         <button 
           type="button" 
           class="btn-danger"
           (click)="onDeleteAccount()"
         >
-          Supprimer mon compte
+          {{ 'profile.deleteAccount' | translate }}
         </button>
       </div>
     </section>
