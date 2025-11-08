@@ -41,6 +41,11 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
     if (changes['gameState'] || changes['players']) {
       this.applySorting();
     }
+
+    // Scroller jusqu'au joueur actuel si c'est son tour
+    if (changes['currentPlayerId'] && this.currentPlayerId) {
+      setTimeout(() => this.scrollToCurrentPlayer(), 100);
+    }
     
     // Logs de débogage
     if (changes['gameState']) {
@@ -297,6 +302,30 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
           return safetyB - safetyA; // Décroissant
         });
         break;
+    }
+  }
+
+  /**
+   * Scroll automatiquement jusqu'au joueur actuel quand c'est son tour
+   */
+  scrollToCurrentPlayer(): void {
+    if (!this.currentPlayerId) return;
+
+    // Trouver l'élément HTML du joueur actuel
+    const playerElements = document.querySelectorAll('.player-item');
+    const currentPlayerIndex = this.sortedPlayers.indexOf(this.currentPlayerId);
+    
+    if (currentPlayerIndex >= 0 && currentPlayerIndex < playerElements.length) {
+      const playerElement = playerElements[currentPlayerIndex] as HTMLElement;
+      
+      // Scroller avec un comportement smooth
+      playerElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest', // Scroll seulement si nécessaire
+        inline: 'nearest'
+      });
+      
+      console.log(`🎯 Auto-scroll vers le joueur actuel: ${this.currentPlayerId} (index: ${currentPlayerIndex})`);
     }
   }
 }
