@@ -1,0 +1,138 @@
+{
+  "common": {
+    "appName": "Flip 7",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour"
+  },
+  "header": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "theme": "Thème",
+    "language": "Langue"
+  },
+  "footer": {
+    "copyright": "© 2024 Flip 7. Tous droits réservés.",
+    "version": "Version"
+  },
+  "login": {
+    "title": "Connexion",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "loginButton": "Se connecter",
+    "register": "S'inscrire",
+    "forgotPassword": "Mot de passe oublié ?",
+    "errors": {
+      "invalidCredentials": "Identifiants invalides",
+      "serverError": "Erreur serveur"
+    }
+  },
+  "register": {
+    "title": "Inscription",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "registerButton": "S'inscrire",
+    "alreadyAccount": "Déjà un compte ?",
+    "loginLink": "Se connecter",
+    "errors": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "usernameTaken": "Nom d'utilisateur déjà pris",
+      "invalidEmail": "Email invalide"
+    }
+  },
+  "home": {
+    "title": "Bienvenue sur Flip 7",
+    "subtitle": "Le jeu de cartes stratégique",
+    "createRoom": "Créer une partie",
+    "joinRoom": "Rejoindre une partie",
+    "rules": "Règles du jeu",
+    "stats": "Statistiques"
+  },
+  "room": {
+    "title": "Salon",
+    "roomId": "ID de la salle",
+    "password": "Mot de passe",
+    "players": "Joueurs",
+    "waiting": "En attente de joueurs...",
+    "ready": "Prêt",
+    "notReady": "Pas prêt",
+    "startGame": "Démarrer la partie",
+    "leaveRoom": "Quitter",
+    "copyRoomId": "Copier l'ID",
+    "shareRoom": "Partager",
+    "minPlayers": "Minimum {{min}} joueurs requis",
+    "maxPlayers": "Maximum {{max}} joueurs"
+  },
+  "game": {
+    "yourTurn": "C'est votre tour !",
+    "waitingFor": "En attente de {{player}}...",
+    "deck": "Pioche",
+    "discard": "Défausse",
+    "hand": "Main",
+    "playCard": "Jouer une carte",
+    "draw": "Piocher",
+    "pass": "Passer",
+    "winner": "{{player}} a gagné !",
+    "gameOver": "Partie terminée",
+    "newGame": "Nouvelle partie",
+    "roundScore": "Score du tour",
+    "totalScore": "Score total",
+    "cards": {
+      "number": "Carte numéro",
+      "operator": "Carte opérateur",
+      "special": "Carte spéciale",
+      "life": "Vie",
+      "stop": "Stop",
+      "drawThree": "+3"
+    },
+    "actions": {
+      "selectPlayer": "Sélectionnez un joueur",
+      "selectTarget": "Choisir une cible",
+      "useLifeCard": "Utiliser la carte Vie",
+      "assignStop": "Assigner Stop",
+      "assignDrawThree": "Assigner +3",
+      "mustDraw": "Vous devez piocher {{count}} cartes",
+      "stopped": "Vous êtes arrêté !"
+    },
+    "status": {
+      "playing": "En cours",
+      "stopped": "Arrêté",
+      "drawing": "Pioche forcée",
+      "waiting": "En attente",
+      "eliminated": "Éliminé",
+      "winner": "Gagnant"
+    }
+  },
+  "rules": {
+    "title": "Règles du jeu Flip 7",
+    "objective": "Objectif",
+    "objectiveText": "Avoir le moins de points possible en fin de partie",
+    "setup": "Mise en place",
+    "gameplay": "Déroulement",
+    "cards": "Les cartes",
+    "scoring": "Décompte des points",
+    "endGame": "Fin de partie"
+  },
+  "profile": {
+    "title": "Profil",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "stats": "Statistiques",
+    "gamesPlayed": "Parties jouées",
+    "gamesWon": "Victoires",
+    "winRate": "Taux de victoire",
+    "bestScore": "Meilleur score",
+    "edit": "Modifier le profil",
+    "changePassword": "Changer le mot de passe"
+  }
+}

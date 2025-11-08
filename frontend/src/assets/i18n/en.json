@@ -1,0 +1,138 @@
+{
+  "common": {
+    "appName": "Flip 7",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "header": {
+    "home": "Home",
+    "profile": "Profile",
+    "logout": "Logout",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "footer": {
+    "copyright": "© 2024 Flip 7. All rights reserved.",
+    "version": "Version"
+  },
+  "login": {
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "loginButton": "Log in",
+    "register": "Sign up",
+    "forgotPassword": "Forgot password?",
+    "errors": {
+      "invalidCredentials": "Invalid credentials",
+      "serverError": "Server error"
+    }
+  },
+  "register": {
+    "title": "Sign up",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "registerButton": "Sign up",
+    "alreadyAccount": "Already have an account?",
+    "loginLink": "Log in",
+    "errors": {
+      "passwordMismatch": "Passwords do not match",
+      "usernameTaken": "Username already taken",
+      "invalidEmail": "Invalid email"
+    }
+  },
+  "home": {
+    "title": "Welcome to Flip 7",
+    "subtitle": "The strategic card game",
+    "createRoom": "Create a game",
+    "joinRoom": "Join a game",
+    "rules": "Game rules",
+    "stats": "Statistics"
+  },
+  "room": {
+    "title": "Room",
+    "roomId": "Room ID",
+    "password": "Password",
+    "players": "Players",
+    "waiting": "Waiting for players...",
+    "ready": "Ready",
+    "notReady": "Not ready",
+    "startGame": "Start game",
+    "leaveRoom": "Leave",
+    "copyRoomId": "Copy ID",
+    "shareRoom": "Share",
+    "minPlayers": "Minimum {{min}} players required",
+    "maxPlayers": "Maximum {{max}} players"
+  },
+  "game": {
+    "yourTurn": "It's your turn!",
+    "waitingFor": "Waiting for {{player}}...",
+    "deck": "Deck",
+    "discard": "Discard",
+    "hand": "Hand",
+    "playCard": "Play a card",
+    "draw": "Draw",
+    "pass": "Pass",
+    "winner": "{{player}} won!",
+    "gameOver": "Game over",
+    "newGame": "New game",
+    "roundScore": "Round score",
+    "totalScore": "Total score",
+    "cards": {
+      "number": "Number card",
+      "operator": "Operator card",
+      "special": "Special card",
+      "life": "Life",
+      "stop": "Stop",
+      "drawThree": "+3"
+    },
+    "actions": {
+      "selectPlayer": "Select a player",
+      "selectTarget": "Choose a target",
+      "useLifeCard": "Use Life card",
+      "assignStop": "Assign Stop",
+      "assignDrawThree": "Assign +3",
+      "mustDraw": "You must draw {{count}} cards",
+      "stopped": "You are stopped!"
+    },
+    "status": {
+      "playing": "Playing",
+      "stopped": "Stopped",
+      "drawing": "Forced draw",
+      "waiting": "Waiting",
+      "eliminated": "Eliminated",
+      "winner": "Winner"
+    }
+  },
+  "rules": {
+    "title": "Flip 7 Game Rules",
+    "objective": "Objective",
+    "objectiveText": "Have the lowest score at the end of the game",
+    "setup": "Setup",
+    "gameplay": "Gameplay",
+    "cards": "Cards",
+    "scoring": "Scoring",
+    "endGame": "End of game"
+  },
+  "profile": {
+    "title": "Profile",
+    "username": "Username",
+    "email": "Email",
+    "stats": "Statistics",
+    "gamesPlayed": "Games played",
+    "gamesWon": "Wins",
+    "winRate": "Win rate",
+    "bestScore": "Best score",
+    "edit": "Edit profile",
+    "changePassword": "Change password"
+  }
+}

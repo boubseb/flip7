@@ -5,6 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs/internal/Observable';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
 import { ProfilComponent } from '../profil/profil.component';
+import { ThemeService, Theme } from '../../services/theme/theme.service';
+import { LanguageService, Language } from '../../services/language/language.service';
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -24,8 +27,13 @@ export class HeaderComponent {
   isRules: boolean = false;
 
   authenticationService = inject(AuthenticationService);
+  themeService = inject(ThemeService);
+  languageService = inject(LanguageService);
 
   isLogin$: Observable<Boolean> = this.authenticationService.isLogin$;
+  currentTheme$: Observable<Theme> = this.themeService.theme$;
+  currentLanguage$: Observable<Language> = this.languageService.language$;
+  
   isProfil: boolean = false;
   isPrfil = this.isLogin$
   router = inject(Router);
@@ -95,6 +103,14 @@ export class HeaderComponent {
     
     // Rediriger vers l'accueil
     this.router.navigateByUrl('/');
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  toggleLanguage(): void {
+    this.languageService.toggleLanguage();
   }
 
 }

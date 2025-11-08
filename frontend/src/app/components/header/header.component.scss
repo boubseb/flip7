@@ -85,6 +85,46 @@
       }
     }
 
+    .header-controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-self: end;
+      margin-right: 1rem;
+
+      .control-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 0.5rem;
+        border-radius: 8px;
+        min-width: 40px;
+        height: 40px;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.5);
+          transform: translateY(-2px);
+        }
+
+        .icon {
+          font-size: 1.25rem;
+        }
+
+        .language-text {
+          font-size: 0.875rem;
+          font-weight: 700;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+
     .profil-container{
       display: flex;
       justify-content: right;
