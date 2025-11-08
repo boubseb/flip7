@@ -1,5 +1,6 @@
 package com.flip7.flip7.game.card;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -14,7 +15,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public abstract class Card {
     private String id; // Identifiant unique de la carte
+    
+    @JsonProperty("type")  // Envoyer aussi sous le nom "type" pour le frontend
     private CardType cardType;
+    
     private boolean cancelled; // Carte barrée (annulée par une carte Vie)
 
     public Card(CardType cardType) {

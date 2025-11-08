@@ -60,7 +60,21 @@ export class RevealedCardsComponent {
   getCardTypeClass(card: any): string {
     const classes: string[] = [];
     
-    if (card.special || card.cardType === 'SPECIAL') {
+    // Cartes opérateurs (+2, +4, +6, +8, +10, ×2)
+    if (card.operator || card.cardType === 'OPERATOR') {
+      classes.push('card-operator');
+    }
+    // Cartes nombres
+    else if (card.value !== undefined || card.cardType === 'NUMBER') {
+      // Différencier cartes hautes (10, 11, 12) des cartes basses/moyennes
+      if (card.value >= 10) {
+        classes.push('card-number-high');
+      } else {
+        classes.push('card-number');
+      }
+    }
+    // Cartes spéciales
+    else if (card.special || card.cardType === 'SPECIAL') {
       classes.push('card-special');
       classes.push(`card-${card.specialType?.toLowerCase() || 'unknown'}`);
       

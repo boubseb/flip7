@@ -33,7 +33,8 @@ export enum SpecialType {
  */
 export interface Card {
   id: string;
-  type: CardType;
+  type: CardType;  // Le backend envoie ce champ via @JsonProperty("type")
+  cardType?: CardType;  // Gardé pour compatibilité (polymorphisme Jackson)
   displayName: string;
   cancelled?: boolean; // Carte barrée (annulée par une carte Vie)
 }
@@ -87,24 +88,38 @@ export class CardHelper {
   }
 
   static getCardColor(card: Card): string {
-    if (this.isNumberCard(card)) {
+    const anyCard = card as any;
+    
+    console.log('🎨 CARTE REÇUE:', JSON.stringify(anyCard, null, 2));
+    
+    // Détection des opérateurs par "operator" (nom envoyé par le backend ligne 482 GameService.java)
+    if (anyCard.operator) {
+      console.log('   ✅ OPERATOR détecté - ORANGE');
+      return '#f97316'; // Orange pour tous les opérateurs (+2, +4, +6, +8, +10, ×2)
+    }
+    
+    // Détection des nombres par "value"
+    if (anyCard.value !== undefined && !anyCard.specialType && !anyCard.operator) {
+      console.log('   ✅ NUMBER détecté - BLEU');
       return '#3b82f6'; // Bleu pour les nombres
-    } else if (this.isOperatorCard(card)) {
-      return '#f97316'; // Orange pour tous les opérateurs (×2, +2, +4, +6, +8, +10)
-    } else {
-      // Couleurs différentes pour chaque carte spéciale
-      const specialCard = card as SpecialCard;
-      switch (specialCard.specialType) {
-        case SpecialType.STOP:
+    }
+    
+    // Détection des cartes spéciales par specialType
+    if (anyCard.specialType) {
+      console.log('   ✅ SPECIAL détecté:', anyCard.specialType);
+      switch (anyCard.specialType) {
+        case 'STOP':
           return '#ef4444'; // Rouge
-        case SpecialType.DRAW_THREE:
+        case 'DRAW_THREE':
           return '#f59e0b'; // Orange
-        case SpecialType.LIFE:
+        case 'LIFE':
           return '#dc2626'; // Rouge vif pour carte Vie
-        default:
-          return '#6b7280'; // Gris par défaut
       }
     }
+    
+    console.log('   ❌ AUCUN TYPE DÉTECTÉ - GRIS');
+    // Par défaut
+    return '#6b7280'; // Gris
   }
 
   static getCardIcon(card: Card): string {
