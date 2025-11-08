@@ -207,12 +207,6 @@ public class GameService {
 
         // Broadcaster l'état du jeu
         broadcastGameState(roomId, game);
-        
-        // Si on est en phase de distribution, reprendre la distribution
-        if (game.getGameState() == GameState.DISTRIBUTING) {
-            System.out.println("▶️  Resuming distribution after Stop card assignment");
-            continueDistributionWithBroadcast(roomId, game);
-        }
 
         // Si le round est terminé, calculer les scores
         if (game.isRoundOver()) {
@@ -237,12 +231,6 @@ public class GameService {
 
         // Broadcaster l'état du jeu
         broadcastGameState(roomId, game);
-        
-        // Si on est en phase de distribution, reprendre la distribution
-        if (game.getGameState() == GameState.DISTRIBUTING) {
-            System.out.println("▶️  Resuming distribution after DrawThree card assignment");
-            continueDistributionWithBroadcast(roomId, game);
-        }
 
         // Si le round est terminé, calculer les scores
         if (game.isRoundOver()) {
@@ -273,10 +261,13 @@ public class GameService {
             throw new IllegalStateException("Ce n'est pas à vous de démarrer le round");
         }
 
-        // Appeler la méthode startNewRound avec distribution progressive
-        game.startNewRound(); // Initialise le round
+        // Appeler la méthode startNewRound sans distribution
+        game.startNewRound(); // Initialise le round en mode PLAYING
         saveRoundStart(roomId, game); // Sauvegarde
-        continueDistributionWithBroadcast(roomId, game); // Lance la distribution
+        
+        // Broadcaster l'état PLAYING - les joueurs peuvent HIT/STOP
+        System.out.println("📡 Broadcasting game state - round started, players can HIT/STOP");
+        broadcastGameState(roomId, game);
 
         System.out.println("🎮 C'est au tour de " + currentPlayer.getUsername());
         return "Round " + game.getRoundNumber() + " démarré !";

@@ -1,6 +1,6 @@
 @if (show) {
-  <div class="modal-overlay" (click)="cancel()">
-    <div class="modal-content player-selector-modal" (click)="$event.stopPropagation()">
+  <div class="modal-overlay">
+    <div class="modal-content player-selector-modal">
       <!-- En-tête avec icône de carte -->
       <div class="modal-header">
         <div class="card-icon" [style.background-color]="getCardColor()">
@@ -51,10 +51,10 @@
         }
       </div>
 
-      <!-- Bouton annuler -->
-      <button class="cancel-button" (click)="cancel()">
-        Annuler
-      </button>
+      <!-- Message d'obligation -->
+      <div class="obligation-message">
+        ⚠️ Vous devez choisir un joueur pour continuer
+      </div>
     </div>
   </div>
 }

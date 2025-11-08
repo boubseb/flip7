@@ -47,6 +47,8 @@ public class Game {
     public void startNewRound() {
         roundNumber++;
         
+        System.out.println("🚀 ========== STARTING NEW ROUND " + roundNumber + " ==========");
+        
         // Déterminer le joueur de départ
         if (roundNumber == 1) {
             // Premier round : joueur aléatoire
@@ -62,8 +64,11 @@ public class Game {
         initialPlayerIndexForRound = currentPlayerIndex;
 
         // Réinitialiser les joueurs
+        System.out.println("🧹 Resetting all players for new round...");
         for (GamePlayer player : players) {
+            System.out.println("   - Resetting " + player.getUsername() + " (current hand: " + player.getHand().size() + " cards)");
             player.resetForNewRound();
+            System.out.println("     ✅ " + player.getUsername() + " reset complete (hand: " + player.getHand().size() + " cards, status: " + player.getStatus() + ")");
         }
 
         // Réinitialiser et mélanger le deck
@@ -140,7 +145,7 @@ public class Game {
 
         // Vérification du double
         if (player.hasDouble()) {
-            return handleDouble(player, drawnCard);
+            return handleDouble(player, drawnCard, true); // true = passer au joueur suivant
         }
 
         // Vérification du Flip7 (7 cartes numérotées différentes)
@@ -159,20 +164,25 @@ public class Game {
 
     /**
      * Gère le cas où un joueur pioche un double
+     * @param skipNextPlayer true si on doit passer au joueur suivant, false si c'est une pioche forcée en cours
      */
-    private DrawResult handleDouble(GamePlayer player, Card drawnCard) {
+    private DrawResult handleDouble(GamePlayer player, Card drawnCard, boolean skipNextPlayer) {
         // Vérifier si le joueur a une carte Vie
         if (player.getLifeCardsInHand() > 0) {
             // Le joueur peut utiliser sa carte Vie
             player.useLifeCard();
-            nextPlayer(); // Passer au joueur suivant après utilisation de la carte Vie
+            if (skipNextPlayer) {
+                nextPlayer(); // Passer au joueur suivant après utilisation de la carte Vie
+            }
             return new DrawResult(true, "Double ! Carte Vie utilisée pour survivre.", drawnCard, false, true);
         } else {
             // Le joueur est éliminé - son score de round passe à 0
             player.setStatus(PlayerStatus.ELIMINATED);
             player.resetRoundScore();
             System.out.println("💀 " + player.getUsername() + " éliminé ! Score du round remis à 0.");
-            nextPlayer();
+            if (skipNextPlayer) {
+                nextPlayer();
+            }
             return new DrawResult(true, "Double ! Vous êtes éliminé du round.", drawnCard, false, false, true);
         }
     }
@@ -209,8 +219,8 @@ public class Game {
             return new ActionResult(false, "Joueur non trouvé");
         }
 
-        // Pendant la distribution (DISTRIBUTING), permettre l'assignation sans vérifier le tour
-        if (gameState != GameState.DISTRIBUTING && !player.getUserId().equals(getCurrentPlayer().getUserId())) {
+        // Vérifier que c'est le tour du joueur
+        if (!player.getUserId().equals(getCurrentPlayer().getUserId())) {
             return new ActionResult(false, "Ce n'est pas votre tour");
         }
 
@@ -249,50 +259,48 @@ public class Game {
         
         // Retirer la carte de la main du joueur qui l'a piochée
         boolean removed = player.removeCard(card);
-        System.out.println("   - Carte retirée de " + player.getUsername() + " ? " + removed);
+        System.out.println("   - Carte Stop retirée de " + player.getUsername() + " ? " + removed);
         
-        // Ajouter la carte Stop à la main du joueur cible et le forcer à s'arrêter
+        // Ajouter la carte Stop à la main du joueur cible
         targetPlayer.addCard(card);
-        System.out.println("   - Carte ajoutée à " + targetPlayer.getUsername());
         
-        System.out.println("🛑 APRÈS assignation:");
-        System.out.println("   - Assigneur: " + player.getUsername() + " (main: " + player.getHand().size() + " cartes)");
-        System.out.println("   - Cible: " + targetPlayer.getUsername() + " (main: " + targetPlayer.getHand().size() + " cartes)");
-        
-        // Initialiser le status si besoin (même s'il n'a pas encore de carte initiale)
-        if (targetPlayer.getStatus() != PlayerStatus.PLAYING && targetPlayer.getStatus() != PlayerStatus.ELIMINATED) {
-            targetPlayer.setStatus(PlayerStatus.PLAYING);
-        }
-        
-        // Le forcer à s'arrêter immédiatement (même avec 0 carte si pas encore distribué)
+        // Le forcer à s'arrêter immédiatement
         targetPlayer.setStatus(PlayerStatus.FORCED_STOP);
         
         System.out.println("🛑 " + player.getUsername() + " a assigné la carte STOP à " + targetPlayer.getUsername());
+        System.out.println("   - " + targetPlayer.getUsername() + " est maintenant FORCED_STOP");
+        System.out.println("   - Score de " + targetPlayer.getUsername() + " : " + targetPlayer.getRoundScore());
         
-        // Si le joueur n'avait pas encore de carte, il reste avec 0 point + la Stop
-        if (gameState == GameState.DISTRIBUTING && targetPlayer.getHand().size() == 1) {
-            System.out.println("   ⚠️  " + targetPlayer.getUsername() + " n'avait pas encore de carte - il est stoppé avec 0 point (seulement la carte Stop)");
-        } else {
-            System.out.println("   Score de " + targetPlayer.getUsername() + " : " + targetPlayer.getRoundScore() + " (incluant la carte Stop)");
+        // Vérifier s'il y avait une pioche forcée en cours pour le joueur qui a pioché cette carte
+        int remainingDraws = player.getRemainingForcedDraws();
+        if (remainingDraws > 0) {
+            System.out.println("   ▶️  Le joueur " + player.getUsername() + " doit reprendre sa pioche forcée (" + remainingDraws + " cartes restantes)");
+            player.setRemainingForcedDraws(0); // Reset
+            forceDrawThreeCards(player, remainingDraws);
+            
+            // Vérifier si le round s'est terminé pendant la reprise de pioche
+            if (gameState != GameState.PLAYING) {
+                System.out.println("   ⚠️ Le round s'est terminé pendant la reprise de pioche - on ne continue pas");
+                return new ActionResult(true, "Le round s'est terminé");
+            }
         }
         
-        // Vérifier s'il y avait une pioche forcée en cours - la Stop l'annule
+        // Si le joueur cible (celui qui reçoit le Stop) avait une pioche forcée, la Stop l'annule
         if (targetPlayer.getRemainingForcedDraws() > 0) {
-            System.out.println("   🛑 La carte Stop annule les " + targetPlayer.getRemainingForcedDraws() + " cartes restantes à piocher");
+            System.out.println("   🛑 La carte Stop annule les " + targetPlayer.getRemainingForcedDraws() + " cartes restantes de " + targetPlayer.getUsername());
             targetPlayer.setRemainingForcedDraws(0);
         }
         
-        // Si on est en phase de distribution, GameService reprendra la distribution
-        if (gameState == GameState.DISTRIBUTING) {
-            // Ne rien faire - GameService appellera continueInitialDistribution() après broadcast
-        } else {
-            // Pendant le jeu normal, appeler nextPlayer()
-            if (targetPlayer.getUserId().equals(getCurrentPlayer().getUserId())) {
-                nextPlayer();
-            } else {
-                // Sinon, passer simplement au joueur suivant
-                nextPlayer();
-            }
+        // Vérifier s'il y a une carte spéciale en attente après la reprise de la pioche
+        boolean hasPendingSpecial = player.getHand().stream()
+            .anyMatch(c -> c instanceof SpecialCard && 
+                     ((SpecialCard) c).isPending() &&
+                     (((SpecialCard) c).getSpecialType() == SpecialType.STOP || 
+                      ((SpecialCard) c).getSpecialType() == SpecialType.DRAW_THREE));
+        
+        // Passer au joueur suivant seulement si pas de carte spéciale en attente
+        if (!hasPendingSpecial) {
+            nextPlayer();
         }
         
         return new ActionResult(true, targetPlayer.getUsername() + " a reçu la carte Stop et est forcé de s'arrêter !");
@@ -305,8 +313,15 @@ public class Game {
             return new ActionResult(false, "Joueur non trouvé");
         }
         
-        // Pendant la distribution (DISTRIBUTING), permettre l'assignation sans vérifier le tour
-        if (gameState != GameState.DISTRIBUTING && !player.getUserId().equals(getCurrentPlayer().getUserId())) {
+        GamePlayer currentPlayer = getCurrentPlayer();
+        System.out.println("➕3️⃣ assignDrawThreeCard - Vérification du tour:");
+        System.out.println("   - Joueur qui assigne: " + player.getUsername() + " (ID: " + player.getUserId() + ")");
+        System.out.println("   - Joueur actuel (getCurrentPlayer): " + (currentPlayer != null ? currentPlayer.getUsername() + " (ID: " + currentPlayer.getUserId() + ")" : "NULL"));
+        System.out.println("   - currentPlayerIndex: " + currentPlayerIndex);
+        
+        // Vérifier que c'est le tour du joueur
+        if (!player.getUserId().equals(currentPlayer.getUserId())) {
+            System.out.println("   ❌ Refus: Ce n'est pas le tour du joueur");
             return new ActionResult(false, "Ce n'est pas votre tour");
         }
 
@@ -337,6 +352,20 @@ public class Game {
             return new ActionResult(false, "Joueur cible non trouvé");
         }
 
+        System.out.println("➕3️⃣ Vérification avant assignation:");
+        System.out.println("   - Joueur qui assigne: " + player.getUsername() + " (status: " + player.getStatus() + ")");
+        System.out.println("   - Joueur cible: " + targetPlayer.getUsername() + " (status: " + targetPlayer.getStatus() + ")");
+        System.out.println("   - Même joueur ? " + player.getUserId().equals(targetPlayer.getUserId()));
+
+        // Vérifier que le joueur cible n'est pas stoppé
+        // Exception: on peut s'auto-assigner un +3 même si on est PLAYING (pioche forcée en cours)
+        if (targetPlayer.getStatus() == PlayerStatus.STOPPED || 
+            targetPlayer.getStatus() == PlayerStatus.FORCED_STOP ||
+            targetPlayer.getStatus() == PlayerStatus.FLIP7_STOP) {
+            System.out.println("   ❌ Refus: joueur cible est stoppé (status: " + targetPlayer.getStatus() + ")");
+            return new ActionResult(false, "Impossible d'assigner un +3 à un joueur stoppé");
+        }
+
         // Assigner la carte au joueur cible
         drawThreeCard.setPending(false);
         drawThreeCard.setAssignedToPlayerId(targetPlayerId);
@@ -344,40 +373,50 @@ public class Game {
         // Retirer la carte de la main du joueur qui l'a piochée
         player.removeCard(card);
         
-        // Ajouter la carte à la main du joueur cible
+        // Ajouter la carte +3 à la main du joueur cible
         targetPlayer.addCard(card);
-        
-        // Pendant la distribution, initialiser le status si besoin
-        if (gameState == GameState.DISTRIBUTING && targetPlayer.getStatus() != PlayerStatus.PLAYING) {
-            targetPlayer.setStatus(PlayerStatus.PLAYING);
-        }
         
         System.out.println("➕3️⃣ " + player.getUsername() + " a assigné la carte DRAW_THREE à " + targetPlayer.getUsername());
         
-        // Vérifier s'il y a une pioche forcée en cours à reprendre
-        int remainingDraws = targetPlayer.getRemainingForcedDraws();
+        // Force le joueur cible à piocher 3 cartes
+        forceDrawThreeCards(targetPlayer, 3);
+        
+        // Vérifier si le round s'est terminé pendant la pioche forcée
+        if (gameState != GameState.PLAYING) {
+            System.out.println("   ⚠️ Le round s'est terminé pendant la pioche forcée - on ne reprend pas");
+            return new ActionResult(true, "Le round s'est terminé");
+        }
+        
+        // Vérifier s'il y avait une pioche forcée en cours pour le joueur qui a pioché cette carte
+        int remainingDraws = player.getRemainingForcedDraws();
         if (remainingDraws > 0) {
-            System.out.println("   ▶️  Reprise d'une pioche forcée avec " + remainingDraws + " cartes restantes");
-            targetPlayer.setRemainingForcedDraws(0); // Reset
-            forceDrawThreeCards(targetPlayer, remainingDraws);
-        } else {
-            // Nouvelle pioche forcée de 3 cartes
-            forceDrawThreeCards(targetPlayer, 3);
+            System.out.println("   ▶️  Le joueur " + player.getUsername() + " doit reprendre sa pioche forcée (" + remainingDraws + " cartes restantes)");
+            player.setRemainingForcedDraws(0); // Reset
+            forceDrawThreeCards(player, remainingDraws);
+            
+            // Re-vérifier si le round s'est terminé
+            if (gameState != GameState.PLAYING) {
+                System.out.println("   ⚠️ Le round s'est terminé pendant la reprise de pioche - on ne continue pas");
+                return new ActionResult(true, "Le round s'est terminé");
+            }
         }
         
         // Passer au joueur suivant (seulement si pas de carte spéciale en attente)
-        boolean hasPendingSpecial = targetPlayer.getHand().stream()
+        // Vérifier les cartes en attente pour le joueur qui a pioché (player) ET pour la cible (targetPlayer)
+        boolean hasPendingSpecialPlayer = player.getHand().stream()
             .anyMatch(c -> c instanceof SpecialCard && 
                      ((SpecialCard) c).isPending() &&
                      (((SpecialCard) c).getSpecialType() == SpecialType.STOP || 
                       ((SpecialCard) c).getSpecialType() == SpecialType.DRAW_THREE));
         
-        // Si on est en phase de distribution, GameService reprendra la distribution
-        if (gameState == GameState.DISTRIBUTING && !hasPendingSpecial) {
-            // Ne rien faire - GameService appellera continueInitialDistribution() après broadcast
-        } else if (!hasPendingSpecial) {
-            // Pendant le jeu normal, passer au joueur suivant dans l'ordre
-            // Exemple: A donne +3 à C, alors: A → pioche → C pioche 3 → tour de B → tour de C
+        boolean hasPendingSpecialTarget = targetPlayer.getHand().stream()
+            .anyMatch(c -> c instanceof SpecialCard && 
+                     ((SpecialCard) c).isPending() &&
+                     (((SpecialCard) c).getSpecialType() == SpecialType.STOP || 
+                      ((SpecialCard) c).getSpecialType() == SpecialType.DRAW_THREE));
+        
+        // Passer au joueur suivant si pas de carte spéciale en attente
+        if (!hasPendingSpecialPlayer && !hasPendingSpecialTarget) {
             nextPlayer();
         }
         
@@ -422,13 +461,15 @@ public class Game {
             // Vérifier si le joueur a un double après cette carte
             if (targetPlayer.hasDouble()) {
                 System.out.println("   ⚠️ DOUBLE détecté avec " + card.getDisplayName() + " !");
-                handleDouble(targetPlayer, card);
+                DrawResult doubleResult = handleDouble(targetPlayer, card, false); // false = NE PAS passer au joueur suivant (pioche forcée en cours)
                 
                 // Si le joueur est éliminé après le double, arrêter la pioche forcée
                 if (targetPlayer.getStatus() == PlayerStatus.ELIMINATED) {
                     System.out.println("   💀 Éliminé à la carte " + (i+1) + "/" + cardsToDraw + " - arrêt de la pioche forcée");
                     targetPlayer.setRemainingForcedDraws(0);
                     break;
+                } else if (doubleResult.isLifeUsed()) {
+                    System.out.println("   ❤️ Carte Vie utilisée ! Le joueur continue la pioche forcée");
                 }
             }
         }

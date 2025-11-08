@@ -22,11 +22,24 @@ export class PlayerSelectorComponent {
 
   /**
    * Vérifie si un joueur est éligible
-   * Tous les joueurs SAUF les éliminés (on peut s'assigner à soi-même)
+   * - Carte STOP: Tous les joueurs sauf éliminés
+   * - Carte DRAW_THREE: Tous les joueurs sauf éliminés ET stoppés
    */
   isPlayerEligible(player: any): boolean {
-    // Tous les joueurs sauf les éliminés sont éligibles
-    return player.status !== PlayerStatus.ELIMINATED;
+    // Toujours exclure les éliminés
+    if (player.status === PlayerStatus.ELIMINATED) {
+      return false;
+    }
+    
+    // Pour les cartes +3, exclure aussi les joueurs stoppés
+    if (this.cardType === 'DRAW_THREE') {
+      return player.status !== PlayerStatus.STOPPED && 
+             player.status !== PlayerStatus.FORCED_STOP &&
+             player.status !== PlayerStatus.FLIP7_STOP;
+    }
+    
+    // Pour les cartes Stop, tous les non-éliminés sont éligibles
+    return true;
   }
 
   /**

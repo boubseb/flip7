@@ -197,22 +197,16 @@
   font-style: italic;
 }
 
-.cancel-button {
-  width: 100%;
-  padding: 0.875rem;
-  background: #f3f4f6;
-  border: 2px solid #e5e7eb;
+.obligation-message {
+  text-align: center;
+  padding: 1rem;
+  background: #fef3c7;
+  border: 2px solid #fbbf24;
   border-radius: 10px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #4b5563;
-  transition: all 0.2s;
-
-  &:hover {
-    background: #e5e7eb;
-    border-color: #d1d5db;
-  }
+  color: #92400e;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: 1rem;
 }
 
 @keyframes fadeIn {
