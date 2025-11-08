@@ -56,21 +56,31 @@ public class RoomService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
         }
         
+        // Si le joueur était déjà dans la room, c'est une reconnexion - toujours autorisée
+        if (room.getPlayers().contains(playerId)) {
+            System.out.println("🔄 Reconnexion du joueur " + playerId + " à la room " + roomId);
+            // Notifier les autres joueurs de la reconnexion
+            broadcastRoomUpdate(room);
+            return room;
+        }
+        
+        // Nouvelle connexion - vérifier les conditions
         if (room.getStatus() != RoomStatus.WAITING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game already started");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Game already started - cannot join");
         }
         
         if (room.getPlayers().size() >= room.getMaxPlayers()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Room is full");
         }
         
-        if (!room.getPlayers().contains(playerId)) {
-            room.getPlayers().add(playerId);
-            room = roomRepository.save(room);
-            
-            // Notify all players in room
-            broadcastRoomUpdate(room);
-        }
+        // Ajouter le nouveau joueur
+        room.getPlayers().add(playerId);
+        room = roomRepository.save(room);
+        
+        System.out.println("➕ Nouveau joueur " + playerId + " rejoint la room " + roomId);
+        
+        // Notify all players in room
+        broadcastRoomUpdate(room);
         
         return room;
     }

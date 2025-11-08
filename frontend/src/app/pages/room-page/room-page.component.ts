@@ -80,8 +80,17 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         // Load the room and go to waiting view
         this.loadRoomById(roomId);
       } else {
-        // Default to create if no mode specified
-        this.currentView = 'create';
+        // Vérifier s'il y a une room sauvegardée pour reconnexion
+        const savedRoomId = localStorage.getItem('currentRoomId');
+        const savedPassword = localStorage.getItem('currentRoomPassword');
+        
+        if (savedRoomId && savedPassword) {
+          console.log('🔄 Tentative de reconnexion à la room:', savedRoomId);
+          this.attemptReconnection(savedRoomId, savedPassword);
+        } else {
+          // Default to create if no mode specified
+          this.currentView = 'create';
+        }
       }
     });
     
@@ -193,6 +202,10 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         console.log('✅ Room created:', room);
         this.showSuccessMessage(`Room créée ! ID: ${room.id}`);
         
+        // Sauvegarder dans localStorage pour reconnexion
+        localStorage.setItem('currentRoomId', room.id);
+        localStorage.setItem('currentRoomPassword', request.password);
+        
         // Set the room and switch to waiting view
         this.currentRoom = room;
         this.updateRoomState();
@@ -246,6 +259,10 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         console.log('✅ Joined room:', room.id);
         this.showSuccessMessage('Room rejointe avec succès !');
         
+        // Sauvegarder dans localStorage pour reconnexion
+        localStorage.setItem('currentRoomId', room.id);
+        localStorage.setItem('currentRoomPassword', pwd);
+        
         // Switch to waiting view
         this.currentRoom = room;
         this.updateRoomState();
@@ -270,6 +287,46 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   selectRoomToJoin(roomId: string): void {
     this.joinRoomId = roomId;
     this.errorMessage = '';
+  }
+
+  attemptReconnection(roomId: string, password: string): void {
+    console.log('🔄 Reconnexion à la room:', roomId);
+    
+    const request: RoomJoinRequest = {
+      roomId: roomId,
+      password: password
+    };
+    
+    this.roomService.joinRoom(request).subscribe({
+      next: (room) => {
+        console.log('✅ Reconnexion réussie:', room.id);
+        this.showSuccessMessage('Reconnecté à la partie !');
+        
+        // Switch to waiting view
+        this.currentRoom = room;
+        this.updateRoomState();
+        this.currentView = 'waiting';
+        
+        // Subscribe to WebSocket updates for this room
+        if (this.wsConnected) {
+          this.wsService.subscribeToRoom(room.id);
+        }
+        
+        // Si la partie a déjà commencé, rediriger vers la game page
+        if (room.status === RoomStatus.IN_GAME) {
+          console.log('🎮 Partie en cours, redirection...');
+          this.router.navigate(['/game'], { queryParams: { roomId: room.id } });
+        }
+      },
+      error: (error) => {
+        console.error('❌ Échec de reconnexion:', error);
+        // Nettoyer le localStorage si la reconnexion échoue (room n'existe plus)
+        localStorage.removeItem('currentRoomId');
+        localStorage.removeItem('currentRoomPassword');
+        this.showErrorMessage('Impossible de se reconnecter (room expirée ou fermée)');
+        this.currentView = 'create';
+      }
+    });
   }
 
   clearMessages(): void {
@@ -410,6 +467,24 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     this.currentView = 'create';
     this.errorMessage = '';
     this.successMessage = '';
+  }
+  
+  ngOnDestroy(): void {
+    // Unsubscribe from all subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    
+    // Ne pas nettoyer le localStorage ici car l'utilisateur peut juste rafraîchir la page
+    // Le nettoyage se fera seulement en cas d'échec de reconnexion ou de quitter intentionnel
+  }
+  
+  leaveRoom(): void {
+    // Nettoyer le localStorage quand on quitte intentionnellement
+    localStorage.removeItem('currentRoomId');
+    localStorage.removeItem('currentRoomPassword');
+    
+    this.currentRoom = null;
+    this.currentView = 'create';
+    this.showSuccessMessage('Vous avez quitté la room');
   }
   
   private updateRoomState(): void {

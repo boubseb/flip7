@@ -100,7 +100,7 @@ export class CardHelper {
         case SpecialType.DRAW_THREE:
           return '#f59e0b'; // Orange
         case SpecialType.LIFE:
-          return '#ec4899'; // Rose
+          return '#dc2626'; // Rouge vif pour carte Vie
         default:
           return '#6b7280'; // Gris par défaut
       }
