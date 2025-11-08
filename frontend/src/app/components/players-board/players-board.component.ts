@@ -19,17 +19,27 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   expandedPlayers: Set<string> = new Set();
   selectedRound: number = 1;
   maxRound: number = 1;
+  
+  // Tri des joueurs
+  sortOrder: 'game' | 'current' | 'theoretical' = 'game';
+  sortedPlayers: string[] = [];
 
   ngOnInit(): void {
     // Initialiser tous les joueurs comme déployés au chargement
     this.players.forEach(playerId => this.expandedPlayers.add(playerId));
     this.updateMaxRound();
+    this.applySorting();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     // Ajouter les nouveaux joueurs comme déployés
     if (changes['players'] && this.players) {
       this.players.forEach(playerId => this.expandedPlayers.add(playerId));
+    }
+    
+    // Réappliquer le tri si les données changent
+    if (changes['gameState'] || changes['players']) {
+      this.applySorting();
     }
     
     // Logs de débogage
@@ -243,5 +253,50 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
       'SPADES': '♠'
     };
     return suitMap[suit] || suit;
+  }
+
+  /**
+   * Change l'ordre de tri des joueurs
+   */
+  setSortOrder(order: 'game' | 'current' | 'theoretical'): void {
+    this.sortOrder = order;
+    this.applySorting();
+  }
+
+  /**
+   * Applique le tri sur la liste des joueurs
+   */
+  applySorting(): void {
+    if (!this.gameState?.players || this.players.length === 0) {
+      this.sortedPlayers = [...this.players];
+      return;
+    }
+
+    const playersCopy = [...this.players];
+
+    switch (this.sortOrder) {
+      case 'game':
+        // Ordre de jeu : ordre original (index dans gameState.players)
+        this.sortedPlayers = playersCopy;
+        break;
+
+      case 'current':
+        // Classement actuel : par score total décroissant
+        this.sortedPlayers = playersCopy.sort((a, b) => {
+          const scoreA = this.getPlayerTotalScore(a);
+          const scoreB = this.getPlayerTotalScore(b);
+          return scoreB - scoreA; // Décroissant
+        });
+        break;
+
+      case 'theoretical':
+        // Classement théorique : par score de sécurité (safetyScore) décroissant
+        this.sortedPlayers = playersCopy.sort((a, b) => {
+          const safetyA = this.getPlayerSafetyScore(a);
+          const safetyB = this.getPlayerSafetyScore(b);
+          return safetyB - safetyA; // Décroissant
+        });
+        break;
+    }
   }
 }

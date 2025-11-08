@@ -20,9 +20,31 @@
     </button>
   </div>
 
+  <!-- Sélecteur de tri -->
+  <div class="sort-selector">
+    <button 
+      class="sort-btn"
+      [class.active]="sortOrder === 'game'"
+      (click)="setSortOrder('game')">
+      🎮 Ordre de jeu
+    </button>
+    <button 
+      class="sort-btn"
+      [class.active]="sortOrder === 'current'"
+      (click)="setSortOrder('current')">
+      🏆 Classement actuel
+    </button>
+    <button 
+      class="sort-btn"
+      [class.active]="sortOrder === 'theoretical'"
+      (click)="setSortOrder('theoretical')">
+      📊 Classement théorique
+    </button>
+  </div>
+
   @if (players.length > 0) {
     <div class="players-list">
-      @for (playerId of players; track playerId; let i = $index) {
+      @for (playerId of sortedPlayers; track playerId; let i = $index) {
         <div 
           class="player-item"
           [class.current-player]="playerId === currentPlayerId"

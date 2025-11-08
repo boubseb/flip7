@@ -75,6 +75,44 @@
         }
     }
 
+    // Sélecteur de tri
+    .sort-selector {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+        .sort-btn {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+
+            &:hover {
+                border-color: #667eea;
+                color: #667eea;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+            }
+
+            &.active {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                border-color: #667eea;
+                color: white;
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            }
+        }
+    }
+
     .players-list {
         display: flex;
         flex-direction: column;
