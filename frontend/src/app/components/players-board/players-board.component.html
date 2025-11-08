@@ -26,19 +26,22 @@
       class="sort-btn"
       [class.active]="sortOrder === 'game'"
       (click)="setSortOrder('game')">
-      🎮 {{ 'game.gameOrder' | translate }}
+      <span class="btn-icon">🎮</span>
+      <span class="btn-text">{{ 'game.gameOrder' | translate }}</span>
     </button>
     <button 
       class="sort-btn"
       [class.active]="sortOrder === 'current'"
       (click)="setSortOrder('current')">
-      🏆 {{ 'game.currentRanking' | translate }}
+      <span class="btn-icon">🏆</span>
+      <span class="btn-text">{{ 'game.currentRanking' | translate }}</span>
     </button>
     <button 
       class="sort-btn"
       [class.active]="sortOrder === 'theoretical'"
       (click)="setSortOrder('theoretical')">
-      📊 {{ 'game.theoreticalRanking' | translate }}
+      <span class="btn-icon">📊</span>
+      <span class="btn-text">{{ 'game.theoreticalRanking' | translate }}</span>
     </button>
   </div>
 
