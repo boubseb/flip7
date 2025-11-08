@@ -132,6 +132,9 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       this.wsService.unsubscribeFromRoom(this.currentRoom.id);
     }
     this.wsService.disconnect();
+    
+    // Ne pas nettoyer le localStorage ici car l'utilisateur peut juste rafraîchir la page
+    // Le nettoyage se fera seulement en cas d'échec de reconnexion ou de quitter intentionnel
   }
 
   loadAvailableRooms(): void {
@@ -445,6 +448,10 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   }
   
   leaveRoom(): void {
+    // Nettoyer le localStorage quand on quitte intentionnellement
+    localStorage.removeItem('currentRoomId');
+    localStorage.removeItem('currentRoomPassword');
+    
     if (this.currentRoom) {
       this.wsService.unsubscribeFromRoom(this.currentRoom.id);
       this.currentRoom = null;
@@ -467,24 +474,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     this.currentView = 'create';
     this.errorMessage = '';
     this.successMessage = '';
-  }
-  
-  ngOnDestroy(): void {
-    // Unsubscribe from all subscriptions
-    this.subscriptions.forEach(sub => sub.unsubscribe());
-    
-    // Ne pas nettoyer le localStorage ici car l'utilisateur peut juste rafraîchir la page
-    // Le nettoyage se fera seulement en cas d'échec de reconnexion ou de quitter intentionnel
-  }
-  
-  leaveRoom(): void {
-    // Nettoyer le localStorage quand on quitte intentionnellement
-    localStorage.removeItem('currentRoomId');
-    localStorage.removeItem('currentRoomPassword');
-    
-    this.currentRoom = null;
-    this.currentView = 'create';
-    this.showSuccessMessage('Vous avez quitté la room');
   }
   
   private updateRoomState(): void {
