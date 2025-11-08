@@ -283,6 +283,15 @@
     }
 }
 
+@keyframes buttonPulse {
+    0%, 100% {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        box-shadow: 0 6px 24px rgba(59, 130, 246, 0.6);
+    }
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;

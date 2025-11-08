@@ -27,12 +27,12 @@ app-footer {
   height: $footerHeight;
 }
 
-/* MAIN prend exactement l’espace entre header et footer */
+/* MAIN prend exactement l'espace entre header et footer */
 main {
   position: absolute;
   top: var(--header-height, $headerHeight);   /* espace égal à la hauteur du header */
   left: 0;
   right: 0;
+  bottom: 0; /* prend toute la hauteur jusqu'en bas */
   overflow: hidden;
-  bottom: var(--footer-height, $footerHeight); /* espace égal à la hauteur du footer */
 }

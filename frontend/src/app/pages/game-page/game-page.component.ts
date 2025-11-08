@@ -8,21 +8,16 @@ import { GameService } from '../../services/game/game.service';
 import { Room, RoomStatus } from '../../models/room/room.model';
 import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
-import { PlayerBoardComponent } from '../../components/player-board/player-board.component';
-import { ScoreBoardComponent } from '../../components/score-board/score-board.component';
-import { FooterComponent } from '../../components/footer/footer.component';
 import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
 import { StartRoundPopupComponent } from '../../components/start-round-popup/start-round-popup.component';
+
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerBoardComponent, ScoreBoardComponent, FooterComponent, PlayerSelectorComponent, StartRoundPopupComponent],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, StartRoundPopupComponent],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
 export class GamePageComponent implements OnInit, OnDestroy {
-  // View state for game
-  gameViewMode: 'all' | 'player' | 'score' = 'player';
-  
   // Room ID from URL
   roomId: string = '';
   
@@ -434,8 +429,108 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.successMessage = '';
   }
 
-  switchGameView(mode: 'all' | 'player' | 'score'): void {
-    this.gameViewMode = mode;
+  /**
+   * Vérifie si le joueur actuel est éliminé
+   */
+  isPlayerEliminated(): boolean {
+    if (!this.gameState?.players || !this.currentUserId) {
+      return false;
+    }
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    return myPlayer?.status === 'ELIMINATED';
+  }
+
+  /**
+   * Tire une carte (Hit)
+   */
+  drawCard(): void {
+    console.log('🎲 drawCard() called');
+    console.log('   - roomId:', this.roomId);
+    console.log('   - isMyTurn:', this.isMyTurn);
+    
+    if (!this.roomId) {
+      console.error('❌ No roomId!');
+      return;
+    }
+    
+    if (!this.isMyTurn) {
+      console.warn('⚠️ Not your turn!');
+      this.showError('Ce n\'est pas votre tour');
+      return;
+    }
+    
+    console.log('🎲 Calling drawCard API...');
+    this.gameService.drawCard(this.roomId).subscribe({
+      next: (result) => {
+        console.log('🃏 Card drawn:', result);
+        console.log('   - needsStopAssignment:', result.needsStopAssignment);
+        console.log('   - card:', result.card);
+        
+        if (result.needsStopAssignment && result.card) {
+          // Carte Stop ou DrawThree piochée - afficher la sélection de joueur
+          const cardData = result.card as any;
+          console.log('🎴 Card needs assignment, cardType:', cardData.cardType);
+          
+          // Le backend retourne "cardType" au lieu de "type"
+          if (cardData.cardType === 'SPECIAL' || cardData.type === 'SPECIAL') {
+            console.log('   Special type:', cardData.specialType);
+            if (cardData.specialType === 'STOP') {
+              console.log('🛑 Stop card drawn - showing player selection');
+              this.showStopCardSelection(result.card);
+            } else if (cardData.specialType === 'DRAW_THREE') {
+              console.log('➕3️⃣ DrawThree card drawn - showing player selection');
+              this.showDrawThreeCardSelection(result.card);
+            } else {
+              console.warn('⚠️ Unknown special type:', cardData.specialType);
+            }
+          } else {
+            console.warn('⚠️ needsStopAssignment but card is not SPECIAL:', cardData);
+          }
+        } else if (result.eliminated) {
+          this.showError('Double ! Vous êtes éliminé !');
+        } else if (result.lifeUsed) {
+          console.log('⚡ Carte Vie utilisée automatiquement');
+        } else if (result.roundEnded) {
+          console.log('🎯 FLIP7 ! 7 cartes numérotées différentes ! Le round s\'arrête et vous gagnez +15 points !');
+          this.showSuccess('🎯 FLIP7 ! 7 cartes numérotées différentes ! +15 points bonus !');
+        }
+        
+        // L'état sera mis à jour via WebSocket
+      },
+      error: (error) => {
+        console.error('❌ Error drawing card:', error);
+        this.showError('Erreur lors de la pioche');
+      }
+    });
+  }
+
+  /**
+   * Arrête de tirer des cartes (Stop)
+   */
+  stopDrawing(): void {
+    console.log('✋ stopDrawing() called');
+    
+    if (!this.roomId) {
+      console.error('❌ No roomId!');
+      return;
+    }
+    
+    if (!this.isMyTurn) {
+      console.warn('⚠️ Not your turn!');
+      this.showError('Ce n\'est pas votre tour');
+      return;
+    }
+    
+    this.gameService.stopDrawing(this.roomId).subscribe({
+      next: () => {
+        console.log('✋ Stopped drawing');
+        // L'état sera mis à jour via WebSocket
+      },
+      error: (error) => {
+        console.error('❌ Error stopping:', error);
+        this.showError('Erreur lors de l\'arrêt');
+      }
+    });
   }
 
   /**

@@ -21,45 +21,37 @@
       <!-- Game Content Area -->
       <div class="game-content">
         <!-- Players Board View (All players) -->
-        @if (gameViewMode === 'all') {
-          <app-players-board 
-            [gameState]="gameState"
-            [players]="currentRoom.players"
-            [playerInfos]="currentRoom.playerInfos || []"
-            [currentUserId]="currentUserId"
-            [currentPlayerId]="currentPlayerId">
-          </app-players-board>
-        }
-
-        <!-- Player Board View (Current player) -->
-        @if (gameViewMode === 'player') {
-          <app-player-board 
-            [gameState]="gameState"
-            [currentUserId]="currentUserId"
-            [isMyTurn]="isMyTurn"
-            (onPlayCard)="onPlayerAction($event)">
-          </app-player-board>
-        }
-
-        <!-- Score Board View -->
-        @if (gameViewMode === 'score') {
-          <app-score-board 
-            [gameState]="gameState"
-            [players]="currentRoom.players"
-            [playerInfos]="currentRoom.playerInfos || []">
-          </app-score-board>
-        }
+        <app-players-board 
+          [gameState]="gameState"
+          [players]="currentRoom.players"
+          [playerInfos]="currentRoom.playerInfos || []"
+          [currentUserId]="currentUserId"
+          [currentPlayerId]="currentPlayerId">
+        </app-players-board>
       </div>
 
+      <!-- Game Footer with Action Buttons -->
+      <div class="game-footer">
+        <button 
+          class="btn btn-hit"
+          [disabled]="!isMyTurn || isPlayerEliminated()"
+          [class.active]="isMyTurn && !isPlayerEliminated()"
+          (click)="drawCard()">
+          <span class="icon">🎴</span>
+          <span>Hit</span>
+        </button>
+        <button 
+          class="btn btn-stop"
+          [disabled]="!isMyTurn || isPlayerEliminated()"
+          [class.active]="isMyTurn && !isPlayerEliminated()"
+          (click)="stopDrawing()">
+          <span class="icon">✋</span>
+          <span>Stop</span>
+        </button>
+      </div>
     </div>
   }
 </div>
-
-<!-- Footer with game navigation -->
-<app-footer 
-  [gameViewMode]="gameViewMode" 
-  (onSwitchView)="switchGameView($event)">
-</app-footer>
 
 <!-- Player Selector Modal - Stop Card -->
 <app-player-selector

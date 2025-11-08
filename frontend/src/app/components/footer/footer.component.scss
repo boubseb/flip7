@@ -40,58 +40,94 @@
     }
   }
 
-  // Game Page Footer: Navigation Buttons
+  // Game Page Footer: Action Buttons (Hit/Stop)
   &.game-footer {
     padding: 0;
+    background: linear-gradient(135deg, #1f2937, #374151);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
 
-    .game-nav-menu {
+    .game-actions {
       width: 100%;
       height: 100%;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 3rem;
+      padding: 0 2rem;
 
-      .nav-btn {
+      .btn {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 1rem;
+        padding: 1rem 3rem;
+        font-size: 1.25rem;
+        font-weight: 700;
         border: none;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 0;
-        background: transparent;
+        border-radius: 16px;
         cursor: pointer;
-        transition: all 0.2s ease;
-        font-weight: 600;
-        color: $textLightColor;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        min-width: 180px;
+        justify-content: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
 
-        &:last-child {
-          border-right: none;
+        .icon {
+          font-size: 2rem;
         }
 
-        &:hover {
-          background: rgba(255, 255, 255, 0.1);
-        }
+        &:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 
-        &.active {
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          color: white;
-          box-shadow: inset 0 4px 8px rgba(102, 126, 234, 0.3);
-
-          .nav-icon {
-            transform: scale(1.2);
+          &:hover {
+            transform: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
           }
         }
 
-        .nav-icon {
-          font-size: 2rem;
-          transition: transform 0.2s;
+        &.active {
+          animation: pulse 2s ease-in-out infinite;
         }
 
-        .nav-label {
-          display: none; // Hide labels
+        &:not(:disabled):hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        &:not(:disabled):active {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+      }
+
+      .btn-hit {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+
+        &:not(:disabled):hover {
+          background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+      }
+
+      .btn-stop {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+
+        &:not(:disabled):hover {
+          background: linear-gradient(135deg, #dc2626, #b91c1c);
         }
       }
     }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 6px 24px rgba(59, 130, 246, 0.6);
   }
 }

@@ -14,9 +14,13 @@ export class FooterComponent implements OnInit, OnDestroy {
   isGamePage: boolean = false;
   private routerSubscription?: Subscription;
 
-  // Inputs/Outputs for game page
-  @Input() gameViewMode: 'all' | 'player' | 'score' = 'player';
-  @Output() onSwitchView = new EventEmitter<'all' | 'player' | 'score'>();
+  // Inputs for game state
+  @Input() isMyTurn: boolean = false;
+  @Input() isEliminated: boolean = false;
+
+  // Outputs for game actions
+  @Output() onHitClick = new EventEmitter<void>();
+  @Output() onStopClick = new EventEmitter<void>();
 
   constructor(private router: Router) {}
 
@@ -40,7 +44,13 @@ export class FooterComponent implements OnInit, OnDestroy {
     this.isGamePage = url.includes('/game/');
   }
 
-  switchView(mode: 'all' | 'player' | 'score'): void {
-    this.onSwitchView.emit(mode);
+  onHit(): void {
+    console.log('🎴 Footer: Hit clicked');
+    this.onHitClick.emit();
+  }
+
+  onStop(): void {
+    console.log('✋ Footer: Stop clicked');
+    this.onStopClick.emit();
   }
 }
