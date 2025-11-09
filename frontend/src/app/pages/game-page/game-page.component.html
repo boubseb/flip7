@@ -85,6 +85,7 @@
           </div>
         } @else {
           <!-- Boutons normaux : Piocher et Stop -->
+          <!-- Debug: {{ 'hasCards=' + hasCards() + ', isMyTurn=' + isMyTurn }} -->
           <button 
             class="btn btn-hit"
             [disabled]="!isMyTurn || isPlayerEliminated()"
@@ -95,8 +96,8 @@
           </button>
           <button 
             class="btn btn-stop"
-            [disabled]="!isMyTurn || isPlayerEliminated()"
-            [class.active]="isMyTurn && !isPlayerEliminated()"
+            [disabled]="!isMyTurn || isPlayerEliminated() || !hasCards()"
+            [class.active]="isMyTurn && !isPlayerEliminated() && hasCards()"
             (click)="stopDrawing()">
             <span class="icon">✋</span>
             <span>{{ 'game.stop' | translate }}</span>
