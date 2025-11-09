@@ -1,5 +1,6 @@
 package com.flip7.flip7.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -56,10 +58,14 @@ public class RoomService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
         }
         
+        // Mettre à jour l'activité de la room
+        room.updateActivity();
+        
         // Si le joueur était déjà dans la room, c'est une reconnexion - toujours autorisée
         if (room.getPlayers().contains(playerId)) {
             System.out.println("🔄 Reconnexion du joueur " + playerId + " à la room " + roomId);
             // Notifier les autres joueurs de la reconnexion
+            roomRepository.save(room);
             broadcastRoomUpdate(room);
             return room;
         }
@@ -254,5 +260,29 @@ public class RoomService {
     // Getter pour UserService (utilisé par GameService)
     public UserRepository getUserRepository() {
         return userRepository;
+    }
+    
+    /**
+     * Tâche planifiée pour supprimer les rooms inactives depuis plus de 30 minutes
+     * S'exécute toutes les 5 minutes
+     */
+    @Scheduled(fixedRate = 300000) // 5 minutes en millisecondes
+    public void cleanupInactiveRooms() {
+        LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
+        List<Room> allRooms = roomRepository.findAll();
+        
+        int deletedCount = 0;
+        for (Room room : allRooms) {
+            if (room.getLastActivityAt().isBefore(thirtyMinutesAgo)) {
+                System.out.println("🗑️ Suppression de la room inactive " + room.getId() + 
+                    " (dernière activité: " + room.getLastActivityAt() + ")");
+                roomRepository.delete(room);
+                deletedCount++;
+            }
+        }
+        
+        if (deletedCount > 0) {
+            System.out.println("✅ " + deletedCount + " room(s) inactive(s) supprimée(s)");
+        }
     }
 }

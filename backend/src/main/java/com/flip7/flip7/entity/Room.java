@@ -49,6 +49,9 @@ public class Room {
     private LocalDateTime createdAt = LocalDateTime.now();
     
     @Column
+    private LocalDateTime lastActivityAt = LocalDateTime.now();
+    
+    @Column
     private Integer maxPlayers = 12;
     
     // Getters and Setters
@@ -122,6 +125,18 @@ public class Room {
     
     public void setMaxPlayers(Integer maxPlayers) {
         this.maxPlayers = maxPlayers;
+    }
+    
+    public LocalDateTime getLastActivityAt() {
+        return lastActivityAt;
+    }
+    
+    public void setLastActivityAt(LocalDateTime lastActivityAt) {
+        this.lastActivityAt = lastActivityAt;
+    }
+    
+    public void updateActivity() {
+        this.lastActivityAt = LocalDateTime.now();
     }
     
     public enum RoomStatus {
