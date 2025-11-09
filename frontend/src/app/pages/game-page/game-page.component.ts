@@ -612,16 +612,13 @@ export class GamePageComponent implements OnInit, OnDestroy {
    */
   hasCards(): boolean {
     if (!this.gameState?.players || !this.currentUserId) {
-      console.log('🃏 hasCards: false (no gameState or userId)');
       return false;
     }
     const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
     if (!myPlayer) {
-      console.log('🃏 hasCards: false (player not found)');
       return false;
     }
     const hasCardsInHand = myPlayer?.hand && Array.isArray(myPlayer.hand) && myPlayer.hand.length > 0;
-    console.log('🃏 hasCards:', hasCardsInHand, '- hand:', myPlayer.hand);
     return hasCardsInHand || false;
   }
 

@@ -287,19 +287,19 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
         break;
 
       case 'current':
-        // Classement actuel : par score total décroissant
+        // Classement actuel : par score sécurisé (vert) décroissant
         this.sortedPlayers = playersCopy.sort((a, b) => {
-          const scoreA = this.getPlayerTotalScore(a);
-          const scoreB = this.getPlayerTotalScore(b);
+          const scoreA = this.getPlayerSafetyScore(a);
+          const scoreB = this.getPlayerSafetyScore(b);
           return scoreB - scoreA; // Décroissant
         });
         break;
 
       case 'theoretical':
-        // Classement théorique : par score de sécurité (safetyScore) décroissant
+        // Classement théorique : par score théorique (bleu) décroissant
         this.sortedPlayers = playersCopy.sort((a, b) => {
-          const safetyA = this.getPlayerSafetyScore(a);
-          const safetyB = this.getPlayerSafetyScore(b);
+          const safetyA = this.getPlayerTotalScore(a);
+          const safetyB = this.getPlayerTotalScore(b);
           return safetyB - safetyA; // Décroissant
         });
         break;

@@ -85,7 +85,6 @@
           </div>
         } @else {
           <!-- Boutons normaux : Piocher et Stop -->
-          <!-- Debug: {{ 'hasCards=' + hasCards() + ', isMyTurn=' + isMyTurn }} -->
           <button 
             class="btn btn-hit"
             [disabled]="!isMyTurn || isPlayerEliminated()"
@@ -141,6 +140,7 @@
   <app-game-over-popup
     [rankings]="gameOverRankings"
     [winnerName]="gameOverWinner"
+    [isAdmin]="isAdmin"
     (playAgain)="onPlayAgain()"
     (leaveRoom)="onLeaveRoom()">
   </app-game-over-popup>
