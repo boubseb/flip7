@@ -49,7 +49,7 @@ public class Room {
     private LocalDateTime createdAt = LocalDateTime.now();
     
     @Column
-    private Integer maxPlayers = 4;
+    private Integer maxPlayers = 12;
     
     // Getters and Setters
     public String getId() {

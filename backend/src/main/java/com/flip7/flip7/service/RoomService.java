@@ -41,7 +41,7 @@ public class RoomService {
         Room room = new Room();
         room.setPassword(passwordEncoder.encode(password));
         room.setAdminId(adminId);
-        room.setMaxPlayers(maxPlayers != null ? maxPlayers : 4);
+        room.setMaxPlayers(maxPlayers != null ? maxPlayers : 12);
         room.getPlayers().add(adminId);
         room.setStatus(RoomStatus.WAITING);
         
@@ -148,7 +148,16 @@ public class RoomService {
     }
     
     public List<Room> getAvailableRooms() {
-        return roomRepository.findByStatus(RoomStatus.WAITING);
+        // Retourne les rooms en WAITING (accessibles à tous)
+        List<Room> waitingRooms = roomRepository.findByStatus(RoomStatus.WAITING);
+        
+        // Retourne aussi les rooms en IN_GAME (pour que les joueurs puissent les rejoindre)
+        List<Room> inGameRooms = roomRepository.findByStatus(RoomStatus.IN_GAME);
+        
+        // Combine les deux listes
+        waitingRooms.addAll(inGameRooms);
+        
+        return waitingRooms;
     }
     
     public Room playTurn(String roomId, String playerId, String moveData) {

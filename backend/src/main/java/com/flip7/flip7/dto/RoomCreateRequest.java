@@ -2,7 +2,7 @@ package com.flip7.flip7.dto;
 
 public class RoomCreateRequest {
     private String password;
-    private Integer maxPlayers = 4;
+    private Integer maxPlayers = 12;
     
     public String getPassword() {
         return password;

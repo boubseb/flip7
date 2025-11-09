@@ -31,7 +31,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   
   // Create room form
   createRoomPassword: string = '';
-  createRoomMaxPlayers: number = 4;
+  createRoomMaxPlayers: number = 12;
   
   // Join room form
   joinRoomId: string = '';
@@ -191,8 +191,8 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       return;
     }
     
-    if (this.createRoomMaxPlayers < 2 || this.createRoomMaxPlayers > 8) {
-      this.showErrorMessage('Le nombre de joueurs doit être entre 2 et 8');
+    if (this.createRoomMaxPlayers < 2 || this.createRoomMaxPlayers > 12) {
+      this.showErrorMessage('Le nombre de joueurs doit être entre 2 et 12');
       return;
     }
     
@@ -230,7 +230,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         
         // Clear form
         this.createRoomPassword = '';
-        this.createRoomMaxPlayers = 4;
+        this.createRoomMaxPlayers = 12;
       },
       error: (error) => {
         console.error('❌ Error creating room:', error);

@@ -169,14 +169,80 @@
     }
   },
   "rules": {
-    "title": "Flip 7 Game Rules",
-    "objective": "Objective",
-    "objectiveText": "Have the lowest score at the end of the game",
-    "setup": "Setup",
-    "gameplay": "Gameplay",
-    "cards": "Cards",
-    "scoring": "Scoring",
-    "endGame": "End of game"
+    "title": "Game Rules - Flip 7",
+    "objective": {
+      "title": "🎯 Game Objective",
+      "description": "In this game of chance, the goal is to be the first player to score 200 points to trigger the final scoring. You score points based on the total value of numbered cards in front of you. If you successfully flip 7 numbered cards in your row, you automatically end the round for everyone and score 15 bonus points. However, if you draw a second card with the same value as a card already in your row, you are eliminated from the current round and score no points!"
+    },
+    "deck": {
+      "title": "🎴 Deck Composition",
+      "description": "Special card deck containing: twelve 12s, eleven 11s, ten 10s... down to one 1, and even a 0 (worth no points). The higher the card value, the more copies in the deck.",
+      "cards": "You'll also find Action cards (Flip Three, Freeze, Second Chance) and Score Modifier cards (+2 to +10, x2)."
+    },
+    "setup": {
+      "title": "📋 Setup",
+      "step1": "Shuffle the deck and choose a dealer for the round",
+      "step2": "The dealer distributes one face-up card to each player (including themselves)",
+      "step3": "If an Action card appears, immediately stop the distribution to resolve it",
+      "step4": "Once all Action cards are resolved, continue until everyone has at least one card"
+    },
+    "gameplay": {
+      "title": "� Round Gameplay",
+      "description": "The dealer offers each player, in turn, the option to \"hit\" (receive a new card) or \"stay\" (leave the round and accumulate points).",
+      "hit": "If you \"hit\": place cards in a single row with Modifier cards above them",
+      "stop": "If you \"stay\": you leave the round and keep your current points",
+      "bust": "If you draw a card with the same value as a card already present: you are eliminated from the round and score NO points",
+      "flip7": "If you flip 7 numbered cards: the round ends immediately for everyone and you earn 15 bonus points"
+    },
+    "actionCards": {
+      "title": "🎭 Action Cards",
+      "description": "Action cards can be played via any active player (including yourself). Place them above your numbered cards.",
+      "freeze": {
+        "title": "FREEZE 🧊",
+        "description": "The player who receives this card loses all accumulated points and is eliminated for the rest of the round."
+      },
+      "flipThree": {
+        "title": "FLIP THREE 🎴",
+        "description": "The player who receives this card must accept three new cards. If another Action card appears while drawing the 3 cards, it must be resolved after."
+      },
+      "secondChance": {
+        "title": "SECOND CHANCE 🍀",
+        "description": "Keep this card. If you draw a duplicate card, discard the duplicate and the Second Chance card. A player can only have one Second Chance card at a time. All Second Chance cards are discarded at the end of the round."
+      }
+    },
+    "modifierCards": {
+      "title": "⭐ Modifier Cards",
+      "plus": "Cards +2 to +10: Add the indicated amount to the sum of your numbered cards",
+      "times": "Card x2: Double the points of all your numbered cards (does not double other modifiers)",
+      "note": "Action and Modifier cards cannot be destroyed! Place them above your numbered cards."
+    },
+    "scoring": {
+      "title": "💯 Point Calculation",
+      "step1": "1. Add the value of all your numbered cards",
+      "step2": "2. Double this total if you have an x2 card",
+      "step3": "3. Add all modifiers (+2, +3, etc.)",
+      "step4": "4. If you flipped 7 numbered cards (Flip 7), add 15 bonus points",
+      "example": "Example: 11 + 5 + 12 = 28 points, with a +4 modifier = 32 total points"
+    },
+    "endTurn": {
+      "title": "� End of Round",
+      "description": "The round ends when:",
+      "case1": "There are no more active players (all eliminated or stopped)",
+      "case2": "OR a player has flipped 7 numbered cards (Flip 7)",
+      "next": "Set aside cards from the round (don't reshuffle them). Pass the deck to the left player who becomes the new dealer."
+    },
+    "endGame": {
+      "title": "🏆 End of Game",
+      "description": "The game ends if, at the end of a round, at least one player has reached 200 points. The player with the MOST points wins.",
+      "note": "The first player to reach 200 points is not necessarily the winner!"
+    },
+    "tips": {
+      "title": "💡 Strategic Tips",
+      "tip1": "🎯 Keep track of the number of cards played and remaining",
+      "tip2": "🎴 Watch out for duplicates: that's the major risk of the game!",
+      "tip3": "🏅 Aiming for Flip 7 (7 cards) gives 15 bonus points and ends the round",
+      "tip4": "🧊 Use Action cards strategically against your opponents"
+    }
   },
   "profile": {
     "title": "My Profile",
