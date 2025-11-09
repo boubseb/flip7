@@ -74,8 +74,8 @@ public class StatisticsService {
                         totalFlip7++;
                     }
 
-                    // Éliminations par double
-                    if (playerData.isEliminatedByDouble()) {
+                    // Éliminations par double (hors +3)
+                    if (playerData.isEliminatedByDouble() && !playerData.isEliminatedByDrawThree()) {
                         roundsEliminatedByDouble++;
                     }
 
