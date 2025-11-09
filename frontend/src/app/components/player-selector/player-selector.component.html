@@ -14,7 +14,7 @@
 
       <!-- Compteur de joueurs éligibles -->
       <div class="eligible-count">
-        {{ getEligiblePlayersCount() }} joueur(s) éligible(s)
+        {{ 'game.playerSelector.eligibleCount' | translate: {count: getEligiblePlayersCount()} }}
       </div>
 
       <!-- Liste des joueurs -->
@@ -29,7 +29,7 @@
             
             <div class="player-info">
               <span class="player-name">
-                {{ player.userId === currentUserId ? '🎮 Vous' : player.username }}
+                {{ player.userId === currentUserId ? ('game.playerSelector.you' | translate) : player.username }}
               </span>
               <span class="player-status" [class]="'status-' + player.status.toLowerCase()">
                 {{ getStatusLabel(player.status) }}
@@ -46,14 +46,14 @@
 
         @if (getEligiblePlayersCount() === 0) {
           <div class="no-players">
-            Aucun joueur éligible disponible
+            {{ 'game.playerSelector.noPlayers' | translate }}
           </div>
         }
       </div>
 
       <!-- Message d'obligation -->
       <div class="obligation-message">
-        ⚠️ Vous devez choisir un joueur pour continuer
+        {{ 'game.playerSelector.obligation' | translate }}
       </div>
     </div>
   </div>

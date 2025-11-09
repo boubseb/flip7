@@ -726,4 +726,22 @@
   }
 }
 
+// Loading messages
+.loading-room,
+.loading-game {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background: var(--bg-primary);
+
+  p {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    animation: pulse 2s infinite;
+  }
+}
+
 

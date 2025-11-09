@@ -142,6 +142,9 @@
     "noCardsRevealed": "No cards revealed",
     "roundScore": "Round score",
     "totalScore": "Total score",
+    "noPlayers": "No players in the game",
+    "cardCountSingular": "card",
+    "cardCountPlural": "cards",
     "cards": {
       "number": "Number card",
       "operator": "Operator card",
@@ -158,6 +161,20 @@
       "assignDrawThree": "Assign +3",
       "mustDraw": "You must draw {{count}} cards",
       "stopped": "You are stopped!"
+    },
+    "playerSelector": {
+      "stopCard": {
+        "title": "🛑 Stop Card",
+        "description": "Choose the player who will receive the Stop card and be forced to stop:"
+      },
+      "drawThreeCard": {
+        "title": "➕3️⃣ +3 Card",
+        "description": "Choose the player who will receive the +3 card and must draw 3 cards:"
+      },
+      "eligibleCount": "{{count}} eligible player(s)",
+      "you": "🎮 You",
+      "noPlayers": "No eligible players available",
+      "obligation": "⚠️ You must choose a player to continue"
     },
     "status": {
       "playing": "Playing",

@@ -265,25 +265,72 @@ export class GamePageComponent implements OnInit, OnDestroy {
         
         console.log('✅ Game in progress, displaying game view');
         
-        // Si le jeu est déjà en cours, récupérer l'état actuel
-        console.log('📡 Fetching current game state...');
+        // Si le jeu est déjà en cours, récupérer l'état actuel pour reconnexion
+        console.log('📡 Fetching current game state for reconnection...');
         this.gameService.getGameState(this.roomId).subscribe({
           next: (gameState) => {
-            console.log('✅ Game state received:', gameState);
+            console.log('✅ Game state received for reconnection:', gameState);
+            console.log('   - currentRoom is set:', !!this.currentRoom);
+            console.log('   - gameState.players:', gameState.players?.length || 0);
             this.gameState = gameState;
+            
+            // Force Angular change detection
+            setTimeout(() => {
+              console.log('🔄 Forcing change detection...');
+              console.log('   - currentRoom:', !!this.currentRoom);
+              console.log('   - gameState:', !!this.gameState);
+              console.log('   - gameState.players:', this.gameState?.players?.length || 0);
+            }, 100);
+            
             if (gameState.players && gameState.players.length > 0) {
               gameState.players.forEach((p: any) => {
-                console.log(`   - ${p.username}: ${p.hand?.length || 0} cards`);
+                console.log(`   - ${p.username}: ${p.hand?.length || 0} cards, status: ${p.status}, score: ${p.roundScore}/${p.totalScore}`);
               });
+              
               if (gameState.currentPlayerIndex >= 0) {
                 const currentPlayer = gameState.players[gameState.currentPlayerIndex];
                 this.currentPlayerId = currentPlayer.userId;
                 this.isMyTurn = this.currentPlayerId === this.currentUserId;
                 console.log('🎯 Current player:', currentPlayer.username, '- My turn:', this.isMyTurn);
               }
+              
+              // Vérifier si on a des cartes pending à assigner (Stop/DrawThree)
+              const myPlayer = gameState.players.find((p: any) => p.userId === this.currentUserId);
+              if (myPlayer && myPlayer.hand) {
+                const pendingStopCard = myPlayer.hand.find((card: any) => 
+                  (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
+                  card.specialType === 'STOP' && 
+                  card.pending === true
+                );
+                
+                if (pendingStopCard && !this.showStopCardModal) {
+                  console.log('🛑 Pending Stop card detected on reconnection');
+                  this.showStopCardSelection(pendingStopCard);
+                }
+
+                const pendingDrawThreeCard = myPlayer.hand.find((card: any) => 
+                  (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
+                  card.specialType === 'DRAW_THREE' && 
+                  card.pending === true
+                );
+                
+                if (pendingDrawThreeCard && !this.showDrawThreeModal) {
+                  console.log('➕3️⃣ Pending DrawThree card detected on reconnection');
+                  this.showDrawThreeCardSelection(pendingDrawThreeCard);
+                }
+              }
+
+              // Vérifier si on est en état WAITING_NEXT_ROUND
+              if (gameState.gameState === 'WAITING_NEXT_ROUND') {
+                console.log('⏳ Reconnected during WAITING_NEXT_ROUND state');
+                this.showStartRoundPopup = true;
+              }
             }
           },
-          error: (err) => console.error('❌ Error fetching game state:', err)
+          error: (err) => {
+            console.error('❌ Error fetching game state:', err);
+            this.showError('Impossible de récupérer l\'état de la partie');
+          }
         });
       },
       error: (error) => {

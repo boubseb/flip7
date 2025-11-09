@@ -12,7 +12,7 @@
   
   @if (cards.length > 0) {
     <div class="hand-info">
-      {{ cards.length }} carte{{ cards.length > 1 ? 's' : '' }}
+      {{ cards.length }} {{ cards.length > 1 ? ('game.cardCountPlural' | translate) : ('game.cardCountSingular' | translate) }}
     </div>
   }
 </div>

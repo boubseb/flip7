@@ -21,13 +21,19 @@
       <!-- Game Content Area -->
       <div class="game-content">
         <!-- Players Board View (All players) -->
-        <app-players-board 
-          [gameState]="gameState"
-          [players]="currentRoom.players"
-          [playerInfos]="currentRoom.playerInfos || []"
-          [currentUserId]="currentUserId"
-          [currentPlayerId]="currentPlayerId">
-        </app-players-board>
+        @if (gameState && gameState.players && gameState.players.length > 0) {
+          <app-players-board 
+            [gameState]="gameState"
+            [players]="currentRoom.players"
+            [playerInfos]="currentRoom.playerInfos || []"
+            [currentUserId]="currentUserId"
+            [currentPlayerId]="currentPlayerId">
+          </app-players-board>
+        } @else {
+          <div class="loading-game">
+            <p>Chargement de la partie...</p>
+          </div>
+        }
       </div>
 
       <!-- Game Footer with Action Buttons -->
@@ -50,14 +56,18 @@
         </button>
       </div>
     </div>
+  } @else {
+    <div class="loading-room">
+      <p>Chargement de la room...</p>
+    </div>
   }
 </div>
 
 <!-- Player Selector Modal - Stop Card -->
 <app-player-selector
   [show]="showStopCardModal"
-  [title]="'🛑 Carte Stop'"
-  [description]="'Choisissez le joueur qui recevra la carte Stop et sera forcé de s\'arrêter :'"
+  [title]="'game.playerSelector.stopCard.title' | translate"
+  [description]="'game.playerSelector.stopCard.description' | translate"
   [players]="gameState?.players || []"
   [currentUserId]="currentUserId"
   [cardType]="'STOP'"
@@ -68,8 +78,8 @@
 <!-- Player Selector Modal - DrawThree Card -->
 <app-player-selector
   [show]="showDrawThreeModal"
-  [title]="'➕3️⃣ Carte +3'"
-  [description]="'Choisissez le joueur qui recevra la carte +3 et devra piocher 3 cartes :'"
+  [title]="'game.playerSelector.drawThreeCard.title' | translate"
+  [description]="'game.playerSelector.drawThreeCard.description' | translate"
   [players]="gameState?.players || []"
   [currentUserId]="currentUserId"
   [cardType]="'DRAW_THREE'"

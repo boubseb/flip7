@@ -133,7 +133,7 @@
     "total": "Total",
     "centerCards": "Cartes au centre",
     "hit": "Piocher",
-    "stop": "S'arrêter",
+    "stop": "Stop",
     "you": "Vous",
     "gameOrder": "Ordre de jeu",
     "currentRanking": "Classement actuel",
@@ -142,6 +142,9 @@
     "noCardsRevealed": "Aucune carte découverte",
     "roundScore": "Score du tour",
     "totalScore": "Score total",
+    "noPlayers": "Aucun joueur dans la partie",
+    "cardCountSingular": "carte",
+    "cardCountPlural": "cartes",
     "cards": {
       "number": "Carte numéro",
       "operator": "Carte opérateur",
@@ -158,6 +161,20 @@
       "assignDrawThree": "Assigner +3",
       "mustDraw": "Vous devez piocher {{count}} cartes",
       "stopped": "Vous êtes arrêté !"
+    },
+    "playerSelector": {
+      "stopCard": {
+        "title": "🛑 Carte Stop",
+        "description": "Choisissez le joueur qui recevra la carte Stop et sera forcé de s'arrêter :"
+      },
+      "drawThreeCard": {
+        "title": "➕3️⃣ Carte +3",
+        "description": "Choisissez le joueur qui recevra la carte +3 et devra piocher 3 cartes :"
+      },
+      "eligibleCount": "{{count}} joueur(s) éligible(s)",
+      "you": "🎮 Vous",
+      "noPlayers": "Aucun joueur éligible disponible",
+      "obligation": "⚠️ Vous devez choisir un joueur pour continuer"
     },
     "status": {
       "playing": "En cours",

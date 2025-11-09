@@ -1,11 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlayerStatus } from '../../models/game/game.model';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-player-selector',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './player-selector.component.html',
   styleUrls: ['./player-selector.component.scss']
 })

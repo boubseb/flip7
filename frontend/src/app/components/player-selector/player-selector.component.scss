@@ -47,26 +47,27 @@
   h2 {
     margin: 0;
     font-size: 1.5rem;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 }
 
 .modal-description {
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0 0 1rem 0;
   font-size: 0.95rem;
   line-height: 1.5;
 }
 
 .eligible-count {
-  background: #f3f4f6;
+  background: var(--bg-secondary);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.85rem;
-  color: #4b5563;
+  color: var(--text-secondary);
   font-weight: 500;
   margin-bottom: 1.5rem;
   text-align: center;
+  border: 1px solid var(--border-color);
 }
 
 .player-list {
@@ -83,19 +84,23 @@
   }
 
   &::-webkit-scrollbar-track {
-    background: #f3f4f6;
+    background: var(--bg-secondary);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #d1d5db;
+    background: var(--border-color);
     border-radius: 3px;
+
+    &:hover {
+      background: var(--text-secondary);
+    }
   }
 }
 
 .player-button {
   padding: 1rem;
-  border: 2px solid #e5e7eb;
+  border: 2px solid var(--border-color);
   border-radius: 10px;
   background: var(--card-bg);
   cursor: pointer;
@@ -112,24 +117,24 @@
     box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 
     .player-name {
-      color: var(--text-primary);
+      color: #1f2937;
     }
 
     .select-arrow {
       transform: translateX(4px);
-      color: var(--text-primary);
+      color: #1f2937;
     }
   }
 
   &.current-user {
     border-color: #667eea;
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(102, 126, 234, 0.3) 100%);
   }
 
   &.disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: #f9fafb;
+    background: var(--bg-secondary);
   }
 
   .player-info {
@@ -143,7 +148,7 @@
   .player-name {
     font-weight: 600;
     font-size: 1rem;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 
   .player-status {
@@ -173,8 +178,8 @@
     }
 
     &.status-waiting {
-      background: #f3f4f6;
-      color: #6b7280;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
     }
   }
 
@@ -186,14 +191,14 @@
 
   .disabled-icon {
     font-size: 1.25rem;
-    color: #9ca3af;
+    color: var(--text-secondary);
   }
 }
 
 .no-players {
   padding: 2rem;
   text-align: center;
-  color: #9ca3af;
+  color: var(--text-secondary);
   font-style: italic;
 }
 

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -110,6 +111,14 @@ public class RoomController {
         Room room = roomService.playTurn(roomId, userId, moveData);
         
         return ResponseEntity.ok(roomService.toRoomResponse(room));
+    }
+    
+    @DeleteMapping("/all")
+    public ResponseEntity<Map<String, String>> deleteAllRooms() {
+        int deletedCount = roomService.deleteAllRooms();
+        Map<String, String> response = new HashMap<>();
+        response.put("message", deletedCount + " room(s) supprimée(s)");
+        return ResponseEntity.ok(response);
     }
     
     private String extractUserIdFromAuth(String authHeader) {

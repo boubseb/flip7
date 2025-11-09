@@ -267,14 +267,21 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         localStorage.setItem('currentRoomId', room.id);
         localStorage.setItem('currentRoomPassword', pwd);
         
-        // Switch to waiting view
-        this.currentRoom = room;
-        this.updateRoomState();
-        this.currentView = 'waiting';
-        
-        // Subscribe to WebSocket updates for this room
-        if (this.wsConnected) {
-          this.wsService.subscribeToRoom(room.id);
+        // Si la partie a déjà commencé, rediriger vers la game page
+        if (room.status === RoomStatus.IN_GAME) {
+          console.log('🎮 Partie en cours, redirection vers game...');
+          this.currentRoom = room;
+          this.router.navigate(['/game', room.id]);
+        } else {
+          // Sinon, switch to waiting view
+          this.currentRoom = room;
+          this.updateRoomState();
+          this.currentView = 'waiting';
+          
+          // Subscribe to WebSocket updates for this room
+          if (this.wsConnected) {
+            this.wsService.subscribeToRoom(room.id);
+          }
         }
         
         // Clear form
@@ -306,20 +313,21 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         console.log('✅ Reconnexion réussie:', room.id);
         this.showSuccessMessage('Reconnecté à la partie !');
         
-        // Switch to waiting view
         this.currentRoom = room;
-        this.updateRoomState();
-        this.currentView = 'waiting';
         
-        // Subscribe to WebSocket updates for this room
-        if (this.wsConnected) {
-          this.wsService.subscribeToRoom(room.id);
-        }
-        
-        // Si la partie a déjà commencé, rediriger vers la game page
+        // Si la partie a déjà commencé, rediriger directement vers la game page
         if (room.status === RoomStatus.IN_GAME) {
-          console.log('🎮 Partie en cours, redirection...');
-          this.router.navigate(['/game'], { queryParams: { roomId: room.id } });
+          console.log('🎮 Partie en cours, redirection vers game...');
+          this.router.navigate(['/game', room.id]);
+        } else {
+          // Sinon, switch to waiting view
+          this.updateRoomState();
+          this.currentView = 'waiting';
+          
+          // Subscribe to WebSocket updates for this room
+          if (this.wsConnected) {
+            this.wsService.subscribeToRoom(room.id);
+          }
         }
       },
       error: (error) => {

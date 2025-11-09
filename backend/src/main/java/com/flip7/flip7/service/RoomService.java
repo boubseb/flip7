@@ -263,6 +263,18 @@ public class RoomService {
     }
     
     /**
+     * Supprime toutes les rooms
+     * @return le nombre de rooms supprimées
+     */
+    public int deleteAllRooms() {
+        List<Room> allRooms = roomRepository.findAll();
+        int count = allRooms.size();
+        roomRepository.deleteAll();
+        System.out.println("🗑️ Toutes les rooms ont été supprimées (" + count + " rooms)");
+        return count;
+    }
+    
+    /**
      * Tâche planifiée pour supprimer les rooms inactives depuis plus de 30 minutes
      * S'exécute toutes les 5 minutes
      */
@@ -273,9 +285,15 @@ public class RoomService {
         
         int deletedCount = 0;
         for (Room room : allRooms) {
-            if (room.getLastActivityAt().isBefore(thirtyMinutesAgo)) {
+            LocalDateTime lastActivity = room.getLastActivityAt();
+            // Si lastActivityAt est null (anciennes rooms), utiliser createdAt
+            if (lastActivity == null) {
+                lastActivity = room.getCreatedAt();
+            }
+            
+            if (lastActivity != null && lastActivity.isBefore(thirtyMinutesAgo)) {
                 System.out.println("🗑️ Suppression de la room inactive " + room.getId() + 
-                    " (dernière activité: " + room.getLastActivityAt() + ")");
+                    " (dernière activité: " + lastActivity + ")");
                 roomRepository.delete(room);
                 deletedCount++;
             }
