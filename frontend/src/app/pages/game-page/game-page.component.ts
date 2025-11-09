@@ -10,7 +10,7 @@ import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
 import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
 import { StartRoundPopupComponent } from '../../components/start-round-popup/start-round-popup.component';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-game-page',
@@ -62,6 +62,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     private gameService: GameService,
     private router: Router,
     private route: ActivatedRoute,
+    private translate: TranslateService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -79,16 +80,40 @@ export class GamePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Get room ID from route params
-    this.roomId = this.route.snapshot.paramMap.get('roomId') || '';
-    
-    if (!this.roomId) {
-      this.router.navigate(['/room']);
-      return;
-    }
-    
-    // Load room data
-    this.loadRoom();
+    // Get room ID from route params and listen for changes
+    this.subscriptions.push(
+      this.route.params.subscribe(params => {
+        const newRoomId = params['roomId'];
+        console.log('🔄 Route params changed - roomId:', newRoomId, '- previous:', this.roomId);
+        
+        if (!newRoomId) {
+          this.router.navigate(['/room']);
+          return;
+        }
+        
+        // Si le roomId change OU si on revient sur la même room mais sans gameState
+        if (newRoomId !== this.roomId || !this.gameState) {
+          // Désabonner de l'ancienne room si différente
+          if (this.roomId && this.roomId !== newRoomId) {
+            console.log('🔄 Unsubscribing from old room:', this.roomId);
+            this.wsService.unsubscribeFromRoom(this.roomId);
+          }
+          
+          this.roomId = newRoomId;
+          this.gameState = null;
+          this.currentRoom = null;
+          
+          console.log('📡 Loading room data for:', this.roomId);
+          this.loadRoom();
+          
+          // S'abonner à la nouvelle room si WebSocket connecté
+          if (this.wsConnected && this.roomId) {
+            console.log('📡 Subscribing to room:', this.roomId);
+            this.wsService.subscribeToRoom(this.roomId);
+          }
+        }
+      })
+    );
     
     // Connect to WebSocket
     this.wsService.connect();
@@ -248,7 +273,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         // Check if user is part of the room
         if (!room.players.includes(this.currentUserId)) {
           console.warn('❌ User not in room');
-          this.showError('Vous ne faites pas partie de cette room');
+          this.showError('game.errors.notInRoom');
           setTimeout(() => this.router.navigate(['/room']), 2000);
           return;
         }
@@ -329,13 +354,21 @@ export class GamePageComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             console.error('❌ Error fetching game state:', err);
-            this.showError('Impossible de récupérer l\'état de la partie');
+            
+            // Si erreur 400, c'est que la partie n'existe plus (backend redémarré ou partie terminée)
+            if (err.status === 400) {
+              console.warn('⚠️ Game not found - redirecting to room page');
+              this.showError('game.errors.gameNotFoundAfterRestart');
+              setTimeout(() => this.router.navigate(['/room']), 3000);
+            } else {
+              this.showError('game.errors.cannotLoadGameState');
+            }
           }
         });
       },
       error: (error) => {
         console.error('❌ Error loading room:', error);
-        this.showError('Room introuvable');
+        this.showError('game.errors.roomNotFound');
         setTimeout(() => this.router.navigate(['/room']), 2000);
       }
     });
@@ -445,7 +478,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
       clearTimeout(this.errorTimeout);
     }
     
-    this.errorMessage = message;
+    // Traduire le message si c'est une clé de traduction
+    this.errorMessage = this.translate.instant(message);
     
     // Auto-effacer après 5 secondes
     this.errorTimeout = setTimeout(() => {

@@ -14,6 +14,7 @@ public class RoomResponse {
     private Integer turnIndex;
     private LocalDateTime createdAt;
     private Integer maxPlayers;
+    private Integer currentPlayers; // Nombre actuel de joueurs dans la room
     private String currentPlayerId; // player whose turn it is
     
     public RoomResponse(String id, String adminId, List<String> players, RoomStatus status, 
@@ -25,6 +26,7 @@ public class RoomResponse {
         this.turnIndex = turnIndex;
         this.createdAt = createdAt;
         this.maxPlayers = maxPlayers;
+        this.currentPlayers = players != null ? players.size() : 0; // Calculer le nombre actuel
         if (players != null && !players.isEmpty() && turnIndex != null && turnIndex < players.size()) {
             this.currentPlayerId = players.get(turnIndex);
         }
@@ -85,6 +87,14 @@ public class RoomResponse {
     
     public void setMaxPlayers(Integer maxPlayers) {
         this.maxPlayers = maxPlayers;
+    }
+    
+    public Integer getCurrentPlayers() {
+        return currentPlayers;
+    }
+    
+    public void setCurrentPlayers(Integer currentPlayers) {
+        this.currentPlayers = currentPlayers;
     }
     
     public String getCurrentPlayerId() {

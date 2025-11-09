@@ -31,7 +31,7 @@
           </app-players-board>
         } @else {
           <div class="loading-game">
-            <p>Chargement de la partie...</p>
+            <p>{{ 'game.loadingGame' | translate }}</p>
           </div>
         }
       </div>
@@ -58,7 +58,7 @@
     </div>
   } @else {
     <div class="loading-room">
-      <p>Chargement de la room...</p>
+      <p>{{ 'game.loadingRoom' | translate }}</p>
     </div>
   }
 </div>

@@ -44,6 +44,13 @@
     "registerButton": "S'inscrire",
     "alreadyAccount": "Déjà un compte ?",
     "loginLink": "Se connecter",
+    "firstName": "Prénom",
+    "birthDate": "Date de naissance",
+    "pseudo": "Pseudo",
+    "firstNamePlaceholder": "Veuillez entrer votre prénom.",
+    "birthDatePlaceholder": "Veuillez entrer votre date de naissance.",
+    "pseudoPlaceholder": "Veuillez entrer votre pseudo.",
+    "passwordRequirements": "(8 caractères min, num, maj, spé)",
     "emailError": "L'email est invalide",
     "passwordError": "Minimum 6 caractères",
     "passwordMatchError": "Les mots de passe ne correspondent pas",
@@ -91,6 +98,30 @@
     "shareRoom": "Partager",
     "minPlayers": "Minimum {{min}} joueurs requis",
     "kickPlayer": "Retirer ce joueur",
+    "errors": {
+      "loadingRooms": "Erreur lors du chargement des rooms",
+      "notInRoom": "Vous ne faites pas partie de cette room",
+      "roomNotFound": "Room introuvable",
+      "passwordRequired": "Le mot de passe est requis",
+      "invalidMaxPlayers": "Le nombre de joueurs doit être entre 2 et 12",
+      "createError": "Erreur lors de la création de la room",
+      "credentialsRequired": "ID et mot de passe requis",
+      "joinError": "Mot de passe incorrect ou room introuvable",
+      "reconnectionFailed": "Impossible de se reconnecter (room expirée ou fermée)",
+      "minPlayersRequired": "Au moins 2 joueurs sont requis pour lancer la partie",
+      "startGameError": "Erreur lors du démarrage de la partie",
+      "refreshError": "Erreur lors du rafraîchissement",
+      "cannotKickYourself": "Vous ne pouvez pas vous retirer vous-même",
+      "kickPlayerError": "Erreur lors du retrait du joueur"
+    },
+    "success": {
+      "roomCreated": "Room créée ! ID: {{roomId}}",
+      "roomJoined": "Room rejointe avec succès !",
+      "reconnected": "Reconnecté à la partie !",
+      "idCopied": "✅ ID copié dans le presse-papier !",
+      "playersRefreshed": "✅ Liste des joueurs mise à jour !",
+      "playerKicked": "✅ Joueur retiré de la room !"
+    },
     "browseTabs": {
       "browse": "Parcourir les salles",
       "joinById": "Rejoindre par ID"
@@ -150,6 +181,8 @@
     "START_ROUND_BUTTON": "Commencer le round",
     "START_ROUND_READY": "Cliquez quand vous êtes prêt",
     "PLEASE_WAIT": "Veuillez patienter...",
+    "loadingGame": "Chargement de la partie...",
+    "loadingRoom": "Chargement de la room...",
     "cards": {
       "number": "Carte numéro",
       "operator": "Carte opérateur",
@@ -188,6 +221,25 @@
       "waiting": "En attente",
       "eliminated": "Éliminé",
       "winner": "Gagnant"
+    },
+    "errors": {
+      "notInRoom": "Vous ne faites pas partie de cette room",
+      "cannotLoadGameState": "Impossible de récupérer l'état de la partie",
+      "roomNotFound": "Room introuvable",
+      "gameNotFoundAfterRestart": "La partie a été perdue suite à un redémarrage du serveur. Veuillez retourner à la salle d'attente et relancer la partie.",
+      "duplicate": "Double ! Vous êtes éliminé !",
+      "errorDrawing": "Erreur lors de la pioche",
+      "errorStopping": "Erreur lors de l'arrêt",
+      "notYourTurn": "Ce n'est pas votre tour",
+      "noStopCard": "Aucune carte Stop à assigner",
+      "errorAssignStop": "Erreur lors de l'assignation de la carte Stop",
+      "noDrawThreeCard": "Aucune carte DrawThree à assigner",
+      "errorAssignDrawThree": "Erreur lors de l'assignation de la carte DrawThree",
+      "notYourTurnToStart": "Ce n'est pas à vous de démarrer le round",
+      "errorStartRound": "Erreur lors du démarrage du round"
+    },
+    "success": {
+      "flip7": "🎯 FLIP7 ! 7 cartes numérotées différentes ! +15 points bonus !"
     }
   },
   "rules": {
@@ -289,6 +341,17 @@
     "changePassword": "Changer le mot de passe",
     "dangerZone": "Zone de danger",
     "deleteAccount": "Supprimer mon compte",
-    "deleteAccountWarning": "Une fois supprimé, votre compte ne pourra pas être récupéré. Cette action est irréversible."
+    "deleteAccountWarning": "Une fois supprimé, votre compte ne pourra pas être récupéré. Cette action est irréversible.",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+    "success": {
+      "updateProfile": "Profil mis à jour avec succès !",
+      "changePassword": "Mot de passe modifié avec succès !"
+    },
+    "errors": {
+      "loadData": "Erreur lors du chargement des données",
+      "updateProfile": "Erreur lors de la mise à jour du profil",
+      "changePassword": "Erreur lors du changement de mot de passe",
+      "deleteAccount": "Erreur lors de la suppression du compte"
+    }
   }
 }

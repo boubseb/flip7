@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthenticationService } from '../../services/authentication/authentification.service';
 import { UserService } from '../../services/user/user.service';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-profil',
@@ -18,6 +18,7 @@ export class ProfilComponent implements OnInit {
   private authService = inject(AuthenticationService);
   private userService = inject(UserService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   profileForm!: FormGroup;
   passwordForm!: FormGroup;
@@ -82,7 +83,7 @@ export class ProfilComponent implements OnInit {
         console.error('Error message:', error.message);
         console.error('Error body:', error.error);
         
-        this.errorMessage = 'Erreur lors du chargement des données: ' + (error.error?.message || error.message);
+        this.errorMessage = this.translate.instant('profile.errors.loadData') + ': ' + (error.error?.message || error.message);
         this.isLoading = false;
         setTimeout(() => this.errorMessage = '', 5000);
       }
@@ -101,13 +102,13 @@ export class ProfilComponent implements OnInit {
 
       this.userService.updateProfile(profileData).subscribe({
         next: (user) => {
-          this.successMessage = 'Profil mis à jour avec succès !';
+          this.successMessage = this.translate.instant('profile.success.updateProfile');
           this.isLoading = false;
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
           console.error('Error updating profile:', error);
-          this.errorMessage = 'Erreur lors de la mise à jour du profil';
+          this.errorMessage = this.translate.instant('profile.errors.updateProfile');
           this.isLoading = false;
           setTimeout(() => this.errorMessage = '', 3000);
         }
@@ -122,14 +123,14 @@ export class ProfilComponent implements OnInit {
 
       this.userService.changePassword(newPassword).subscribe({
         next: (response) => {
-          this.successMessage = 'Mot de passe modifié avec succès !';
+          this.successMessage = this.translate.instant('profile.success.changePassword');
           this.passwordForm.reset();
           this.isLoading = false;
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
           console.error('Error changing password:', error);
-          this.errorMessage = 'Erreur lors du changement de mot de passe';
+          this.errorMessage = this.translate.instant('profile.errors.changePassword');
           this.isLoading = false;
           setTimeout(() => this.errorMessage = '', 3000);
         }
@@ -138,7 +139,7 @@ export class ProfilComponent implements OnInit {
   }
 
   onDeleteAccount(): void {
-    const confirmed = confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');
+    const confirmed = confirm(this.translate.instant('profile.confirmDelete'));
     if (confirmed) {
       this.isLoading = true;
       this.userService.deleteAccount().subscribe({
@@ -148,7 +149,7 @@ export class ProfilComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error deleting account:', error);
-          this.errorMessage = 'Erreur lors de la suppression du compte';
+          this.errorMessage = this.translate.instant('profile.errors.deleteAccount');
           this.isLoading = false;
           setTimeout(() => this.errorMessage = '', 3000);
         }

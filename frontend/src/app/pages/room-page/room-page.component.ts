@@ -8,7 +8,7 @@ import { WebSocketService } from '../../services/websocket/websocket.service';
 import { Room, RoomStatus, RoomCreateRequest, RoomJoinRequest } from '../../models/room/room.model';
 import { RoomBrowserComponent } from '../../components/room-browser/room-browser.component';
 import { Subscription } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-room-page',
@@ -49,6 +49,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     private wsService: WebSocketService,
     private router: Router,
     private route: ActivatedRoute,
+    private translate: TranslateService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -145,7 +146,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading rooms:', error);
-        this.showErrorMessage('Erreur lors du chargement des rooms');
+        this.showErrorMessage('room.errors.loadingRooms');
       }
     });
   }
@@ -158,7 +159,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         // Check if user is part of the room
         if (!room.players.includes(this.currentUserId)) {
           console.warn('❌ User not in room');
-          this.showErrorMessage('Vous ne faites pas partie de cette room');
+          this.showErrorMessage('room.errors.notInRoom');
           this.currentView = 'join';
           return;
         }
@@ -174,7 +175,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('❌ Error loading room:', error);
-        this.showErrorMessage('Room introuvable');
+        this.showErrorMessage('room.errors.roomNotFound');
         this.currentView = 'join';
       }
     });
@@ -187,12 +188,12 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     }
 
     if (!this.createRoomPassword) {
-      this.showErrorMessage('Le mot de passe est requis');
+      this.showErrorMessage('room.errors.passwordRequired');
       return;
     }
     
     if (this.createRoomMaxPlayers < 2 || this.createRoomMaxPlayers > 12) {
-      this.showErrorMessage('Le nombre de joueurs doit être entre 2 et 12');
+      this.showErrorMessage('room.errors.invalidMaxPlayers');
       return;
     }
     
@@ -204,7 +205,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     this.roomService.createRoom(request).subscribe({
       next: (room) => {
         console.log('✅ Room created:', room);
-        this.showSuccessMessage(`Room créée ! ID: ${room.id}`);
+        this.showSuccessMessage('room.success.roomCreated', 3000, { roomId: room.id });
         
         // Sauvegarder dans localStorage pour reconnexion
         localStorage.setItem('currentRoomId', room.id);
@@ -234,7 +235,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('❌ Error creating room:', error);
-        this.showErrorMessage(error.error?.message || 'Erreur lors de la création de la room');
+        this.showErrorMessage(error.error?.message || 'room.errors.createError');
       }
     });
   }
@@ -249,7 +250,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     const pwd = password || this.joinRoomPassword;
     
     if (!id || !pwd) {
-      this.showErrorMessage('ID et mot de passe requis');
+      this.showErrorMessage('room.errors.credentialsRequired');
       return;
     }
     
@@ -261,7 +262,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     this.roomService.joinRoom(request).subscribe({
       next: (room) => {
         console.log('✅ Joined room:', room.id);
-        this.showSuccessMessage('Room rejointe avec succès !');
+        this.showSuccessMessage('room.success.roomJoined');
         
         // Sauvegarder dans localStorage pour reconnexion
         localStorage.setItem('currentRoomId', room.id);
@@ -290,7 +291,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error joining room:', error);
-        this.showErrorMessage(error.error?.message || 'Mot de passe incorrect ou room introuvable');
+        this.showErrorMessage(error.error?.message || 'room.errors.joinError');
       }
     });
   }
@@ -311,7 +312,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     this.roomService.joinRoom(request).subscribe({
       next: (room) => {
         console.log('✅ Reconnexion réussie:', room.id);
-        this.showSuccessMessage('Reconnecté à la partie !');
+        this.showSuccessMessage('room.success.reconnected');
         
         this.currentRoom = room;
         
@@ -335,7 +336,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         // Nettoyer le localStorage si la reconnexion échoue (room n'existe plus)
         localStorage.removeItem('currentRoomId');
         localStorage.removeItem('currentRoomPassword');
-        this.showErrorMessage('Impossible de se reconnecter (room expirée ou fermée)');
+        this.showErrorMessage('room.errors.reconnectionFailed');
         this.currentView = 'create';
       }
     });
@@ -350,8 +351,8 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  private showSuccessMessage(message: string, duration: number = 3000): void {
-    this.successMessage = message;
+  private showSuccessMessage(messageKey: string, duration: number = 3000, params?: any): void {
+    this.successMessage = this.translate.instant(messageKey, params);
     this.errorMessage = '';
     if (this.messageTimeout) {
       clearTimeout(this.messageTimeout);
@@ -361,8 +362,8 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     }, duration);
   }
 
-  private showErrorMessage(message: string, duration: number = 5000): void {
-    this.errorMessage = message;
+  private showErrorMessage(messageKey: string, duration: number = 5000): void {
+    this.errorMessage = this.translate.instant(messageKey);
     this.successMessage = '';
     if (this.messageTimeout) {
       clearTimeout(this.messageTimeout);
@@ -385,7 +386,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     const id = roomId || this.currentRoom?.id;
     if (id) {
       navigator.clipboard.writeText(id).then(() => {
-        this.showSuccessMessage('✅ ID copié dans le presse-papier !', 2000);
+        this.showSuccessMessage('room.success.idCopied', 2000);
       });
     }
   }
@@ -394,7 +395,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     if (!this.currentRoom || !this.isAdmin) return;
     
     if (this.currentRoom.players.length < 2) {
-      this.showErrorMessage('Au moins 2 joueurs sont requis pour lancer la partie');
+      this.showErrorMessage('room.errors.minPlayersRequired');
       return;
     }
     
@@ -405,7 +406,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error starting game:', error);
-        this.showErrorMessage(error.error?.message || 'Erreur lors du démarrage de la partie');
+        this.showErrorMessage(error.error?.message || 'room.errors.startGameError');
       }
     });
   }
@@ -424,11 +425,11 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         console.log('✅ Room refreshed:', room);
         this.currentRoom = room;
         this.updateRoomState();
-        this.showSuccessMessage('✅ Liste des joueurs mise à jour !', 2000);
+        this.showSuccessMessage('room.success.playersRefreshed', 2000);
       },
       error: (error: any) => {
         console.error('❌ Error refreshing room:', error);
-        this.showErrorMessage('Erreur lors du rafraîchissement');
+        this.showErrorMessage('room.errors.refreshError');
       }
     });
   }
@@ -437,7 +438,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     if (!this.currentRoom || !this.isAdmin) return;
     
     if (playerId === this.currentUserId) {
-      this.showErrorMessage('Vous ne pouvez pas vous retirer vous-même');
+      this.showErrorMessage('room.errors.cannotKickYourself');
       return;
     }
     
@@ -447,11 +448,11 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         console.log('✅ Player kicked:', playerId);
         this.currentRoom = room;
         this.updateRoomState();
-        this.showSuccessMessage('✅ Joueur retiré de la room !', 2000);
+        this.showSuccessMessage('room.success.playerKicked', 2000);
       },
       error: (error: any) => {
         console.error('❌ Error kicking player:', error);
-        this.showErrorMessage(error.error?.message || 'Erreur lors du retrait du joueur');
+        this.showErrorMessage(error.error?.message || 'room.errors.kickPlayerError');
       }
     });
   }

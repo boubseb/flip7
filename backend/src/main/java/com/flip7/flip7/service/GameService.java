@@ -977,7 +977,7 @@ public class GameService {
         stopCard.setPending(true); // IMPORTANT: marquer comme pending
         player2.addCard(stopCard);
         player2.setStatus(PlayerStatus.PLAYING);
-        game.setCurrentPlayerIndex(1); // C'est le joueur 2 qui doit assigner
+        // game.setCurrentPlayerIndex(1); // COMMENTÉ - méthode n'existe pas
         System.out.println("   🛑 " + player2.getUsername() + " a reçu: CARTE STOP (pending=true)");
         System.out.println("   ⏸️  Distribution en pause - " + player2.getUsername() + " doit assigner");
         
@@ -987,7 +987,8 @@ public class GameService {
         }
 
         // 4. Broadcaster l'état
-        broadcastGameState(roomId);
+        // broadcastGameState(roomId); // COMMENTÉ - signature incorrecte
+        broadcastGameState(roomId, game);
         
         System.out.println("🧪 === TEST PRÊT ===");
         System.out.println("   " + player2.getUsername() + " doit maintenant assigner la carte Stop");

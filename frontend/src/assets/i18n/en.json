@@ -44,6 +44,13 @@
     "registerButton": "Sign up",
     "alreadyAccount": "Already have an account?",
     "loginLink": "Log in",
+    "firstName": "First name",
+    "birthDate": "Birth date",
+    "pseudo": "Nickname",
+    "firstNamePlaceholder": "Please enter your first name.",
+    "birthDatePlaceholder": "Please enter your birth date.",
+    "pseudoPlaceholder": "Please enter your nickname.",
+    "passwordRequirements": "(8 chars min, number, uppercase, special)",
     "emailError": "Invalid email",
     "passwordError": "Minimum 6 characters",
     "passwordMatchError": "Passwords do not match",
@@ -91,6 +98,30 @@
     "shareRoom": "Share",
     "minPlayers": "Minimum {{min}} players required",
     "kickPlayer": "Kick this player",
+    "errors": {
+      "loadingRooms": "Error loading rooms",
+      "notInRoom": "You are not part of this room",
+      "roomNotFound": "Room not found",
+      "passwordRequired": "Password is required",
+      "invalidMaxPlayers": "Number of players must be between 2 and 12",
+      "createError": "Error creating the room",
+      "credentialsRequired": "ID and password required",
+      "joinError": "Incorrect password or room not found",
+      "reconnectionFailed": "Unable to reconnect (room expired or closed)",
+      "minPlayersRequired": "At least 2 players are required to start the game",
+      "startGameError": "Error starting the game",
+      "refreshError": "Error refreshing",
+      "cannotKickYourself": "You cannot kick yourself",
+      "kickPlayerError": "Error kicking player"
+    },
+    "success": {
+      "roomCreated": "Room created! ID: {{roomId}}",
+      "roomJoined": "Successfully joined room!",
+      "reconnected": "Reconnected to the game!",
+      "idCopied": "✅ ID copied to clipboard!",
+      "playersRefreshed": "✅ Player list updated!",
+      "playerKicked": "✅ Player removed from room!"
+    },
     "browseTabs": {
       "browse": "Browse Rooms",
       "joinById": "Join by ID"
@@ -150,6 +181,8 @@
     "START_ROUND_BUTTON": "Start round",
     "START_ROUND_READY": "Click when you're ready",
     "PLEASE_WAIT": "Please wait...",
+    "loadingGame": "Loading game...",
+    "loadingRoom": "Loading room...",
     "cards": {
       "number": "Number card",
       "operator": "Operator card",
@@ -188,6 +221,25 @@
       "waiting": "Waiting",
       "eliminated": "Eliminated",
       "winner": "Winner"
+    },
+    "errors": {
+      "notInRoom": "You are not part of this room",
+      "cannotLoadGameState": "Unable to load game state",
+      "roomNotFound": "Room not found",
+      "gameNotFoundAfterRestart": "The game was lost due to a server restart. Please return to the waiting room and restart the game.",
+      "duplicate": "Duplicate! You are eliminated!",
+      "errorDrawing": "Error while drawing",
+      "errorStopping": "Error while stopping",
+      "notYourTurn": "It's not your turn",
+      "noStopCard": "No Stop card to assign",
+      "errorAssignStop": "Error assigning Stop card",
+      "noDrawThreeCard": "No DrawThree card to assign",
+      "errorAssignDrawThree": "Error assigning DrawThree card",
+      "notYourTurnToStart": "It's not your turn to start the round",
+      "errorStartRound": "Error starting the round"
+    },
+    "success": {
+      "flip7": "🎯 FLIP7! 7 different numbered cards! +15 bonus points!"
     }
   },
   "rules": {
@@ -289,6 +341,17 @@
     "changePassword": "Change password",
     "dangerZone": "Danger zone",
     "deleteAccount": "Delete my account",
-    "deleteAccountWarning": "Once deleted, your account cannot be recovered. This action is irreversible."
+    "deleteAccountWarning": "Once deleted, your account cannot be recovered. This action is irreversible.",
+    "confirmDelete": "Are you sure you want to delete your account? This action is irreversible.",
+    "success": {
+      "updateProfile": "Profile updated successfully!",
+      "changePassword": "Password changed successfully!"
+    },
+    "errors": {
+      "loadData": "Error loading data",
+      "updateProfile": "Error updating profile",
+      "changePassword": "Error changing password",
+      "deleteAccount": "Error deleting account"
+    }
   }
 }

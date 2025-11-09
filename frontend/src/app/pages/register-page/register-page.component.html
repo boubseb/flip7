@@ -5,21 +5,21 @@
         <label for="name">{{ 'register.username' | translate }} *</label>
         <input id="name" formControlName="name" type="text" required [title]="'register.username' | translate">
 
-        <label for="lastName">Prénom *</label>
-        <input id="lastName" formControlName="lastName" type="text" required title="Veuillez entrer votre prénom.">
+        <label for="lastName">{{ 'register.firstName' | translate }} *</label>
+        <input id="lastName" formControlName="lastName" type="text" required [title]="'register.firstNamePlaceholder' | translate">
 
-        <label for="birthDate">Date de naissance *</label>
+        <label for="birthDate">{{ 'register.birthDate' | translate }} *</label>
         <input id="birthDate" formControlName="birthDate" type="date" required
-            title="Veuillez entrer votre date de naissance.">
+            [title]="'register.birthDatePlaceholder' | translate">
 
-        <label for="pseudo">Pseudo *</label>
-        <input id="pseudo" formControlName="pseudo" type="text" required title="Veuillez entrer votre pseudo.">
+        <label for="pseudo">{{ 'register.pseudo' | translate }} *</label>
+        <input id="pseudo" formControlName="pseudo" type="text" required [title]="'register.pseudoPlaceholder' | translate">
 
         <label for="Mail">{{ 'register.email' | translate }} *</label>
         <input id="Mail" formControlName="mailAddress" type="email" required
             [title]="'register.email' | translate">
 
-        <label for="password">{{ 'register.password' | translate }} * (8 caractères min, num, maj, spé)</label>
+        <label for="password">{{ 'register.password' | translate }} * {{ 'register.passwordRequirements' | translate }}</label>
         <input id="password" formControlName="password" type="password" required
             [title]="'register.password' | translate">
 

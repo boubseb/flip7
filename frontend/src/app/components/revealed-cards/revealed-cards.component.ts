@@ -48,8 +48,8 @@ export class RevealedCardsComponent {
   private formatSpecialType(specialType: string): string {
     if (!specialType) return '⭐';
     const typeMap: { [key: string]: string } = {
-      'STOP': 'STOP',
-      'DRAW_THREE': '+3',
+      'STOP': '🛑',
+      'DRAW_THREE': '➕3️⃣',
       'LIFE': '❤️'
     };
     return typeMap[specialType] || specialType;
