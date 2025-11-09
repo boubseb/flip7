@@ -1,0 +1,205 @@
+<div class="statistics-page">
+  <div class="statistics-header">
+    <button class="back-button" (click)="goBack()">
+      <span>←</span>
+      <span>Retour</span>
+    </button>
+    <h1>📊 Mes Statistiques</h1>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement des statistiques...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-container">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="retry-button" (click)="loadStatistics()">Réessayer</button>
+    </div>
+  }
+
+  @if (statistics && !loading && !error) {
+    <div class="statistics-container">
+      <!-- Statistiques personnelles -->
+      <div class="stats-section">
+        <h2 class="section-title">📈 Mes Statistiques</h2>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🎮</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalGames }}</div>
+              <div class="stat-label">Parties jouées</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.completedGames }}</div>
+              <div class="stat-label">Parties finies</div>
+            </div>
+          </div>
+
+          <div class="stat-card highlight">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.victories }}</div>
+              <div class="stat-label">Victoires</div>
+            </div>
+          </div>
+
+          <div class="stat-card highlight">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalFlip7 }}</div>
+              <div class="stat-label">Flip 7 réalisés</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🔢</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.totalRounds }}</div>
+              <div class="stat-label">Rounds joués</div>
+            </div>
+          </div>
+
+          <div class="stat-card danger">
+            <div class="stat-icon">💥</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.roundsEliminatedByDouble }}</div>
+              <div class="stat-label">Éliminé par double</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.maxScoreInOneRound }}</div>
+              <div class="stat-label">Plus gros score (1 round)</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ formatNumber(statistics.averagePointsPerRound) }}</div>
+              <div class="stat-label">Moyenne par round</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ formatNumber(statistics.averagePointsPerScoringRound) }}</div>
+              <div class="stat-label">Moyenne (rounds > 0)</div>
+            </div>
+          </div>
+
+          <div class="stat-card danger">
+            <div class="stat-icon">🛑</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.stopCardsReceived }}</div>
+              <div class="stat-label">Cartes Stop reçues</div>
+            </div>
+          </div>
+
+          <div class="stat-card success">
+            <div class="stat-icon">💚</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.lifeCardsObtained }}</div>
+              <div class="stat-label">Cartes Vie obtenues</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">➕</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.drawThreeReceived }}</div>
+              <div class="stat-label">Cartes +3 reçues</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card success">
+            <div class="stat-icon">✨</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.drawThreeCompleted }}</div>
+              <div class="stat-label">+3 réussis</div>
+            </div>
+          </div>
+
+          <div class="stat-card danger">
+            <div class="stat-icon">💀</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.drawThreeWithElimination }}</div>
+              <div class="stat-label">+3 avec élimination</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques globales -->
+      <div class="stats-section global">
+        <h2 class="section-title">🌍 Statistiques Globales</h2>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">🎮</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.globalCompletedGames }}</div>
+              <div class="stat-label">Parties finies (total)</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ formatNumber(statistics.globalAverageRoundsPerGame) }}</div>
+              <div class="stat-label">Moyenne rounds/partie</div>
+            </div>
+          </div>
+
+          <div class="stat-card highlight">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.globalTotalFlip7 }}</div>
+              <div class="stat-label">Flip 7 totaux</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ statistics.globalMaxScoreInOneRound }}</div>
+              <div class="stat-label">Record absolu (1 round)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="theoretical-max">
+          <div class="theoretical-card">
+            <div class="theoretical-icon">🌟</div>
+            <div class="theoretical-content">
+              <div class="theoretical-title">Score Théorique Maximum</div>
+              <div class="theoretical-value">{{ statistics.theoreticalMaxScore }}</div>
+              <div class="theoretical-description">
+                +2 +4 +6 +8 +10 + (12+11+10+9+8+7+6) avec carte x2
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

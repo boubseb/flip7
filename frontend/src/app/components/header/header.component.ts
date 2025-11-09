@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs/internal/Observable';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
 import { ProfilComponent } from '../profil/profil.component';
+import { StatisticsComponent } from '../statistics/statistics.component';
 import { ThemeService, Theme } from '../../services/theme/theme.service';
 import { LanguageService, Language } from '../../services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,6 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
     CommonModule,
     RulesComponent,
     ProfilComponent,
+    StatisticsComponent,
     RouterLink,
     TranslateModule
   ],
@@ -27,6 +29,7 @@ export class HeaderComponent {
   constructor() { }
 
   isRules: boolean = false;
+  isStatistics: boolean = false;
 
   authenticationService = inject(AuthenticationService);
   themeService = inject(ThemeService);
@@ -44,35 +47,52 @@ export class HeaderComponent {
 
   toggleIsRules() {
     this.isRules = !this.isRules;
-    // Fermer le profil quand on ouvre les règles
+    // Fermer le profil et les stats quand on ouvre les règles
     if (this.isRules) {
+      this.isStatistics = false;
       this.isProfil = false;
     }
   }
   
   toggleIsProfil() {
     this.isProfil = !this.isProfil;
+    // Fermer stats et règles quand on ouvre le profil
+    if (this.isProfil) {
+      this.isStatistics = false;
+      this.isRules = false;
+    }
+  }
+
+  toggleIsStatistics() {
+    this.isStatistics = !this.isStatistics;
+    // Fermer profil et règles quand on ouvre les stats
+    if (this.isStatistics) {
+      this.isProfil = false;
+      this.isRules = false;
+      this.isProfilMenuOpen = false;
+    }
   }
 
   toggleProfilMenu() {
     this.isProfilMenuOpen = !this.isProfilMenuOpen;
-    // Fermer les règles quand on ouvre le menu profil
+    // Fermer les règles et stats quand on ouvre le menu profil
     if (this.isProfilMenuOpen) {
       this.isRules = false;
+      this.isStatistics = false;
     }
   }
 
   openProfil() {
     this.isProfilMenuOpen = false;
     this.isProfil = true;
-    // Fermer les règles si elles sont ouvertes
+    // Fermer les règles et stats si elles sont ouvertes
     this.isRules = false;
+    this.isStatistics = false;
   }
 
   openStats() {
     this.isProfilMenuOpen = false;
-    // TODO: Implement stats page
-    console.log('Opening stats...');
+    this.isStatistics = true;
     // Fermer les règles et le profil si ouverts
     this.isRules = false;
     this.isProfil = false;
@@ -91,6 +111,7 @@ export class HeaderComponent {
     // Fermer tous les overlays quand on clique sur le titre
     this.isProfil = false;
     this.isRules = false;
+    this.isStatistics = false;
     this.isProfilMenuOpen = false;
   }
 
@@ -99,6 +120,7 @@ export class HeaderComponent {
     this.isProfilMenuOpen = false;
     this.isProfil = false;
     this.isRules = false;
+    this.isStatistics = false;
     
     // Supprimer le token
     this.authenticationService.removeToken();

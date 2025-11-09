@@ -263,9 +263,15 @@ public class GameHistory {
         private int roundScore;
         private boolean eliminated;
         private boolean stopped;
-        private boolean hasSevenDifferent;  // A gagné avec 7 cartes différentes
+        private boolean hasSevenDifferent;  // A gagné avec 7 cartes différentes (Flip7)
         private int cardsDrawn;             // Nombre de cartes piochées
         private boolean usedLife;           // A utilisé une carte Vie
+        private boolean eliminatedByDouble; // Éliminé par un double
+        private boolean receivedStopCard;   // A reçu une carte Stop
+        private int lifeCardsObtained;      // Nombre de cartes Vie obtenues
+        private boolean receivedDrawThree;  // A reçu une carte +3
+        private boolean completedDrawThree; // A réussi le +3 (sans élimination)
+        private boolean eliminatedByDrawThree; // Éliminé par un double lors du +3
 
         public PlayerRoundData() {
         }
@@ -338,6 +344,54 @@ public class GameHistory {
 
         public void setUsedLife(boolean usedLife) {
             this.usedLife = usedLife;
+        }
+
+        public boolean isEliminatedByDouble() {
+            return eliminatedByDouble;
+        }
+
+        public void setEliminatedByDouble(boolean eliminatedByDouble) {
+            this.eliminatedByDouble = eliminatedByDouble;
+        }
+
+        public boolean isReceivedStopCard() {
+            return receivedStopCard;
+        }
+
+        public void setReceivedStopCard(boolean receivedStopCard) {
+            this.receivedStopCard = receivedStopCard;
+        }
+
+        public int getLifeCardsObtained() {
+            return lifeCardsObtained;
+        }
+
+        public void setLifeCardsObtained(int lifeCardsObtained) {
+            this.lifeCardsObtained = lifeCardsObtained;
+        }
+
+        public boolean isReceivedDrawThree() {
+            return receivedDrawThree;
+        }
+
+        public void setReceivedDrawThree(boolean receivedDrawThree) {
+            this.receivedDrawThree = receivedDrawThree;
+        }
+
+        public boolean isCompletedDrawThree() {
+            return completedDrawThree;
+        }
+
+        public void setCompletedDrawThree(boolean completedDrawThree) {
+            this.completedDrawThree = completedDrawThree;
+        }
+
+        public boolean isEliminatedByDrawThree() {
+            return eliminatedByDrawThree;
+        }
+
+        public void setEliminatedByDrawThree(boolean eliminatedByDrawThree) {
+            this.eliminatedByDrawThree = eliminatedByDrawThree;
         }
     }
 

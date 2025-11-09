@@ -874,6 +874,48 @@ public class GameService {
             data.setUsedLife(player.hasUsedLife());
             data.setCardsDrawn(player.getHandSize());
             
+            // Statistiques supplémentaires
+            // Éliminé par un double ?
+            if (player.getStatus() == PlayerStatus.ELIMINATED) {
+                Map<Integer, Integer> numberCounts = new HashMap<>();
+                for (Card card : player.getHand()) {
+                    if (card instanceof NumberCard) {
+                        int num = ((NumberCard) card).getValue();
+                        numberCounts.put(num, numberCounts.getOrDefault(num, 0) + 1);
+                    }
+                }
+                boolean hasDouble = numberCounts.values().stream().anyMatch(count -> count >= 2);
+                data.setEliminatedByDouble(hasDouble);
+            }
+            
+            // A reçu une carte Stop ?
+            data.setReceivedStopCard(player.getStoppedByUsername() != null);
+            
+            // Nombre de cartes Vie obtenues ce round
+            data.setLifeCardsObtained(player.getLifeCardsInHand());
+            
+            // A reçu un +3 ?
+            boolean receivedDrawThree = player.getDrawThreeByUsername() != null;
+            data.setReceivedDrawThree(receivedDrawThree);
+            
+            if (receivedDrawThree) {
+                // +3 réussi (sans élimination)
+                data.setCompletedDrawThree(player.getStatus() != PlayerStatus.ELIMINATED);
+                
+                // Éliminé pendant le +3 ?
+                if (player.getStatus() == PlayerStatus.ELIMINATED) {
+                    Map<Integer, Integer> numberCounts = new HashMap<>();
+                    for (Card card : player.getHand()) {
+                        if (card instanceof NumberCard) {
+                            int num = ((NumberCard) card).getValue();
+                            numberCounts.put(num, numberCounts.getOrDefault(num, 0) + 1);
+                        }
+                    }
+                    boolean hasDouble = numberCounts.values().stream().anyMatch(count -> count >= 2);
+                    data.setEliminatedByDrawThree(hasDouble);
+                }
+            }
+            
             roundHistory.addPlayerData(data);
             
             // Déterminer le gagnant du round (meilleur score non éliminé)

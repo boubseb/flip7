@@ -1,0 +1,295 @@
+.statistics-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+
+  .statistics-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+
+    .back-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(-5px);
+      }
+    }
+
+    h1 {
+      color: white;
+      font-size: 2.5rem;
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  .loading-container,
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    color: white;
+    text-align: center;
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    .error-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin: 1rem 0;
+    }
+
+    .retry-button {
+      padding: 0.75rem 2rem;
+      background: white;
+      color: #667eea;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+
+  .statistics-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .stats-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+    &.global {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+
+      .section-title {
+        color: white;
+      }
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        color: #333;
+      }
+
+      .theoretical-card {
+        background: rgba(255, 255, 255, 0.95);
+        color: #333;
+      }
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #667eea;
+      margin: 0 0 1.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      &.highlight {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      }
+
+      &.success {
+        background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+      }
+
+      &.danger {
+        background: linear-gradient(135deg, #ffa8a8 0%, #ff6b6b 100%);
+      }
+
+      .stat-icon {
+        font-size: 2.5rem;
+        flex-shrink: 0;
+      }
+
+      .stat-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: #333;
+          line-height: 1;
+        }
+        }
+      }
+    }
+
+    .theoretical-max {
+      margin-top: 2rem;
+
+      .theoretical-card {
+        background: linear-gradient(135deg, #fff9c4 0%, #ffeb3b 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+        .theoretical-icon {
+          font-size: 4rem;
+        }
+
+        .theoretical-content {
+          flex: 1;
+
+          .theoretical-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+          }
+
+          .theoretical-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ff6b6b;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+          }
+
+          .theoretical-description {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+
+
+    .statistics-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+
+    .stats-section {
+      padding: 1.5rem;
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+      }
+
+      .stat-card {
+        padding: 1rem;
+
+        .stat-icon {
+          font-size: 2rem;
+        }
+
+        .stat-content {
+          .stat-value {
+            font-size: 1.5rem;
+          }
+
+          .stat-label {
+            font-size: 0.75rem;
+          }
+        }
+      }
+
+      .theoretical-max {
+        .theoretical-card {
+          flex-direction: column;
+          text-align: center;
+
+          .theoretical-content {
+            .theoretical-value {
+              font-size: 2.5rem;
+            }
+          }
+        }
+      }
+    }
+  }
