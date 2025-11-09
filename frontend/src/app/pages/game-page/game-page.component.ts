@@ -697,6 +697,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
     console.log('   - Card type:', card?.cardType || card?.type);
     console.log('   - Card specialType:', card?.specialType);
     
+    // Définir la carte AVANT de vérifier l'auto-assignation
+    this.stopCardToAssign = card;
+    
     // Vérifier combien de joueurs sont assignables (non éliminés, non stopped)
     const assignablePlayers = this.getAssignablePlayers();
     console.log('👥 Joueurs assignables:', assignablePlayers.length);
@@ -708,7 +711,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
       return;
     }
     
-    this.stopCardToAssign = card;
+    // Sinon, afficher le modal
     this.showStopCardModal = true;
   }
 
@@ -764,6 +767,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
   showDrawThreeCardSelection(card: any): void {
     console.log('➕3️⃣ Opening DrawThree card selection modal', card);
     
+    // Définir la carte AVANT de vérifier l'auto-assignation
+    this.drawThreeCardToAssign = card;
+    
     // Vérifier combien de joueurs sont assignables (non éliminés, non stopped)
     const assignablePlayers = this.getAssignablePlayers();
     console.log('👥 Joueurs assignables:', assignablePlayers.length);
@@ -775,7 +781,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
       return;
     }
     
-    this.drawThreeCardToAssign = card;
+    // Sinon, afficher le modal
     this.showDrawThreeModal = true;
   }
   
@@ -785,14 +791,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
    */
   private getAssignablePlayers(): any[] {
     if (!this.gameState || !this.gameState.players) {
+      console.log('⚠️ getAssignablePlayers: Pas de gameState ou players');
       return [];
     }
     
-    return this.gameState.players.filter((player: any) => 
-      player.status !== 'ELIMINATED' && 
-      player.status !== 'STOPPED' && 
-      player.status !== 'FORCED_STOP'
-    );
+    const assignable = this.gameState.players.filter((player: any) => {
+      const isAssignable = player.status !== 'ELIMINATED' && 
+                           player.status !== 'STOPPED' && 
+                           player.status !== 'FORCED_STOP';
+      console.log(`   - ${player.username} (${player.status}): ${isAssignable ? '✅ Assignable' : '❌ Non assignable'}`);
+      return isAssignable;
+    });
+    
+    console.log(`📊 Total joueurs assignables: ${assignable.length}`);
+    return assignable;
   }
 
   /**

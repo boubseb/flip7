@@ -307,13 +307,21 @@ public class Game {
         System.out.println("   🛑 " + targetPlayer.getUsername() + " est maintenant FORCED_STOP");
         
         // ÉTAPE 4: Vérifier s'il y a une pioche suspendue à reprendre
+        // MAIS si le joueur s'est assigné le Stop à lui-même, la pioche est ANNULÉE
         if (remaining > 0) {
-            System.out.println("   ♻️ Il reste " + remaining + " carte(s) à piocher pour " + player.getUsername());
-            boolean completed = processForcedDraws(player, remaining);
-            
-            if (!completed) {
-                System.out.println("   ⏸️ Pioche reprise interrompue - Attente assignation");
-                return new ActionResult(true, "Carte spéciale piochée - assignation nécessaire");
+            if (player.getUserId().equals(targetPlayer.getUserId())) {
+                // Auto-assignation du Stop : la pioche suspendue est annulée
+                System.out.println("   ⚠️ Auto-assignation du Stop : pioche suspendue annulée (remaining=" + remaining + ")");
+                player.setRemainingForcedDraws(0); // Reset
+            } else {
+                // Joueur différent : on reprend la pioche suspendue normalement
+                System.out.println("   ♻️ Il reste " + remaining + " carte(s) à piocher pour " + player.getUsername());
+                boolean completed = processForcedDraws(player, remaining);
+                
+                if (!completed) {
+                    System.out.println("   ⏸️ Pioche reprise interrompue - Attente assignation");
+                    return new ActionResult(true, "Carte spéciale piochée - assignation nécessaire");
+                }
             }
         } else {
             // Pas de pioche suspendue, vérifier s'il y en a d'autres dans la queue
@@ -403,15 +411,10 @@ public class Game {
             System.out.println("   💾 Sauvegarde firstSourcePlayerId: " + getPlayerById(firstSourcePlayerId).getUsername());
         }
         
-        // ÉTAPE 2: Retirer la carte de la queue UNIQUEMENT si remaining == 0
-        // Si remaining > 0, la carte doit rester dans la queue pour être reprise plus tard
+        // ÉTAPE 2: Retirer la carte de la queue (elle est maintenant assignée)
         int remaining = pendingCard.getRemainingForcedDraws();
-        if (remaining == 0) {
-            pendingSpecialCardsQueue.remove(pendingCard);
-            System.out.println("   📝 Carte retirée de la queue (remaining=0)");
-        } else {
-            System.out.println("   ⏸️ Carte RESTE dans la queue (remaining=" + remaining + ")");
-        }
+        pendingSpecialCardsQueue.remove(pendingCard);
+        System.out.println("   📝 Carte retirée de la queue (remaining=" + remaining + ")");
         
         // ÉTAPE 3: Déplacer la carte de la main de source vers target
         Card card = player.getHand().stream()
