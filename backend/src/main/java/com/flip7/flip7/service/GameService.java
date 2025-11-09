@@ -158,13 +158,20 @@ public class GameService {
 
         System.out.println("✅ Game found, calling game.drawCard()");
         Game.DrawResult result = game.drawCard(playerId);
+        
+        System.out.println("📊 DrawResult: success=" + result.isSuccess() + ", roundEnded=" + result.isRoundEnded());
+        System.out.println("📊 Game state after drawCard: " + game.getGameState());
+        System.out.println("📊 Is round over? " + game.isRoundOver());
 
         // Broadcaster l'état du jeu
         broadcastGameState(roomId, game);
 
         // Si le round est terminé, calculer les scores
         if (result.isRoundEnded() || game.isRoundOver()) {
+            System.out.println("🔚 Round ended detected, calling handleRoundEnd()...");
             handleRoundEnd(roomId, game);
+        } else {
+            System.out.println("▶️ Round continues...");
         }
 
         return result;
@@ -469,6 +476,7 @@ public class GameService {
             System.out.println("      🃏 Player " + player.getUsername() + " has " + player.getHand().size() + " cards in hand");
             for (Card card : player.getHand()) {
                 java.util.Map<String, Object> cardMap = new java.util.HashMap<>();
+                cardMap.put("id", card.getId()); // 🔑 AJOUT DE L'ID DE LA CARTE
                 cardMap.put("cardType", card.getCardType().toString());
                 cardMap.put("cancelled", card.isCancelled());
                 
@@ -476,19 +484,19 @@ public class GameService {
                     NumberCard numCard = (NumberCard) card;
                     cardMap.put("value", numCard.getValue());
                     cardMap.put("special", false);
-                    System.out.println("         - NumberCard: " + numCard.getValue() + (card.isCancelled() ? " (barrée)" : ""));
+                    System.out.println("         - NumberCard: " + numCard.getValue() + " (ID: " + card.getId() + ")" + (card.isCancelled() ? " (barrée)" : ""));
                 } else if (card instanceof OperatorCard) {
                     OperatorCard opCard = (OperatorCard) card;
                     cardMap.put("operator", opCard.getOperatorType().toString());
                     cardMap.put("special", false);
-                    System.out.println("         - OperatorCard: " + opCard.getOperatorType());
+                    System.out.println("         - OperatorCard: " + opCard.getOperatorType() + " (ID: " + card.getId() + ")");
                 } else if (card instanceof SpecialCard) {
                     SpecialCard specCard = (SpecialCard) card;
                     cardMap.put("specialType", specCard.getSpecialType().toString());
                     cardMap.put("special", true);
                     cardMap.put("used", specCard.isUsed());
                     cardMap.put("pending", specCard.isPending());
-                    System.out.println("         - SpecialCard: " + specCard.getSpecialType() + (specCard.isUsed() ? " (utilisée)" : "") + (specCard.isPending() ? " (pending)" : ""));
+                    System.out.println("         - SpecialCard: " + specCard.getSpecialType() + " (ID: " + card.getId() + ")" + (specCard.isUsed() ? " (utilisée)" : "") + (specCard.isPending() ? " (pending)" : ""));
                 }
                 
                 handCards.add(cardMap);
@@ -994,6 +1002,77 @@ public class GameService {
         System.out.println("   " + player2.getUsername() + " doit maintenant assigner la carte Stop");
         System.out.println("   Il devrait voir TOUS les joueurs (sauf lui-même) dans la modale");
         System.out.println("   Y compris ceux qui n'ont pas encore de carte");
+    }
+    
+    /**
+     * Redémarre une nouvelle partie dans la même room
+     * Sauvegarde la partie actuelle si elle est terminée et crée une nouvelle partie
+     */
+    public void restartGame(String roomId, String userId) {
+        // Récupérer la room
+        Room room = roomService.getRoom(roomId);
+        if (room == null) {
+            throw new RuntimeException("Room not found");
+        }
+        
+        // Vérifier que l'utilisateur est l'admin de la room
+        if (!room.getAdminId().equals(userId)) {
+            throw new RuntimeException("Only the room admin can restart the game");
+        }
+        
+        // Récupérer la partie actuelle
+        Game currentGame = activeGames.get(roomId);
+        
+        // Si une partie existe et est en GAME_OVER, la sauvegarder
+        if (currentGame != null && currentGame.getGameState() == GameState.GAME_OVER) {
+            String historyId = gameHistoryIds.get(roomId);
+            if (historyId != null) {
+                GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
+                if (history != null && history.getStatus() == GameHistory.GameStatus.IN_PROGRESS) {
+                    // Marquer la partie comme terminée
+                    history.setStatus(GameHistory.GameStatus.COMPLETED);
+                    history.setEndedAt(LocalDateTime.now());
+                    
+                    // Sauvegarder le gagnant
+                    GamePlayer winner = currentGame.getWinner();
+                    if (winner != null) {
+                        history.setWinnerId(winner.getUserId());
+                    }
+                    
+                    // Sauvegarder les scores finaux
+                    for (GamePlayer player : currentGame.getPlayers()) {
+                        GameHistory.PlayerScore score = new GameHistory.PlayerScore(
+                            player.getUserId(),
+                            player.getUsername(),
+                            player.getTotalScore()
+                        );
+                        history.getFinalScores().add(score);
+                    }
+                    
+                    gameHistoryRepository.save(history);
+                    System.out.println("✅ Partie terminée sauvegardée dans l'historique: " + historyId);
+                }
+            }
+        }
+        
+        // Supprimer l'ancienne partie de la mémoire
+        activeGames.remove(roomId);
+        gameHistoryIds.remove(roomId);
+        
+        // Réinitialiser le statut de la room à WAITING
+        room.setStatus(Room.RoomStatus.WAITING);
+        roomService.getRoomRepository().save(room);
+        
+        // Broadcaster que la partie a été réinitialisée
+        messagingTemplate.convertAndSend(
+            "/topic/rooms/" + roomId + "/game-restarted",
+            Map.of(
+                "message", "Une nouvelle partie va commencer",
+                "roomStatus", "WAITING"
+            )
+        );
+        
+        System.out.println("🔄 Partie redémarrée pour la room: " + roomId);
     }
     
     /**

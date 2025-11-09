@@ -1,0 +1,77 @@
+<div class="modal-overlay" [class.minimized]="isMinimized" (click)="onOverlayClick($event)">
+  <div class="modal-content game-over-modal" (click)="$event.stopPropagation()">
+    <!-- Bouton pour réafficher quand minimisé -->
+    @if (isMinimized) {
+      <div class="minimized-bar" (click)="onShowAgain()">
+        <span class="minimized-icon">🏆</span>
+        <span class="minimized-text">{{ 'GAME.GAME_OVER' | translate }} - {{ 'GAME.CLICK_TO_SHOW' | translate }}</span>
+      </div>
+    }
+
+    <!-- Contenu complet (caché quand minimisé) -->
+    <div class="full-content" [class.hidden]="isMinimized">
+      <!-- Bannière de victoire -->
+      <div class="victory-banner">
+        <div class="banner-icon">🏆</div>
+        <div class="banner-text">
+          <h1>{{ 'GAME.GAME_OVER' | translate }}</h1>
+          <p class="winner-announcement">
+            {{ winnerName }} {{ 'GAME.HAS_WON' | translate }} !
+          </p>
+        </div>
+      </div>
+
+      <!-- Classement des joueurs -->
+      <div class="rankings-section">
+        <h2 class="section-title">{{ 'GAME.FINAL_RANKINGS' | translate }}</h2>
+        
+        <div class="rankings-list">
+          <div 
+            *ngFor="let player of rankings" 
+            class="ranking-item"
+            [class]="getRankClass(player.rank)"
+            [class.winner]="player.isWinner">
+            
+            <div class="rank-badge">
+              <span class="rank-icon">{{ getRankIcon(player.rank) }}</span>
+            </div>
+            
+            <div class="player-info">
+              <span class="player-name">{{ player.username }}</span>
+              <span class="player-badge" *ngIf="player.isWinner">👑 {{ 'GAME.WINNER' | translate }}</span>
+            </div>
+            
+            <div class="player-score">
+              <span class="score-value">{{ player.score }}</span>
+              <span class="score-label">{{ 'GAME.POINTS' | translate }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="actions-section">
+        <button 
+          class="modal-button hide-button"
+          (click)="onHideTemporarily()">
+          <span class="button-icon">👁️</span>
+          <span>{{ 'GAME.HIDE_TEMPORARILY' | translate }}</span>
+        </button>
+        
+        <button 
+          class="modal-button primary"
+          (click)="onPlayAgain()">
+          <span class="button-icon">🔄</span>
+          <span>{{ 'GAME.PLAY_AGAIN' | translate }}</span>
+        </button>
+        
+        <button 
+          class="modal-button secondary"
+          (click)="onLeaveRoom()">
+          <span class="button-icon">🏠</span>
+          <span>{{ 'GAME.BACK_TO_HOME' | translate }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

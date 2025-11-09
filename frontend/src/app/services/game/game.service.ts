@@ -169,6 +169,18 @@ export class GameService {
   }
 
   /**
+   * Redémarre une nouvelle partie dans la même room
+   * Sauvegarde la partie actuelle et en crée une nouvelle
+   */
+  restartGame(roomId: string): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/${roomId}/restart-game`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
    * Récupère l'historique d'une room
    */
   getRoomHistory(roomId: string): Observable<GameHistory[]> {

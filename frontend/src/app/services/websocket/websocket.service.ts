@@ -31,6 +31,7 @@ export class WebSocketService {
   private roundEnd = new Subject<RoundEndData>();
   private gameOver = new Subject<GameOverData>();
   private gameAbandoned = new Subject<{ message: string }>();
+  private gameRestarted = new Subject<{ message: string; roomStatus: string }>();
 
   public roomUpdates$ = this.roomUpdates.asObservable();
   public gameStarts$ = this.gameStarts.asObservable();
@@ -44,6 +45,7 @@ export class WebSocketService {
   public roundEnd$ = this.roundEnd.asObservable();
   public gameOver$ = this.gameOver.asObservable();
   public gameAbandoned$ = this.gameAbandoned.asObservable();
+  public gameRestarted$ = this.gameRestarted.asObservable();
 
   connect(): void {
     if (this.stompClient?.connected) {
@@ -203,6 +205,16 @@ export class WebSocketService {
     );
     this.subscriptions.set(`abandoned-${roomId}`, abandonedSub);
 
+    // Subscribe to game restarted
+    const restartedSub = this.stompClient.subscribe(
+      `/topic/rooms/${roomId}/game-restarted`,
+      (message: IMessage) => {
+        const data = JSON.parse(message.body);
+        this.gameRestarted.next(data);
+      }
+    );
+    this.subscriptions.set(`restarted-${roomId}`, restartedSub);
+
     console.log(`Subscribed to room: ${roomId}`);
   }
 
@@ -216,7 +228,8 @@ export class WebSocketService {
       `round-ready-${roomId}`,
       `round-end-${roomId}`,
       `game-over-${roomId}`,
-      `abandoned-${roomId}`
+      `abandoned-${roomId}`,
+      `restarted-${roomId}`
     ];
     
     keys.forEach(key => {

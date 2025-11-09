@@ -1,4 +1,7 @@
-.popup-overlay {
+// Import des styles utilisateur
+@import '../../styles/user-profil.scss';
+
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -10,150 +13,183 @@
   justify-content: center;
   z-index: 2000;
   animation: fadeIn 0.3s ease-out;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
 }
 
-.popup-content {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
-  padding: 3rem;
+.modal-content {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 0;
   max-width: 500px;
   width: 90%;
   text-align: center;
-  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  position: relative;
+  animation: slideInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--border-color);
   overflow: hidden;
+}
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    animation: rotate 20s linear infinite;
+.start-round-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+// Bannière de fin de round précédent
+.round-end-banner {
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-bottom: 2px solid var(--border-color);
+  
+  &.flip7 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+  }
+  
+  &.eliminated {
+    background: linear-gradient(135deg, #434343 0%, #000000 100%);
+    color: white;
+  }
+  
+  &.stopped {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+  }
+
+  .banner-icon {
+    font-size: 2rem;
+    animation: bannerBounce 2s ease-in-out infinite;
+  }
+
+  .banner-text {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 }
 
-.start-round-popup {
-  position: relative;
-  z-index: 1;
+// Icône principale
+.modal-icon {
+  padding: 2.5rem 2rem 1.5rem;
 
-  > * {
-    position: relative;
-    z-index: 2;
+  .round-icon {
+    font-size: 5rem;
+    display: inline-block;
+    animation: spin 3s linear infinite;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
   }
 }
 
-.popup-icon {
-  font-size: 5rem;
-  margin-bottom: 1.5rem;
-  animation: bounce 2s ease-in-out infinite;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-
-  &.active {
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-}
-
-.round-badge {
-  display: inline-block;
-  background: rgba(102, 126, 234, 0.25);
-  backdrop-filter: blur(10px);
-  padding: 0.5rem 1.5rem;
-  border-radius: 50px;
+// Titre
+.modal-title {
+  color: var(--text-primary);
+  font-size: 2rem;
   font-weight: 700;
-  font-size: 1rem;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-  border: 2px solid rgba(102, 126, 234, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 12px var(--shadow);
+  margin: 0 0 1.5rem 0;
+  padding: 0 2rem;
+  line-height: 1.3;
 }
 
-.popup-title {
-  color: var(--text-primary);
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 2rem 0;
-  line-height: 1.4;
-  text-shadow: 0 2px 8px var(--shadow);
+// Messages
+.modal-message {
+  padding: 0 2rem 2rem;
+
+  .primary-message {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem 0;
+    line-height: 1.5;
+  }
+
+  .secondary-message {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+    font-style: italic;
+  }
 }
 
-.start-button {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: var(--text-primary);
+// Bouton
+.modal-button {
+  margin: 0 2rem 2rem;
+  padding: 1rem 2rem;
   border: none;
-  padding: 1.25rem 3rem;
-  border-radius: 50px;
-  font-size: 1.25rem;
-  font-weight: 700;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
-  margin-bottom: 1rem;
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-  }
-
-  &:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 30px rgba(245, 87, 108, 0.5);
+  &.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 
     &::before {
-      width: 300px;
-      height: 300px;
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(102, 126, 234, 0.5);
+
+      &::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      .button-icon {
+        transform: translateX(3px);
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 
-  &:active {
-    transform: translateY(-1px) scale(1.02);
-  }
-
   .button-icon {
-    font-size: 1.5rem;
-    animation: rocket 2s ease-in-out infinite;
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
   }
 }
 
-.help-text {
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  margin: 0;
-  font-style: italic;
+// Conteneur d'attente
+.waiting-container {
+  padding: 0 2rem 2.5rem;
 }
 
-.waiting-animation {
+.loading-dots {
   display: flex;
   justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
 
   .dot {
-    width: 16px;
-    height: 16px;
-    background: var(--text-primary);
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
+    background: var(--accent-color);
     animation: wave 1.4s ease-in-out infinite;
-    box-shadow: 0 2px 8px var(--shadow);
 
     &:nth-child(1) {
       animation-delay: 0s;
@@ -169,13 +205,6 @@
   }
 }
 
-.waiting-text {
-  color: var(--text-primary);
-  font-size: 1rem;
-  margin: 0;
-  font-weight: 500;
-}
-
 // Animations
 @keyframes fadeIn {
   from {
@@ -186,32 +215,35 @@
   }
 }
 
-@keyframes popIn {
-  0% {
-    transform: scale(0.8);
+@keyframes slideInUp {
+  from {
     opacity: 0;
+    transform: translateY(50px);
   }
-  100% {
-    transform: scale(1);
+  to {
     opacity: 1;
-  }
-}
-
-@keyframes bounce {
-  0%, 100% {
     transform: translateY(0);
   }
-  50% {
-    transform: translateY(-20px);
+}
+
+@keyframes bannerBounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-5px);
+  }
+  60% {
+    transform: translateY(-3px);
   }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    transform: scale(1.2);
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -224,23 +256,32 @@
   }
 }
 
-@keyframes rocket {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
+// Responsive
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
   }
-  25% {
-    transform: translateY(-5px) rotate(-10deg);
-  }
-  75% {
-    transform: translateY(-5px) rotate(10deg);
-  }
-}
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
+  .modal-icon .round-icon {
+    font-size: 4rem;
   }
-  to {
-    transform: rotate(360deg);
+
+  .modal-title {
+    font-size: 1.5rem;
+  }
+
+  .modal-message .primary-message {
+    font-size: 1.1rem;
+  }
+
+  .modal-button {
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .round-end-banner {
+    font-size: 1rem;
+    padding: 1rem;
   }
 }

@@ -267,6 +267,11 @@ public class RoomService {
         return userRepository;
     }
     
+    // Getter pour RoomRepository (utilisé par GameService)
+    public RoomRepository getRoomRepository() {
+        return roomRepository;
+    }
+    
     /**
      * Supprime toutes les rooms
      * @return le nombre de rooms supprimées

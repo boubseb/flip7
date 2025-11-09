@@ -382,6 +382,23 @@ public class GameController {
     }
 
     /**
+     * Redémarre une nouvelle partie dans la même room
+     * Sauvegarde la partie actuelle et en crée une nouvelle
+     */
+    @PostMapping("/{roomId}/restart-game")
+    public ResponseEntity<?> restartGame(
+            @PathVariable String roomId,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String userId = token.replace("Bearer ", "");
+            gameService.restartGame(roomId, userId);
+            return ResponseEntity.ok(Map.of("message", "Nouvelle partie créée"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * ENDPOINT DE TEST - Force une distribution avec carte Stop au 2ème joueur
      * Usage: POST /api/game/{roomId}/test/distribution-stop
      */

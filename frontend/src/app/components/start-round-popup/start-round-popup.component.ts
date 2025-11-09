@@ -14,6 +14,8 @@ export class StartRoundPopupComponent {
   @Input() roundNumber: number = 1;
   @Input() playerUsername: string = '';
   @Input() isCurrentPlayer: boolean = false;
+  @Input() roundEndReason: 'flip7' | 'eliminated' | 'stopped' | null = null;
+  @Input() flip7PlayerName: string = '';
   
   @Output() onStartRound = new EventEmitter<void>();
 
@@ -23,6 +25,28 @@ export class StartRoundPopupComponent {
   startRound(): void {
     if (this.isCurrentPlayer) {
       this.onStartRound.emit();
+    }
+  }
+
+  /**
+   * Retourne le message de fin de round selon la raison
+   */
+  getRoundEndMessage(): string {
+    if (!this.roundEndReason || this.roundNumber === 1) {
+      return '';
+    }
+    
+    switch (this.roundEndReason) {
+      case 'flip7':
+        return this.flip7PlayerName 
+          ? `🎯 ${this.flip7PlayerName} a réalisé un FLIP7 !` 
+          : '🎯 Un joueur a réalisé un FLIP7 !';
+      case 'eliminated':
+        return '💀 Tous les joueurs ont été éliminés !';
+      case 'stopped':
+        return '🛑 Tous les joueurs se sont arrêtés !';
+      default:
+        return '';
     }
   }
 

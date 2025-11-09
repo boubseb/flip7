@@ -134,10 +134,34 @@ public class Game {
             
             if (type == SpecialType.STOP) {
                 System.out.println("🛑 " + player.getUsername() + " a pioché une carte STOP (en attente d'assignation)");
+                specialCard.setPending(true);
+                
+                // Ajouter à la queue
+                PendingSpecialCard pendingCard = new PendingSpecialCard(
+                    specialCard,
+                    player.getUserId(),
+                    null,
+                    0 // Pas de pioche forcée en cours
+                );
+                pendingSpecialCardsQueue.add(pendingCard);
+                System.out.println("   📝 Ajout à la queue: STOP (remaining: 0)");
+                
                 // La carte reste pending, le joueur doit choisir à qui l'assigner
                 return new DrawResult(true, "Carte Stop piochée ! Choisissez un joueur.", drawnCard, false, false, false, true);
             } else if (type == SpecialType.DRAW_THREE) {
                 System.out.println("➕3️⃣ " + player.getUsername() + " a pioché une carte DRAW_THREE (en attente d'assignation)");
+                specialCard.setPending(true);
+                
+                // Ajouter à la queue
+                PendingSpecialCard pendingCard = new PendingSpecialCard(
+                    specialCard,
+                    player.getUserId(),
+                    null,
+                    0 // Pas de pioche forcée en cours
+                );
+                pendingSpecialCardsQueue.add(pendingCard);
+                System.out.println("   📝 Ajout à la queue: DRAW_THREE (remaining: 0)");
+                
                 // La carte reste pending, le joueur doit choisir à qui l'assigner
                 return new DrawResult(true, "Carte +3 piochée ! Choisissez un joueur.", drawnCard, false, false, false, true);
             }
@@ -153,7 +177,9 @@ public class Game {
             player.setStatus(PlayerStatus.FLIP7_STOP);
             System.out.println("🎯 FLIP7 ! " + player.getUsername() + " a 7 cartes numérotées différentes !");
             System.out.println("   Le round s'arrête pour tous. Bonus de +15 points pour " + player.getUsername());
+            System.out.println("   📞 Calling endRound()...");
             endRound();
+            System.out.println("   ✅ endRound() completed. GameState is now: " + gameState);
             return new DrawResult(true, "🎯 FLIP7 ! 7 cartes numérotées différentes ! Le round s'arrête et vous gagnez +15 points !", drawnCard, true);
         }
 
@@ -282,15 +308,32 @@ public class Game {
         System.out.println("   - " + targetPlayer.getUsername() + " est maintenant FORCED_STOP");
         System.out.println("   - Score de " + targetPlayer.getUsername() + " : " + targetPlayer.getRoundScore());
         
-        // Si le joueur cible (celui qui reçoit le Stop) avait une pioche forcée, le Stop l'annule
-        if (targetPlayer.getRemainingForcedDraws() > 0) {
-            System.out.println("   🛑 La carte Stop annule les " + targetPlayer.getRemainingForcedDraws() + " cartes restantes de " + targetPlayer.getUsername());
-            targetPlayer.setRemainingForcedDraws(0);
-        }
+        // Le STOP n'annule PAS les tirages du joueur cible
+        // Il met juste le joueur cible en FORCED_STOP
         
         // Retirer cette carte de la queue si elle y est
-        pendingSpecialCardsQueue.removeIf(p -> p.getCard().getId().equals(cardId));
-        System.out.println("   📝 Carte retirée de la queue");
+        PendingSpecialCard removedCard = null;
+        for (PendingSpecialCard p : pendingSpecialCardsQueue) {
+            if (p.getCard().getId().equals(cardId)) {
+                removedCard = p;
+                break;
+            }
+        }
+        
+        if (removedCard != null) {
+            pendingSpecialCardsQueue.remove(removedCard);
+            System.out.println("   � Carte retirée de la queue");
+            
+            // Si le joueur qui ASSIGNE le STOP avait des tirages restants (il était victime d'un +3)
+            // Il doit continuer à tirer après avoir assigné le STOP
+            if (removedCard.getRemainingForcedDraws() > 0) {
+                System.out.println("   ⚠️  " + player.getUsername() + " avait encore " + removedCard.getRemainingForcedDraws() + " cartes à tirer");
+                System.out.println("   ▶️  Il doit continuer sa pioche forcée");
+                player.setRemainingForcedDraws(removedCard.getRemainingForcedDraws());
+            }
+        } else {
+            System.out.println("   ⚠️  Carte STOP non trouvée dans la queue");
+        }
         
         // Traiter la prochaine carte pending ou reprendre la pioche forcée
         processNextPendingCard();
@@ -370,9 +413,29 @@ public class Game {
         
         System.out.println("➕3️⃣ " + player.getUsername() + " a assigné la carte DRAW_THREE à " + targetPlayer.getUsername());
         
-        // Retirer cette carte de la queue si elle y est
-        pendingSpecialCardsQueue.removeIf(p -> p.getCard().getId().equals(cardId));
-        System.out.println("   � Carte retirée de la queue");
+        // Retirer cette carte de la queue et récupérer les infos
+        PendingSpecialCard removedCard = null;
+        for (PendingSpecialCard p : pendingSpecialCardsQueue) {
+            if (p.getCard().getId().equals(cardId)) {
+                removedCard = p;
+                break;
+            }
+        }
+        
+        if (removedCard != null) {
+            pendingSpecialCardsQueue.remove(removedCard);
+            System.out.println("   📝 Carte retirée de la queue");
+            
+            // Si le joueur qui ASSIGNE le +3 avait des tirages restants
+            // Il doit les continuer après avoir assigné le +3
+            if (removedCard.getRemainingForcedDraws() > 0) {
+                System.out.println("   ⚠️  " + player.getUsername() + " avait encore " + removedCard.getRemainingForcedDraws() + " cartes à tirer");
+                System.out.println("   ▶️  Il doit continuer sa pioche forcée après le +3");
+                player.setRemainingForcedDraws(removedCard.getRemainingForcedDraws());
+            }
+        } else {
+            System.out.println("   ⚠️  Carte +3 non trouvée dans la queue");
+        }
         
         // Force le joueur cible à piocher 3 cartes
         forceDrawThreeCards(targetPlayer, 3);

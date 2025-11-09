@@ -147,6 +147,18 @@
       "clickToJoin": "Cliquer pour rejoindre cette salle"
     }
   },
+  "GAME": {
+    "GAME_OVER": "Partie Terminée",
+    "HAS_WON": "a remporté la victoire",
+    "FINAL_RANKINGS": "Classement Final",
+    "WINNER": "Vainqueur",
+    "POINTS": "pts",
+    "PLAY_AGAIN": "Rejouer",
+    "LEAVE_ROOM": "Quitter la salle",
+    "BACK_TO_HOME": "Retour à l'accueil",
+    "HIDE_TEMPORARILY": "Masquer temporairement",
+    "CLICK_TO_SHOW": "Cliquer pour afficher"
+  },
   "game": {
     "yourTurn": "C'est votre tour !",
     "waitingFor": "En attente de {{player}}...",

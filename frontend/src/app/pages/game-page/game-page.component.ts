@@ -10,11 +10,12 @@ import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
 import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
 import { StartRoundPopupComponent } from '../../components/start-round-popup/start-round-popup.component';
+import { GameOverPopupComponent, PlayerRanking } from '../../components/game-over-popup/game-over-popup.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, StartRoundPopupComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, StartRoundPopupComponent, GameOverPopupComponent, TranslateModule],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
@@ -53,6 +54,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
   // Start Round Popup
   showStartRoundPopup: boolean = false;
+
+  // Game Over Popup
+  showGameOverPopup: boolean = false;
+  gameOverRankings: PlayerRanking[] = [];
+  gameOverWinner: string = '';
   
   private subscriptions: Subscription[] = [];
 
@@ -172,6 +178,16 @@ export class GamePageComponent implements OnInit, OnDestroy {
         });
       })
     );
+
+    // Subscribe to game restarted
+    this.subscriptions.push(
+      this.wsService.gameRestarted$.subscribe(data => {
+        console.log('🔄 Game restarted event received:', data);
+        // Fermer le popup et rediriger vers la page room
+        this.showGameOverPopup = false;
+        this.router.navigate(['/room', this.roomId]);
+      })
+    );
     
     // Subscribe to turn updates (on ignore, on utilisera gameStateUpdates$ à la place)
     this.subscriptions.push(
@@ -215,6 +231,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
           this.showStartRoundPopup = true;
         } else {
           this.showStartRoundPopup = false;
+        }
+
+        // Détecter l'état GAME_OVER pour afficher le popup de fin de partie
+        if (response.gameState === 'GAME_OVER') {
+          console.log('🏆 Game Over detected - preparing rankings');
+          this.prepareGameOverData(response);
         }
 
         // Détecter si le joueur actuel a une carte Stop ou DrawThree pending
@@ -632,7 +654,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Ouvre le modal de sélection de joueur pour la carte Stop
    */
   showStopCardSelection(card: any): void {
-    console.log('🛑 Opening Stop card selection modal', card);
+    console.log('🛑 Opening Stop card selection modal');
+    console.log('   - Card object:', card);
+    console.log('   - Card ID:', card?.id);
+    console.log('   - Card type:', card?.cardType || card?.type);
+    console.log('   - Card specialType:', card?.specialType);
     this.stopCardToAssign = card;
     this.showStopCardModal = true;
   }
@@ -641,12 +667,23 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Assigne la carte Stop au joueur sélectionné
    */
   assignStopToPlayer(playerId: string): void {
+    console.log('🛑 assignStopToPlayer called');
+    console.log('   - stopCardToAssign:', this.stopCardToAssign);
+    console.log('   - stopCardToAssign.id:', this.stopCardToAssign?.id);
+    console.log('   - playerId:', playerId);
+    
     if (!this.stopCardToAssign) {
       this.showError('Aucune carte Stop à assigner');
       return;
     }
 
-    console.log('🛑 Assigning Stop card to player:', playerId);
+    if (!this.stopCardToAssign.id) {
+      console.error('❌ Card ID is missing!', this.stopCardToAssign);
+      this.showError('Erreur: ID de carte manquant');
+      return;
+    }
+
+    console.log('🛑 Calling gameService.assignStopCard...');
     
     this.gameService.assignStopCard(
       this.roomId, 
@@ -737,5 +774,73 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.showError('Erreur lors du démarrage du round');
       }
     });
+  }
+
+  /**
+   * Prépare les données pour la popup de fin de partie
+   */
+  prepareGameOverData(gameState: any): void {
+    if (!gameState.players || gameState.players.length === 0) {
+      return;
+    }
+
+    // Trier les joueurs par score total décroissant
+    const sortedPlayers = [...gameState.players].sort((a, b) => b.totalScore - a.totalScore);
+    
+    // Créer le classement
+    this.gameOverRankings = sortedPlayers.map((player, index) => ({
+      username: player.username,
+      score: player.totalScore,
+      rank: index + 1,
+      isWinner: index === 0
+    }));
+
+    // Le gagnant est le premier du classement
+    this.gameOverWinner = sortedPlayers[0].username;
+
+    // Afficher la popup
+    this.showGameOverPopup = true;
+
+    console.log('🏆 Game Over Rankings:', this.gameOverRankings);
+    console.log('👑 Winner:', this.gameOverWinner);
+  }
+
+  /**
+   * Gère le clic sur "Rejouer"
+   */
+  onPlayAgain(): void {
+    console.log('🔄 Play again requested');
+    
+    if (!this.roomId) {
+      console.error('❌ No room ID available');
+      return;
+    }
+    
+    // Appeler le backend pour redémarrer la partie
+    this.gameService.restartGame(this.roomId).subscribe({
+      next: (response) => {
+        console.log('✅ Game restarted:', response);
+        this.showGameOverPopup = false;
+        // Le WebSocket va notifier tous les joueurs que la partie a redémarré
+      },
+      error: (error) => {
+        console.error('❌ Error restarting game:', error);
+        // Afficher un message d'erreur si nécessaire
+        if (error.error?.error === 'Only the room admin can restart the game') {
+          alert('Seul l\'admin de la salle peut relancer une partie');
+        } else {
+          alert('Erreur lors du redémarrage de la partie');
+        }
+      }
+    });
+  }
+
+  /**
+   * Gère le clic sur "Quitter la salle"
+   */
+  onLeaveRoom(): void {
+    console.log('🚪 Leave room requested');
+    this.showGameOverPopup = false;
+    this.router.navigate(['/']);
   }
 }

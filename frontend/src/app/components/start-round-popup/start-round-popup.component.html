@@ -1,38 +1,60 @@
 @if (show) {
-  <div class="popup-overlay">
-    <div class="popup-content start-round-popup">
-      <!-- Icône -->
-      <div class="popup-icon" [class.active]="isCurrentPlayer">
-        {{ getIcon() }}
+  <div class="modal-overlay" (click)="$event.stopPropagation()">
+    <div class="modal-content start-round-modal">
+      <!-- Header avec raison de fin du round précédent -->
+      @if (roundEndReason && roundNumber > 1) {
+        <div class="round-end-banner" [class.flip7]="roundEndReason === 'flip7'" 
+             [class.eliminated]="roundEndReason === 'eliminated'"
+             [class.stopped]="roundEndReason === 'stopped'">
+          <div class="banner-icon">
+            @if (roundEndReason === 'flip7') {
+              🎯
+            } @else if (roundEndReason === 'eliminated') {
+              💀
+            } @else {
+              🛑
+            }
+          </div>
+          <div class="banner-text">{{ getRoundEndMessage() }}</div>
+        </div>
+      }
+
+      <!-- Icône principale -->
+      <div class="modal-icon">
+        <span class="round-icon">🎲</span>
       </div>
 
-      <!-- Round Number -->
-      <div class="round-badge">
+      <!-- Titre -->
+      <h2 class="modal-title">
         {{ 'game.round' | translate }} {{ roundNumber }}
-      </div>
+      </h2>
 
       <!-- Message -->
-      @if (isCurrentPlayer) {
-        <h2 class="popup-title">{{ 'game.START_ROUND_YOUR_TURN' | translate: {round: roundNumber} }}</h2>
-      } @else {
-        <h2 class="popup-title">{{ 'game.START_ROUND_WAITING' | translate: {player: playerUsername, round: roundNumber} }}</h2>
-      }
+      <div class="modal-message">
+        @if (isCurrentPlayer) {
+          <p class="primary-message">{{ 'game.START_ROUND_YOUR_TURN' | translate: {round: roundNumber} }}</p>
+          <p class="secondary-message">{{ 'game.START_ROUND_READY' | translate }}</p>
+        } @else {
+          <p class="primary-message">{{ 'game.START_ROUND_WAITING' | translate: {player: playerUsername, round: roundNumber} }}</p>
+          <p class="secondary-message">{{ 'game.PLEASE_WAIT' | translate }}</p>
+        }
+      </div>
 
       <!-- Action button (only for current player) -->
       @if (isCurrentPlayer) {
-        <button class="start-button" (click)="startRound()">
+        <button class="modal-button primary" (click)="startRound()">
           <span class="button-icon">🚀</span>
           <span>{{ 'game.START_ROUND_BUTTON' | translate }}</span>
         </button>
-        <p class="help-text">{{ 'game.START_ROUND_READY' | translate }}</p>
       } @else {
         <!-- Waiting animation -->
-        <div class="waiting-animation">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
+        <div class="waiting-container">
+          <div class="loading-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
         </div>
-        <p class="waiting-text">{{ 'game.PLEASE_WAIT' | translate }}</p>
       }
     </div>
   </div>

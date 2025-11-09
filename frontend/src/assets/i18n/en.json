@@ -147,6 +147,18 @@
       "clickToJoin": "Click to join this room"
     }
   },
+  "GAME": {
+    "GAME_OVER": "Game Over",
+    "HAS_WON": "has won the game",
+    "FINAL_RANKINGS": "Final Rankings",
+    "WINNER": "Winner",
+    "POINTS": "pts",
+    "PLAY_AGAIN": "Play Again",
+    "LEAVE_ROOM": "Leave Room",
+    "BACK_TO_HOME": "Back to Home",
+    "HIDE_TEMPORARILY": "Hide Temporarily",
+    "CLICK_TO_SHOW": "Click to show"
+  },
   "game": {
     "yourTurn": "It's your turn!",
     "waitingFor": "Waiting for {{player}}...",

@@ -95,3 +95,13 @@
   [isCurrentPlayer]="isMyTurn"
   (onStartRound)="startRound()">
 </app-start-round-popup>
+
+<!-- Game Over Popup -->
+@if (showGameOverPopup) {
+  <app-game-over-popup
+    [rankings]="gameOverRankings"
+    [winnerName]="gameOverWinner"
+    (playAgain)="onPlayAgain()"
+    (leaveRoom)="onLeaveRoom()">
+  </app-game-over-popup>
+}
