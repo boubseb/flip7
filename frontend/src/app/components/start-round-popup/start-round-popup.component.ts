@@ -18,6 +18,9 @@ export class StartRoundPopupComponent {
   @Input() flip7PlayerName: string = '';
   
   @Output() onStartRound = new EventEmitter<void>();
+  @Output() hideTemporarily = new EventEmitter<void>();
+
+  isMinimized: boolean = false;
 
   /**
    * Démarre le round
@@ -26,6 +29,28 @@ export class StartRoundPopupComponent {
     if (this.isCurrentPlayer) {
       this.onStartRound.emit();
     }
+  }
+
+  /**
+   * Masque temporairement le popup
+   */
+  onHideTemporarily(): void {
+    this.isMinimized = true;
+    this.hideTemporarily.emit();
+  }
+
+  /**
+   * Réaffiche le popup
+   */
+  onShowAgain(): void {
+    this.isMinimized = false;
+  }
+
+  /**
+   * Empêche la fermeture accidentelle
+   */
+  onOverlayClick(event: MouseEvent): void {
+    event.stopPropagation();
   }
 
   /**

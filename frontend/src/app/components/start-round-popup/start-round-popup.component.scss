@@ -285,3 +285,78 @@
     padding: 1rem;
   }
 }
+
+// États minimisé/maximisé
+.modal-overlay.minimized {
+  background: transparent;
+  backdrop-filter: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  pointer-events: none; // Permet de cliquer à travers l'overlay
+}
+
+.minimized-bar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  display: flex;
+  pointer-events: auto; // Réactive les clics sur la barre
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  color: white;
+  font-weight: 600;
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2001;
+  animation: slideUp 0.4s ease-out;
+
+  &:hover {
+    transform: translateX(-50%) translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .minimized-icon {
+    font-size: 1.5rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .minimized-text {
+    font-size: 1rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.full-content {
+  transition: opacity 0.3s ease;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+// Animation pour le bouton minimisé
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}

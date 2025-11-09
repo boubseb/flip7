@@ -417,6 +417,10 @@ public class GameService {
         for (PlayerDTO player : dto.getPlayers()) {
             System.out.println("   - Player " + player.getUsername() + ": " + player.getHand().size() + " cards, score: " + player.getRoundScore());
         }
+        System.out.println("   🔍 DTO.pendingSpecialCards size before send: " + dto.getPendingSpecialCards().size());
+        if (!dto.getPendingSpecialCards().isEmpty()) {
+            System.out.println("   🔍 First pending card: " + dto.getPendingSpecialCards().get(0));
+        }
         messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game", dto);
     }
 
@@ -438,8 +442,9 @@ public class GameService {
 
     /**
      * Crée un DTO de l'état du jeu
+     * PUBLIC pour être accessible depuis GameController
      */
-    private GameStateDTO createGameStateDTO(Game game) {
+    public GameStateDTO createGameStateDTO(Game game) {
         System.out.println("\n🎮 === CREATE GAME STATE DTO ===");
         System.out.println("   Round: " + game.getRoundNumber());
         System.out.println("   Game State: " + game.getGameState());
@@ -547,6 +552,25 @@ public class GameService {
             dto.addPlayer(playerDTO);
         }
         
+        // Ajouter les cartes spéciales en attente d'assignation (depuis la queue)
+        java.util.List<java.util.Map<String, Object>> pendingCards = new java.util.ArrayList<>();
+        for (com.flip7.flip7.game.model.PendingSpecialCard pendingCard : game.getPendingSpecialCards()) {
+            java.util.Map<String, Object> cardData = new java.util.HashMap<>();
+            cardData.put("cardId", pendingCard.getCard().getId());
+            cardData.put("cardType", pendingCard.getCard().getCardType().toString());
+            cardData.put("specialType", ((SpecialCard) pendingCard.getCard()).getSpecialType().toString());
+            cardData.put("sourcePlayerId", pendingCard.getSourcePlayerId());
+            cardData.put("targetPlayerId", pendingCard.getTargetPlayerId());
+            cardData.put("remainingForcedDraws", pendingCard.getRemainingForcedDraws());
+            pendingCards.add(cardData);
+            System.out.println("   📋 Pending card added to DTO: " + ((SpecialCard) pendingCard.getCard()).getSpecialType() + 
+                             " | source=" + pendingCard.getSourcePlayerId() + 
+                             " | target=" + pendingCard.getTargetPlayerId() + 
+                             " | remaining=" + pendingCard.getRemainingForcedDraws());
+        }
+        dto.setPendingSpecialCards(pendingCards);
+        System.out.println("   📋 Total pending special cards in DTO: " + pendingCards.size());
+        
         return dto;
     }
 
@@ -600,6 +624,7 @@ public class GameService {
         private int currentPlayerIndex;
         private int remainingCards;
         private java.util.List<PlayerDTO> players = new java.util.ArrayList<>();
+        private java.util.List<java.util.Map<String, Object>> pendingSpecialCards = new java.util.ArrayList<>();
 
         // Getters et Setters
         public GameState getGameState() { return gameState; }
@@ -612,6 +637,10 @@ public class GameService {
         public void setRemainingCards(int remainingCards) { this.remainingCards = remainingCards; }
         public java.util.List<PlayerDTO> getPlayers() { return players; }
         public void addPlayer(PlayerDTO player) { this.players.add(player); }
+        public java.util.List<java.util.Map<String, Object>> getPendingSpecialCards() { return pendingSpecialCards; }
+        public void setPendingSpecialCards(java.util.List<java.util.Map<String, Object>> pendingSpecialCards) { 
+            this.pendingSpecialCards = pendingSpecialCards; 
+        }
     }
 
     public static class PlayerDTO {

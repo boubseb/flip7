@@ -239,39 +239,59 @@ export class GamePageComponent implements OnInit, OnDestroy {
           this.prepareGameOverData(response);
         }
 
-        // Détecter si le joueur actuel a une carte Stop ou DrawThree pending
-        // Note: Pas besoin de vérifier isMyTurn car on peut avoir une carte Stop/DrawThree en distribution initiale
-        if (response.players && response.players.length > 0) {
-          const myPlayer = response.players.find((p: any) => p.userId === this.currentUserId);
-          if (myPlayer && myPlayer.hand) {
-            console.log('🔍 Checking for pending cards in hand:', myPlayer.hand);
-            console.log('🔍 Current modals state - Stop:', this.showStopCardModal, 'DrawThree:', this.showDrawThreeModal);
-            
-            // Vérifier carte Stop (backend retourne "cardType" au lieu de "type")
-            const pendingStopCard = myPlayer.hand.find((card: any) => 
-              (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
-              card.specialType === 'STOP' && 
-              card.pending === true
-            );
-            
-            if (pendingStopCard && !this.showStopCardModal) {
-              console.log('🛑 Pending Stop card detected in hand - showing player selection');
-              this.showStopCardSelection(pendingStopCard);
-            }
+        // DEBUG: Afficher la réponse complète
+        console.log('📦 Full response received:', {
+          pendingSpecialCards: response.pendingSpecialCards,
+          currentUserId: this.currentUserId,
+          gameState: response.gameState
+        });
 
-            // Vérifier carte DrawThree (backend retourne "cardType" au lieu de "type")
-            const pendingDrawThreeCard = myPlayer.hand.find((card: any) => 
-              (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
-              card.specialType === 'DRAW_THREE' && 
-              card.pending === true
-            );
-            
-            console.log('🔍 Pending DrawThree card found?', pendingDrawThreeCard);
-            
-            if (pendingDrawThreeCard && !this.showDrawThreeModal) {
-              console.log('➕3️⃣ Pending DrawThree card detected in hand - showing player selection');
-              this.showDrawThreeCardSelection(pendingDrawThreeCard);
-            }
+        // Détecter si le joueur actuel a des cartes spéciales en attente d'assignation
+        // Utiliser la queue pendingSpecialCards au lieu de chercher dans la main
+        if (response.pendingSpecialCards && response.pendingSpecialCards.length > 0) {
+          console.log('🔍 Checking pending special cards queue:', response.pendingSpecialCards);
+          console.log('🔍 Current modals state - Stop:', this.showStopCardModal, 'DrawThree:', this.showDrawThreeModal);
+          console.log('🔍 Current user ID:', this.currentUserId);
+          
+          // DEBUG: Afficher chaque carte en attente
+          response.pendingSpecialCards.forEach((pending: any, index: number) => {
+            console.log(`   📋 Card ${index}:`, {
+              type: pending.specialType,
+              sourcePlayerId: pending.sourcePlayerId,
+              targetPlayerId: pending.targetPlayerId,
+              remainingForcedDraws: pending.remainingForcedDraws,
+              isForMe: pending.sourcePlayerId === this.currentUserId
+            });
+          });
+          
+          // Chercher une carte STOP en attente pour le joueur actuel
+          const pendingStopCard = response.pendingSpecialCards.find((pending: any) => 
+            pending.sourcePlayerId === this.currentUserId &&
+            !pending.targetPlayerId &&
+            pending.specialType === 'STOP'
+          );
+          
+          if (pendingStopCard && !this.showStopCardModal) {
+            console.log('🛑 Pending Stop card detected in queue - showing player selection');
+            // Créer un objet carte compatible avec showStopCardSelection
+            const card = { id: pendingStopCard.cardId, specialType: pendingStopCard.specialType };
+            this.showStopCardSelection(card);
+          }
+
+          // Chercher une carte DRAW_THREE en attente pour le joueur actuel
+          const pendingDrawThreeCard = response.pendingSpecialCards.find((pending: any) => 
+            pending.sourcePlayerId === this.currentUserId &&
+            !pending.targetPlayerId &&
+            pending.specialType === 'DRAW_THREE'
+          );
+          
+          console.log('🔍 Pending DrawThree card found in queue?', pendingDrawThreeCard);
+          
+          if (pendingDrawThreeCard && !this.showDrawThreeModal) {
+            console.log('➕3️⃣ Pending DrawThree card detected in queue - showing player selection');
+            // Créer un objet carte compatible avec showDrawThreeCardSelection
+            const card = { id: pendingDrawThreeCard.cardId, specialType: pendingDrawThreeCard.specialType };
+            this.showDrawThreeCardSelection(card);
           }
         }
       })
@@ -335,28 +355,44 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 }
                 
                 // Vérifier si on a des cartes pending à assigner (Stop/DrawThree)
-                const myPlayer = gameState.players.find((p: any) => p.userId === this.currentUserId);
-                if (myPlayer && myPlayer.hand) {
-                  const pendingStopCard = myPlayer.hand.find((card: any) => 
-                    (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
-                    card.specialType === 'STOP' && 
-                    card.pending === true
+                // Utiliser la queue pendingSpecialCards au lieu de chercher dans la main
+                if (gameState.pendingSpecialCards && gameState.pendingSpecialCards.length > 0) {
+                  console.log('🔍 Checking pending special cards on reconnection:', gameState.pendingSpecialCards);
+                  console.log('🔍 Current user ID on reconnection:', this.currentUserId);
+                  
+                  // DEBUG: Afficher chaque carte en attente
+                  gameState.pendingSpecialCards.forEach((pending: any, index: number) => {
+                    console.log(`   📋 Reconnection Card ${index}:`, {
+                      type: pending.specialType,
+                      sourcePlayerId: pending.sourcePlayerId,
+                      targetPlayerId: pending.targetPlayerId,
+                      remainingForcedDraws: pending.remainingForcedDraws,
+                      isForMe: pending.sourcePlayerId === this.currentUserId
+                    });
+                  });
+                  
+                  const pendingStopCard = gameState.pendingSpecialCards.find((pending: any) => 
+                    pending.sourcePlayerId === this.currentUserId &&
+                    !pending.targetPlayerId &&
+                    pending.specialType === 'STOP'
                   );
                   
                   if (pendingStopCard && !this.showStopCardModal) {
                     console.log('🛑 Pending Stop card detected on reconnection');
-                    this.showStopCardSelection(pendingStopCard);
+                    const card = { id: pendingStopCard.cardId, specialType: pendingStopCard.specialType };
+                    this.showStopCardSelection(card);
                   }
 
-                  const pendingDrawThreeCard = myPlayer.hand.find((card: any) => 
-                    (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
-                    card.specialType === 'DRAW_THREE' && 
-                    card.pending === true
+                  const pendingDrawThreeCard = gameState.pendingSpecialCards.find((pending: any) => 
+                    pending.sourcePlayerId === this.currentUserId &&
+                    !pending.targetPlayerId &&
+                    pending.specialType === 'DRAW_THREE'
                   );
                   
                   if (pendingDrawThreeCard && !this.showDrawThreeModal) {
                     console.log('➕3️⃣ Pending DrawThree card detected on reconnection');
-                    this.showDrawThreeCardSelection(pendingDrawThreeCard);
+                    const card = { id: pendingDrawThreeCard.cardId, specialType: pendingDrawThreeCard.specialType };
+                    this.showDrawThreeCardSelection(card);
                   }
                 }
 

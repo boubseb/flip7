@@ -62,6 +62,19 @@ export interface GameStateResponse {
   remainingCards: number;
   winnerId?: string;
   players: GamePlayer[];
+  pendingSpecialCards?: PendingSpecialCard[];
+}
+
+/**
+ * Carte spéciale en attente d'assignation
+ */
+export interface PendingSpecialCard {
+  cardId: string;
+  cardType: string;
+  specialType: string;
+  sourcePlayerId: string;
+  targetPlayerId?: string;
+  remainingForcedDraws: number;
 }
 
 /**

@@ -202,38 +202,19 @@ public class GameController {
             @RequestHeader("Authorization") String token) {
         try {
             String userId = token.replace("Bearer ", "");
+            System.out.println("🔄 REST getGameState called for room: " + roomId + " by user: " + userId);
+            
             Game game = gameService.getGame(roomId);
             
             if (game == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Partie non trouvée"));
             }
 
-            GameStateResponse response = new GameStateResponse();
-            response.setGameState(game.getGameState().name());
-            response.setRoundNumber(game.getRoundNumber());
-            response.setCurrentPlayerIndex(game.getCurrentPlayerIndex());
-            response.setRemainingCards(game.getRemainingCards());
-            response.setWinnerId(game.getWinnerId());
-
-            // Ajouter les informations des joueurs
-            for (GamePlayer player : game.getPlayers()) {
-                PlayerInfo info = new PlayerInfo();
-                info.setUserId(player.getUserId());
-                info.setUsername(player.getUsername());
-                info.setStatus(player.getStatus().name());
-                info.setTotalScore(player.getTotalScore());
-                info.setRoundScore(player.getRoundScore());
-                info.setHandSize(player.getHandSize());
-                
-                // Inclure la main complète pour TOUS les joueurs (cartes révélées)
-                info.setHand(player.getHand().stream()
-                    .map(this::mapCardToDTO)
-                    .collect(Collectors.toList()));
-                
-                response.addPlayer(info);
-            }
-
-            return ResponseEntity.ok(response);
+            // Utiliser createGameStateDTO pour avoir EXACTEMENT les mêmes données que le WebSocket
+            // y compris pendingSpecialCards
+            GameService.GameStateDTO dto = gameService.createGameStateDTO(game);
+            
+            return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
