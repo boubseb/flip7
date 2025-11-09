@@ -1,5 +1,7 @@
 package com.flip7.flip7.game.card;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Carte spéciale (Stop, +3 cartes, Vie)
  */
@@ -58,6 +60,7 @@ public class SpecialCard extends Card {
     }
 
     @Override
+    @JsonIgnore
     public String getDisplayName() {
         switch (specialType) {
             case STOP:

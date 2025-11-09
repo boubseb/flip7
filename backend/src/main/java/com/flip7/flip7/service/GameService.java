@@ -1,6 +1,11 @@
 package com.flip7.flip7.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.flip7.flip7.entity.GameHistory;
+import com.flip7.flip7.entity.GameSnapshot;
 import com.flip7.flip7.entity.Room;
 import com.flip7.flip7.game.card.Card;
 import com.flip7.flip7.game.card.NumberCard;
@@ -13,13 +18,17 @@ import com.flip7.flip7.game.model.GameState;
 import com.flip7.flip7.game.model.PlayerStatus;
 import com.flip7.flip7.event.GameStartEvent;
 import com.flip7.flip7.repository.GameHistoryRepository;
+import com.flip7.flip7.repository.GameSnapshotRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,12 +46,86 @@ public class GameService {
 
     @Autowired
     private GameHistoryRepository gameHistoryRepository;
+    
+    @Autowired
+    private GameSnapshotRepository gameSnapshotRepository;
+    
+    private final ObjectMapper objectMapper = new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        // Do not fail when snapshot JSON contains older/extra properties
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
     // Map des parties en cours (roomId -> Game)
     private final Map<String, Game> activeGames = new ConcurrentHashMap<>();
     
     // Map pour lier une partie en cours à son historique (roomId -> GameHistory.id)
     private final Map<String, String> gameHistoryIds = new ConcurrentHashMap<>();
+    
+    /**
+     * Restaure les parties en cours depuis la base de données au démarrage du serveur
+     */
+    @PostConstruct
+    public void restoreGamesFromDatabase() {
+        System.out.println("🔄 Restauration des parties en cours depuis la base de données...");
+        
+        try {
+            List<GameSnapshot> snapshots = gameSnapshotRepository.findByGameStatusIn(
+                Arrays.asList("PLAYING", "WAITING_NEXT_ROUND")
+            );
+            
+            System.out.println("📊 Snapshots trouvés: " + snapshots.size());
+            
+            for (GameSnapshot snapshot : snapshots) {
+                try {
+                    System.out.println("🔄 Tentative de restauration pour room: " + snapshot.getRoomId());
+                    Game game = objectMapper.readValue(snapshot.getGameStateJson(), Game.class);
+                    activeGames.put(snapshot.getRoomId(), game);
+                    System.out.println("✅ Partie restaurée pour room: " + snapshot.getRoomId() + 
+                                     " (round " + snapshot.getCurrentRound() + ")");
+                } catch (Exception e) {
+                    System.err.println("❌ Erreur lors de la restauration de la partie " + 
+                                     snapshot.getRoomId() + ": " + e.getMessage());
+                    e.printStackTrace(); // Afficher la stack trace complète
+                }
+            }
+            
+            System.out.println("✅ " + activeGames.size() + " partie(s) restaurée(s)");
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la restauration des parties: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Sauvegarde l'état d'une partie en base de données
+     */
+    private void saveGameSnapshot(String roomId, Game game) {
+        try {
+            String gameJson = objectMapper.writeValueAsString(game);
+            
+            GameSnapshot snapshot = gameSnapshotRepository.findById(roomId)
+                .orElse(new GameSnapshot(roomId, gameJson));
+            
+            snapshot.setGameStateJson(gameJson);
+            snapshot.setCurrentRound(game.getRoundNumber());
+            snapshot.setGameStatus(game.getGameState().toString());
+            
+            gameSnapshotRepository.save(snapshot);
+            System.out.println("💾 Snapshot sauvegardé pour room " + roomId + " (round " + game.getRoundNumber() + ")");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur sauvegarde snapshot pour " + roomId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Supprime le snapshot d'une partie terminée
+     */
+    private void deleteGameSnapshot(String roomId) {
+        gameSnapshotRepository.deleteById(roomId);
+    }
 
     /**
      * Initialise une nouvelle partie pour une room
@@ -422,6 +505,9 @@ public class GameService {
             System.out.println("   🔍 First pending card: " + dto.getPendingSpecialCards().get(0));
         }
         messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game", dto);
+        
+        // Sauvegarder le snapshot en BDD
+        saveGameSnapshot(roomId, game);
     }
 
     /**
@@ -1054,6 +1140,9 @@ public class GameService {
         
         // Si une partie existe et est en GAME_OVER, la sauvegarder
         if (currentGame != null && currentGame.getGameState() == GameState.GAME_OVER) {
+            // Supprimer le snapshot de la BDD (partie terminée)
+            deleteGameSnapshot(roomId);
+            
             String historyId = gameHistoryIds.get(roomId);
             if (historyId != null) {
                 GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
@@ -1088,20 +1177,30 @@ public class GameService {
         activeGames.remove(roomId);
         gameHistoryIds.remove(roomId);
         
-        // Réinitialiser le statut de la room à WAITING
+        // Réinitialiser le statut de la room à WAITING temporairement
         room.setStatus(Room.RoomStatus.WAITING);
         roomService.getRoomRepository().save(room);
         
-        // Broadcaster que la partie a été réinitialisée
-        messagingTemplate.convertAndSend(
-            "/topic/rooms/" + roomId + "/game-restarted",
-            Map.of(
-                "message", "Une nouvelle partie va commencer",
-                "roomStatus", "WAITING"
-            )
-        );
-        
         System.out.println("🔄 Partie redémarrée pour la room: " + roomId);
+        
+        // Démarrer automatiquement une nouvelle partie
+        System.out.println("🎮 Démarrage automatique de la nouvelle partie...");
+        try {
+            Game newGame = initializeGame(roomId);
+            newGame.startGame();
+            broadcastGameState(roomId, newGame);
+            System.out.println("✅ Nouvelle partie démarrée automatiquement");
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors du démarrage automatique: " + e.getMessage());
+            // En cas d'erreur, broadcaster un message de fallback
+            messagingTemplate.convertAndSend(
+                "/topic/rooms/" + roomId + "/game-restarted",
+                Map.of(
+                    "message", "Partie réinitialisée - Veuillez démarrer manuellement",
+                    "roomStatus", "WAITING"
+                )
+            );
+        }
     }
     
     /**

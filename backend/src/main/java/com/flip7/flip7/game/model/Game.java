@@ -1,5 +1,6 @@
 package com.flip7.flip7.game.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.flip7.flip7.game.card.*;
 
 import java.util.*;
@@ -7,6 +8,7 @@ import java.util.*;
 /**
  * Classe principale gérant la logique du jeu Flip7
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Game {
     private String roomId;
     private Deck deck;
@@ -20,7 +22,18 @@ public class Game {
     private Queue<PendingSpecialCard> pendingSpecialCardsQueue = new LinkedList<>();
     private String firstSourcePlayerId; // Joueur qui a pioché la 1ère carte spéciale de la chaîne
 
-    public Game(String roomId, List<String> playerIds, Map<String, String> playerNames) {
+    // Constructeur par défaut pour Jackson
+    public Game() {
+        this.deck = new Deck();
+        this.players = new ArrayList<>();
+        this.pendingSpecialCardsQueue = new LinkedList<>();
+    }
+
+    public Game(
+        String roomId, 
+        List<String> playerIds, 
+        Map<String, String> playerNames
+    ) {
         this.roomId = roomId;
         this.deck = new Deck();
         this.players = new ArrayList<>();

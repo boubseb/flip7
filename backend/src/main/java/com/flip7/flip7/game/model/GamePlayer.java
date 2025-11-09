@@ -1,5 +1,8 @@
 package com.flip7.flip7.game.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.flip7.flip7.game.card.*;
 
 import java.util.ArrayList;
@@ -24,7 +27,23 @@ public class GamePlayer {
     private List<RoundData> rounds;        // Liste de tous les rounds (le dernier = actuel)
     private int remainingForcedDraws;      // Nombre de cartes restant à piocher (pour DrawThree interrompu)
 
-    public GamePlayer(String userId, String username) {
+    // Constructeur par défaut pour Jackson
+    public GamePlayer() {
+        this.hand = new ArrayList<>();
+        this.status = PlayerStatus.PLAYING;
+        this.roundScore = 0;
+        this.totalScore = 0;
+        this.hasUsedLife = false;
+        this.lifeCardsInHand = 0;
+        this.rounds = new ArrayList<>();
+        this.remainingForcedDraws = 0;
+    }
+
+    @JsonCreator
+    public GamePlayer(
+        @JsonProperty("userId") String userId, 
+        @JsonProperty("username") String username
+    ) {
         this.userId = userId;
         this.username = username;
         this.hand = new ArrayList<>();
@@ -276,6 +295,7 @@ public class GamePlayer {
         return lifeCardsInHand;
     }
 
+    @JsonIgnore
     public int getHandSize() {
         return hand.size();
     }
@@ -334,7 +354,20 @@ public class GamePlayer {
         private PlayerStatus status;
         private List<Card> hand;
 
-        public RoundData(int roundNumber, int roundScore, int totalScore, int theoreticalTotal, PlayerStatus status, List<Card> hand) {
+        // Constructeur par défaut pour Jackson
+        public RoundData() {
+            this.hand = new ArrayList<>();
+        }
+
+        @JsonCreator
+        public RoundData(
+            @JsonProperty("roundNumber") int roundNumber, 
+            @JsonProperty("roundScore") int roundScore, 
+            @JsonProperty("totalScore") int totalScore, 
+            @JsonProperty("theoreticalTotal") int theoreticalTotal, 
+            @JsonProperty("status") PlayerStatus status, 
+            @JsonProperty("hand") List<Card> hand
+        ) {
             this.roundNumber = roundNumber;
             this.roundScore = roundScore;
             this.totalScore = totalScore;

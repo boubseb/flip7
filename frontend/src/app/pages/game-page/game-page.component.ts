@@ -183,9 +183,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.wsService.gameRestarted$.subscribe(data => {
         console.log('🔄 Game restarted event received:', data);
-        // Fermer le popup et rediriger vers la page room
+        // Fermer le popup - la nouvelle partie va démarrer automatiquement
         this.showGameOverPopup = false;
-        this.router.navigate(['/room', this.roomId]);
+        // Ne PAS rediriger - attendre que gameStarts$ soit déclenché automatiquement
+        console.log('⏳ En attente du démarrage automatique de la nouvelle partie...');
       })
     );
     
@@ -695,6 +696,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
     console.log('   - Card ID:', card?.id);
     console.log('   - Card type:', card?.cardType || card?.type);
     console.log('   - Card specialType:', card?.specialType);
+    
+    // Vérifier combien de joueurs sont assignables (non éliminés, non stopped)
+    const assignablePlayers = this.getAssignablePlayers();
+    console.log('👥 Joueurs assignables:', assignablePlayers.length);
+    
+    // Si un seul joueur assignable (le joueur actuel), auto-assigner
+    if (assignablePlayers.length === 1) {
+      console.log('⚠️ JOUEUR SEUL - Auto-assignation à soi-même');
+      this.assignStopToPlayer(this.currentUserId);
+      return;
+    }
+    
     this.stopCardToAssign = card;
     this.showStopCardModal = true;
   }
@@ -750,8 +763,36 @@ export class GamePageComponent implements OnInit, OnDestroy {
    */
   showDrawThreeCardSelection(card: any): void {
     console.log('➕3️⃣ Opening DrawThree card selection modal', card);
+    
+    // Vérifier combien de joueurs sont assignables (non éliminés, non stopped)
+    const assignablePlayers = this.getAssignablePlayers();
+    console.log('👥 Joueurs assignables:', assignablePlayers.length);
+    
+    // Si un seul joueur assignable (le joueur actuel), auto-assigner
+    if (assignablePlayers.length === 1) {
+      console.log('⚠️ JOUEUR SEUL - Auto-assignation à soi-même');
+      this.assignDrawThreeToPlayer(this.currentUserId);
+      return;
+    }
+    
     this.drawThreeCardToAssign = card;
     this.showDrawThreeModal = true;
+  }
+  
+  /**
+   * Retourne la liste des joueurs à qui on peut assigner une carte
+   * (non éliminés, non stopped)
+   */
+  private getAssignablePlayers(): any[] {
+    if (!this.gameState || !this.gameState.players) {
+      return [];
+    }
+    
+    return this.gameState.players.filter((player: any) => 
+      player.status !== 'ELIMINATED' && 
+      player.status !== 'STOPPED' && 
+      player.status !== 'FORCED_STOP'
+    );
   }
 
   /**

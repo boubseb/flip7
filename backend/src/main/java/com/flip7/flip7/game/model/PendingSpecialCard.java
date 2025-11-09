@@ -1,5 +1,7 @@
 package com.flip7.flip7.game.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.flip7.flip7.game.card.SpecialCard;
 
 /**
@@ -14,7 +16,19 @@ public class PendingSpecialCard {
     private long timestamp; // Pour l'ordre de traitement
     private int priority; // Pour prioriser certaines cartes si nécessaire
 
-    public PendingSpecialCard(SpecialCard card, String sourcePlayerId, String targetPlayerId, int remainingForcedDraws) {
+    // Constructeur par défaut pour Jackson
+    public PendingSpecialCard() {
+        this.timestamp = System.currentTimeMillis();
+        this.priority = 0;
+    }
+
+    @JsonCreator
+    public PendingSpecialCard(
+        @JsonProperty("card") SpecialCard card, 
+        @JsonProperty("sourcePlayerId") String sourcePlayerId, 
+        @JsonProperty("targetPlayerId") String targetPlayerId, 
+        @JsonProperty("remainingForcedDraws") int remainingForcedDraws
+    ) {
         this.card = card;
         this.sourcePlayerId = sourcePlayerId;
         this.targetPlayerId = targetPlayerId;

@@ -1,5 +1,7 @@
 package com.flip7.flip7.game.card;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Carte numérotée (0-12)
  */
@@ -24,6 +26,7 @@ public class NumberCard extends Card {
     }
 
     @Override
+    @JsonIgnore
     public String getDisplayName() {
         return String.valueOf(value);
     }
