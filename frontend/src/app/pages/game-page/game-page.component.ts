@@ -9,13 +9,12 @@ import { Room, RoomStatus } from '../../models/room/room.model';
 import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
 import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
-import { StartRoundPopupComponent } from '../../components/start-round-popup/start-round-popup.component';
 import { GameOverPopupComponent, PlayerRanking } from '../../components/game-over-popup/game-over-popup.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, StartRoundPopupComponent, GameOverPopupComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, GameOverPopupComponent, TranslateModule],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
@@ -220,16 +219,16 @@ export class GamePageComponent implements OnInit, OnDestroy {
           console.log('🎯 Current player:', this.currentPlayerId, '- My turn:', this.isMyTurn);
         }
 
-        // Détecter l'état WAITING_NEXT_ROUND pour afficher le popup
-        // Pour le joueur actuel : popup avec bouton "Commencer"
-        // Pour les autres : popup d'attente
+        // Détecter l'état WAITING_NEXT_ROUND
+        // On ne montre PLUS le popup, le bouton est directement dans le game footer
         if (response.gameState === 'WAITING_NEXT_ROUND') {
           if (this.isMyTurn) {
-            console.log('⏳ Waiting for next round - showing START button (YOUR turn)');
+            console.log('⏳ Waiting for next round - YOUR turn to start');
           } else {
-            console.log('⏳ Waiting for next round - showing WAITING message for', this.getCurrentPlayerUsername());
+            console.log('⏳ Waiting for next round - waiting for', this.getCurrentPlayerUsername());
           }
-          this.showStartRoundPopup = true;
+          // Ne plus afficher le popup
+          this.showStartRoundPopup = false;
         } else {
           this.showStartRoundPopup = false;
         }
@@ -400,7 +399,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
                 // Vérifier si on est en état WAITING_NEXT_ROUND
                 if (gameState.gameState === 'WAITING_NEXT_ROUND') {
                   console.log('⏳ Reconnected during WAITING_NEXT_ROUND state');
-                  this.showStartRoundPopup = true;
+                  // Le bouton est maintenant dans le game footer, pas besoin de popup
+                  this.showStartRoundPopup = false;
                 }
               }
             },

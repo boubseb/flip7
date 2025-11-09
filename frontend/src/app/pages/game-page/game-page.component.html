@@ -38,22 +38,42 @@
 
       <!-- Game Footer with Action Buttons -->
       <div class="game-footer">
-        <button 
-          class="btn btn-hit"
-          [disabled]="!isMyTurn || isPlayerEliminated()"
-          [class.active]="isMyTurn && !isPlayerEliminated()"
-          (click)="drawCard()">
-          <span class="icon">🎴</span>
-          <span>{{ 'game.hit' | translate }}</span>
-        </button>
-        <button 
-          class="btn btn-stop"
-          [disabled]="!isMyTurn || isPlayerEliminated()"
-          [class.active]="isMyTurn && !isPlayerEliminated()"
-          (click)="stopDrawing()">
-          <span class="icon">✋</span>
-          <span>{{ 'game.stop' | translate }}</span>
-        </button>
+        <!-- Si WAITING_NEXT_ROUND : bouton spécial ou message d'attente -->
+        @if (gameState?.gameState === 'WAITING_NEXT_ROUND') {
+          @if (isMyTurn) {
+            <!-- Bouton pour le joueur actuel : lancer le nouveau round -->
+            <button 
+              class="btn btn-start-round"
+              (click)="startRound()">
+              <span class="icon">🎬</span>
+              <span>Lancer le Round {{ gameState?.roundNumber || 1 }}</span>
+            </button>
+          } @else {
+            <!-- Message d'attente pour les autres joueurs -->
+            <div class="waiting-message">
+              <span class="icon">⏳</span>
+              <span>En attente de {{ getCurrentPlayerUsername() }}...</span>
+            </div>
+          }
+        } @else {
+          <!-- Boutons normaux : Piocher et Stop -->
+          <button 
+            class="btn btn-hit"
+            [disabled]="!isMyTurn || isPlayerEliminated()"
+            [class.active]="isMyTurn && !isPlayerEliminated()"
+            (click)="drawCard()">
+            <span class="icon">🎴</span>
+            <span>{{ 'game.hit' | translate }}</span>
+          </button>
+          <button 
+            class="btn btn-stop"
+            [disabled]="!isMyTurn || isPlayerEliminated()"
+            [class.active]="isMyTurn && !isPlayerEliminated()"
+            (click)="stopDrawing()">
+            <span class="icon">✋</span>
+            <span>{{ 'game.stop' | translate }}</span>
+          </button>
+        }
       </div>
     </div>
   } @else {
@@ -86,15 +106,6 @@
   (onPlayerSelected)="assignDrawThreeToPlayer($event)"
   (onCancel)="closeDrawThreeModal()">
 </app-player-selector>
-
-<!-- Start Round Popup -->
-<app-start-round-popup
-  [show]="showStartRoundPopup"
-  [roundNumber]="gameState?.roundNumber || 1"
-  [playerUsername]="getCurrentPlayerUsername()"
-  [isCurrentPlayer]="isMyTurn"
-  (onStartRound)="startRound()">
-</app-start-round-popup>
 
 <!-- Game Over Popup -->
 @if (showGameOverPopup) {
