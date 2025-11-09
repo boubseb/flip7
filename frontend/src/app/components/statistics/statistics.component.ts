@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { UserService } from '../../services/user/user.service';
 import { StatisticsService } from '../../services/statistics/statistics.service';
 import { PlayerStatistics } from '../../models/statistics/player-statistics.model';
@@ -7,7 +8,7 @@ import { PlayerStatistics } from '../../models/statistics/player-statistics.mode
 @Component({
   selector: 'app-statistics',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './statistics.component.html',
   styleUrl: './statistics.component.scss'
 })

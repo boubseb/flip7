@@ -375,5 +375,26 @@
       "changePassword": "Erreur lors du changement de mot de passe",
       "deleteAccount": "Erreur lors de la suppression du compte"
     }
+  },
+  "statistics": {
+    "completedGames": "Parties finies",
+    "flip7": "Flip 7 réalisés",
+    "roundsPlayed": "Rounds joués",
+    "eliminatedByDouble": "Éliminé par double",
+    "maxScoreInOneRound": "Plus gros score (1 round)",
+    "averagePointsPerRound": "Moyenne par round",
+    "averagePointsPerScoringRound": "Moyenne (rounds > 0)",
+    "stopCardsReceived": "Cartes Stop reçues",
+    "lifeCardsObtained": "Cartes Vie obtenues",
+    "drawThreeReceived": "Cartes +3 reçues",
+    "drawThreeCompleted": "+3 réussis",
+    "drawThreeWithElimination": "+3 avec élimination",
+    "globalStats": "Statistiques Globales",
+    "globalCompletedGames": "Parties finies (total)",
+    "globalAverageRoundsPerGame": "Moyenne rounds/partie",
+    "globalTotalFlip7": "Flip 7 totaux",
+    "globalMaxScoreInOneRound": "Record absolu (1 round)",
+    "theoreticalMaxScore": "Score Théorique Maximum",
+    "theoreticalDescription": "+2 +4 +6 +8 +10 + (12+11+10+9+8+7+6) avec carte x2"
   }
 }
