@@ -145,6 +145,11 @@
     "noPlayers": "No players in the game",
     "cardCountSingular": "card",
     "cardCountPlural": "cards",
+    "START_ROUND_YOUR_TURN": "It's your turn to start round {{round}}!",
+    "START_ROUND_WAITING": "Waiting for {{player}} to start round {{round}}...",
+    "START_ROUND_BUTTON": "Start round",
+    "START_ROUND_READY": "Click when you're ready",
+    "PLEASE_WAIT": "Please wait...",
     "cards": {
       "number": "Number card",
       "operator": "Operator card",

@@ -32,7 +32,7 @@
                 {{ player.userId === currentUserId ? ('game.playerSelector.you' | translate) : player.username }}
               </span>
               <span class="player-status" [class]="'status-' + player.status.toLowerCase()">
-                {{ getStatusLabel(player.status) }}
+                {{ getStatusKey(player.status) | translate }}
               </span>
             </div>
 

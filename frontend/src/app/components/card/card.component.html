@@ -10,9 +10,10 @@
       <div class="card-icon">
         {{ getCardIcon() }}
       </div>
+    } @else {
+      <div class="card-value">
+        {{ card.displayName }}
+      </div>
     }
-    <div class="card-value">
-      {{ card.displayName }}
-    </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlayerStatus } from '../../models/game/game.model';
 import { TranslateModule } from '@ngx-translate/core';
@@ -10,7 +10,7 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './player-selector.component.html',
   styleUrls: ['./player-selector.component.scss']
 })
-export class PlayerSelectorComponent {
+export class PlayerSelectorComponent implements OnChanges {
   @Input() title: string = 'Choisissez un joueur';
   @Input() description: string = 'Sélectionnez le joueur qui recevra cette carte';
   @Input() players: any[] = [];
@@ -20,6 +20,17 @@ export class PlayerSelectorComponent {
   
   @Output() onPlayerSelected = new EventEmitter<string>();
   @Output() onCancel = new EventEmitter<void>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['show'] && changes['show'].currentValue === true) {
+      console.log('🎯 Player Selector - Players:', this.players);
+      console.log('🎯 Player Selector - Card Type:', this.cardType);
+      console.log('🎯 Player Selector - Eligible count:', this.getEligiblePlayersCount());
+      this.players.forEach(p => {
+        console.log(`   - ${p.username}: status=${p.status}, eligible=${this.isPlayerEligible(p)}`);
+      });
+    }
+  }
 
   /**
    * Vérifie si un joueur est éligible
@@ -68,22 +79,24 @@ export class PlayerSelectorComponent {
   }
 
   /**
-   * Retourne le libellé du statut
+   * Retourne la clé de traduction du statut
    */
-  getStatusLabel(status: string): string {
+  getStatusKey(status: string): string {
     switch (status) {
       case PlayerStatus.PLAYING:
-        return 'En jeu';
+        return 'game.status.playing';
       case PlayerStatus.STOPPED:
-        return 'Arrêté';
       case PlayerStatus.FORCED_STOP:
-        return 'Stoppé (carte)';
+      case PlayerStatus.FLIP7_STOP:
+        return 'game.status.stopped';
       case PlayerStatus.ELIMINATED:
-        return 'Éliminé';
+        return 'game.status.eliminated';
       case PlayerStatus.WAITING:
-        return 'En attente';
+        return 'game.status.waiting';
       default:
-        return status;
+        // Si le statut n'est pas reconnu, retourner la clé "playing" par défaut
+        console.warn('Unknown player status:', status);
+        return 'game.status.playing';
     }
   }
 
