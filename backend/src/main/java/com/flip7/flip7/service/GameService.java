@@ -995,4 +995,49 @@ public class GameService {
         System.out.println("   Il devrait voir TOUS les joueurs (sauf lui-même) dans la modale");
         System.out.println("   Y compris ceux qui n'ont pas encore de carte");
     }
+    
+    /**
+     * Nettoie les games en mémoire pour les rooms qui n'existent plus dans la base de données
+     * ou qui sont inactives depuis longtemps.
+     * Cette méthode est appelée périodiquement par le scheduler de RoomService.
+     */
+    public void cleanupInactiveGames() {
+        System.out.println("   🎮 Nettoyage des games en mémoire...");
+        
+        int initialSize = activeGames.size();
+        if (initialSize == 0) {
+            System.out.println("      ✅ Aucun game en mémoire");
+            return;
+        }
+        
+        System.out.println("      📊 Games en mémoire avant nettoyage: " + initialSize);
+        
+        // Supprimer les games dont la room n'existe plus en base
+        activeGames.entrySet().removeIf(entry -> {
+            String roomId = entry.getKey();
+            try {
+                Room room = roomService.getRoom(roomId);
+                if (room == null) {
+                    System.out.println("      🗑️ Suppression du game pour room inexistante: " + roomId);
+                    gameHistoryIds.remove(roomId);
+                    return true;
+                }
+                return false;
+            } catch (Exception e) {
+                System.out.println("      🗑️ Suppression du game pour room avec erreur: " + roomId);
+                gameHistoryIds.remove(roomId);
+                return true;
+            }
+        });
+        
+        int finalSize = activeGames.size();
+        int removed = initialSize - finalSize;
+        
+        if (removed > 0) {
+            System.out.println("      ✅ " + removed + " game(s) supprimé(s) de la mémoire");
+            System.out.println("      📊 Games restants en mémoire: " + finalSize);
+        } else {
+            System.out.println("      ✅ Aucun game à supprimer (tous valides)");
+        }
+    }
 }

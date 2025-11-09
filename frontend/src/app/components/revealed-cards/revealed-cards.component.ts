@@ -49,7 +49,7 @@ export class RevealedCardsComponent {
     if (!specialType) return '⭐';
     const typeMap: { [key: string]: string } = {
       'STOP': '🛑',
-      'DRAW_THREE': '➕3️⃣',
+      'DRAW_THREE': '+3',
       'LIFE': '❤️'
     };
     return typeMap[specialType] || specialType;

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,6 +37,10 @@ public class RoomService {
     
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    
+    @Autowired(required = false)
+    @Lazy
+    private GameService gameService;
     
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     
@@ -276,12 +281,17 @@ public class RoomService {
     
     /**
      * Tâche planifiée pour supprimer les rooms inactives depuis plus de 30 minutes
-     * S'exécute toutes les 5 minutes
+     * S'exécute toutes les 5 minutes (300000 ms)
      */
     @Scheduled(fixedRate = 300000) // 5 minutes en millisecondes
     public void cleanupInactiveRooms() {
-        LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minusMinutes(30);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime thirtyMinutesAgo = now.minusMinutes(30);
+        
+        System.out.println("🧹 [" + now + "] Exécution du nettoyage des rooms inactives (> 30 min)...");
+        
         List<Room> allRooms = roomRepository.findAll();
+        System.out.println("   📊 Total de rooms dans la base: " + allRooms.size());
         
         int deletedCount = 0;
         for (Room room : allRooms) {
@@ -292,15 +302,27 @@ public class RoomService {
             }
             
             if (lastActivity != null && lastActivity.isBefore(thirtyMinutesAgo)) {
-                System.out.println("🗑️ Suppression de la room inactive " + room.getId() + 
-                    " (dernière activité: " + lastActivity + ")");
+                long minutesInactive = java.time.Duration.between(lastActivity, now).toMinutes();
+                System.out.println("   🗑️ Suppression de la room " + room.getId() + 
+                    " (inactive depuis " + minutesInactive + " minutes - dernière activité: " + lastActivity + ")");
                 roomRepository.delete(room);
                 deletedCount++;
             }
         }
         
         if (deletedCount > 0) {
-            System.out.println("✅ " + deletedCount + " room(s) inactive(s) supprimée(s)");
+            System.out.println("   ✅ " + deletedCount + " room(s) inactive(s) supprimée(s)");
+        } else {
+            System.out.println("   ✅ Aucune room inactive à supprimer");
+        }
+        
+        // Nettoyer aussi les games actifs en mémoire si GameService est disponible
+        if (gameService != null) {
+            try {
+                gameService.cleanupInactiveGames();
+            } catch (Exception e) {
+                System.out.println("   ⚠️ Erreur lors du nettoyage des games en mémoire: " + e.getMessage());
+            }
         }
     }
 }

@@ -104,6 +104,15 @@ export class WebSocketService {
       return;
     }
 
+    // Vérifier si on est déjà souscrit à cette room
+    const roomSubKey = `room-${roomId}`;
+    if (this.subscriptions.has(roomSubKey)) {
+      console.log('⚠️ Already subscribed to room:', roomId);
+      return;
+    }
+
+    console.log('📡 Creating new subscription for room:', roomId);
+
     // Subscribe to room updates
     const roomSub = this.stompClient.subscribe(
       `/topic/rooms/${roomId}`,

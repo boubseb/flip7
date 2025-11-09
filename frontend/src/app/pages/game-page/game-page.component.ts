@@ -91,8 +91,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
           return;
         }
         
-        // Si le roomId change OU si on revient sur la même room mais sans gameState
-        if (newRoomId !== this.roomId || !this.gameState) {
+        // Si le roomId change vraiment (pas juste un refresh)
+        if (newRoomId !== this.roomId) {
           // Désabonner de l'ancienne room si différente
           if (this.roomId && this.roomId !== newRoomId) {
             console.log('🔄 Unsubscribing from old room:', this.roomId);
@@ -105,12 +105,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
           
           console.log('📡 Loading room data for:', this.roomId);
           this.loadRoom();
-          
-          // S'abonner à la nouvelle room si WebSocket connecté
-          if (this.wsConnected && this.roomId) {
-            console.log('📡 Subscribing to room:', this.roomId);
-            this.wsService.subscribeToRoom(this.roomId);
-          }
+        } else {
+          console.log('⏭️ Same roomId, skipping reload');
         }
       })
     );
@@ -118,30 +114,34 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Connect to WebSocket
     this.wsService.connect();
     
-    // Subscribe to connection status
+    // Subscribe to connection status ONCE
     this.subscriptions.push(
       this.wsService.connectionStatus$.subscribe(connected => {
+        const wasConnected = this.wsConnected;
         this.wsConnected = connected;
-        if (connected) {
-          console.log('✅ WebSocket connected');
-          // Subscribe to room when connected
+        
+        if (connected && !wasConnected) {
+          console.log('✅ WebSocket connected for the first time');
+          // Subscribe to room when connected (only if not already subscribed)
           if (this.roomId) {
-            console.log('📡 Subscribing to room:', this.roomId);
+            console.log('📡 Subscribing to room after connection:', this.roomId);
             this.wsService.subscribeToRoom(this.roomId);
           }
+        } else if (connected && wasConnected) {
+          console.log('🔄 WebSocket reconnected (already was connected)');
+          // Ne pas re-souscrire, c'est déjà fait
         } else {
           console.warn('⚠️ WebSocket disconnected');
         }
       })
     );
     
-    // Subscribe to room updates
+    // Subscribe to room updates (uniquement pour les changements de room, pas de gameState)
     this.subscriptions.push(
       this.wsService.roomUpdates$.subscribe(room => {
-        console.log('🔄 Room update received:', room);
-        console.log('Players now:', room.players);
+        console.log('🔄 Room update received (not game state)');
         this.currentRoom = room;
-        this.updateRoomState();
+        // Ne pas appeler updateRoomState() ici car ça peut causer des refresh
       })
     );
     
@@ -150,7 +150,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
       this.wsService.gameStarts$.subscribe(room => {
         console.log('🎮 Game started event received:', room);
         this.currentRoom = room;
-        this.updateRoomState();
         
         // Récupérer immédiatement l'état du jeu pour avoir les cartes initiales
         console.log('📡 Fetching initial game state...');
@@ -174,13 +173,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
       })
     );
     
-    // Subscribe to turn updates
+    // Subscribe to turn updates (on ignore, on utilisera gameStateUpdates$ à la place)
     this.subscriptions.push(
       this.wsService.turnUpdates$.subscribe(update => {
-        console.log('Turn update:', update);
-        this.currentRoom = update.room;
-        this.updateRoomState();
-        // Handle move data here
+        console.log('🔄 Turn update received (ignored, using gameStateUpdates$ instead)');
+        // Ne rien faire, on attend le gameStateUpdate
       })
     );
     
@@ -225,6 +222,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
         if (response.players && response.players.length > 0) {
           const myPlayer = response.players.find((p: any) => p.userId === this.currentUserId);
           if (myPlayer && myPlayer.hand) {
+            console.log('🔍 Checking for pending cards in hand:', myPlayer.hand);
+            console.log('🔍 Current modals state - Stop:', this.showStopCardModal, 'DrawThree:', this.showDrawThreeModal);
+            
             // Vérifier carte Stop (backend retourne "cardType" au lieu de "type")
             const pendingStopCard = myPlayer.hand.find((card: any) => 
               (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
@@ -243,6 +243,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
               card.specialType === 'DRAW_THREE' && 
               card.pending === true
             );
+            
+            console.log('🔍 Pending DrawThree card found?', pendingDrawThreeCard);
             
             if (pendingDrawThreeCard && !this.showDrawThreeModal) {
               console.log('➕3️⃣ Pending DrawThree card detected in hand - showing player selection');
@@ -290,81 +292,75 @@ export class GamePageComponent implements OnInit, OnDestroy {
         
         console.log('✅ Game in progress, displaying game view');
         
-        // Si le jeu est déjà en cours, récupérer l'état actuel pour reconnexion
-        console.log('📡 Fetching current game state for reconnection...');
-        this.gameService.getGameState(this.roomId).subscribe({
-          next: (gameState) => {
-            console.log('✅ Game state received for reconnection:', gameState);
-            console.log('   - currentRoom is set:', !!this.currentRoom);
-            console.log('   - gameState.players:', gameState.players?.length || 0);
-            this.gameState = gameState;
-            
-            // Force Angular change detection
-            setTimeout(() => {
-              console.log('🔄 Forcing change detection...');
-              console.log('   - currentRoom:', !!this.currentRoom);
-              console.log('   - gameState:', !!this.gameState);
-              console.log('   - gameState.players:', this.gameState?.players?.length || 0);
-            }, 100);
-            
-            if (gameState.players && gameState.players.length > 0) {
-              gameState.players.forEach((p: any) => {
-                console.log(`   - ${p.username}: ${p.hand?.length || 0} cards, status: ${p.status}, score: ${p.roundScore}/${p.totalScore}`);
-              });
+        // Si le jeu est déjà en cours, récupérer l'état actuel pour reconnexion (une seule fois)
+        if (!this.gameState) {
+          console.log('📡 Fetching current game state for reconnection...');
+          this.gameService.getGameState(this.roomId).subscribe({
+            next: (gameState) => {
+              console.log('✅ Game state received for reconnection:', gameState);
+              this.gameState = gameState;
               
-              if (gameState.currentPlayerIndex >= 0) {
-                const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-                this.currentPlayerId = currentPlayer.userId;
-                this.isMyTurn = this.currentPlayerId === this.currentUserId;
-                console.log('🎯 Current player:', currentPlayer.username, '- My turn:', this.isMyTurn);
-              }
-              
-              // Vérifier si on a des cartes pending à assigner (Stop/DrawThree)
-              const myPlayer = gameState.players.find((p: any) => p.userId === this.currentUserId);
-              if (myPlayer && myPlayer.hand) {
-                const pendingStopCard = myPlayer.hand.find((card: any) => 
-                  (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
-                  card.specialType === 'STOP' && 
-                  card.pending === true
-                );
+              if (gameState.players && gameState.players.length > 0) {
+                gameState.players.forEach((p: any) => {
+                  console.log(`   - ${p.username}: ${p.hand?.length || 0} cards, status: ${p.status}, score: ${p.roundScore}/${p.totalScore}`);
+                });
                 
-                if (pendingStopCard && !this.showStopCardModal) {
-                  console.log('🛑 Pending Stop card detected on reconnection');
-                  this.showStopCardSelection(pendingStopCard);
+                if (gameState.currentPlayerIndex >= 0) {
+                  const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+                  this.currentPlayerId = currentPlayer.userId;
+                  this.isMyTurn = this.currentPlayerId === this.currentUserId;
+                  console.log('🎯 Current player:', currentPlayer.username, '- My turn:', this.isMyTurn);
+                }
+                
+                // Vérifier si on a des cartes pending à assigner (Stop/DrawThree)
+                const myPlayer = gameState.players.find((p: any) => p.userId === this.currentUserId);
+                if (myPlayer && myPlayer.hand) {
+                  const pendingStopCard = myPlayer.hand.find((card: any) => 
+                    (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
+                    card.specialType === 'STOP' && 
+                    card.pending === true
+                  );
+                  
+                  if (pendingStopCard && !this.showStopCardModal) {
+                    console.log('🛑 Pending Stop card detected on reconnection');
+                    this.showStopCardSelection(pendingStopCard);
+                  }
+
+                  const pendingDrawThreeCard = myPlayer.hand.find((card: any) => 
+                    (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
+                    card.specialType === 'DRAW_THREE' && 
+                    card.pending === true
+                  );
+                  
+                  if (pendingDrawThreeCard && !this.showDrawThreeModal) {
+                    console.log('➕3️⃣ Pending DrawThree card detected on reconnection');
+                    this.showDrawThreeCardSelection(pendingDrawThreeCard);
+                  }
                 }
 
-                const pendingDrawThreeCard = myPlayer.hand.find((card: any) => 
-                  (card.type === 'SPECIAL' || card.cardType === 'SPECIAL') && 
-                  card.specialType === 'DRAW_THREE' && 
-                  card.pending === true
-                );
-                
-                if (pendingDrawThreeCard && !this.showDrawThreeModal) {
-                  console.log('➕3️⃣ Pending DrawThree card detected on reconnection');
-                  this.showDrawThreeCardSelection(pendingDrawThreeCard);
+                // Vérifier si on est en état WAITING_NEXT_ROUND
+                if (gameState.gameState === 'WAITING_NEXT_ROUND') {
+                  console.log('⏳ Reconnected during WAITING_NEXT_ROUND state');
+                  this.showStartRoundPopup = true;
                 }
               }
-
-              // Vérifier si on est en état WAITING_NEXT_ROUND
-              if (gameState.gameState === 'WAITING_NEXT_ROUND') {
-                console.log('⏳ Reconnected during WAITING_NEXT_ROUND state');
-                this.showStartRoundPopup = true;
+            },
+            error: (err) => {
+              console.error('❌ Error fetching game state:', err);
+              
+              // Si erreur 400, c'est que la partie n'existe plus (backend redémarré ou partie terminée)
+              if (err.status === 400) {
+                console.warn('⚠️ Game not found - redirecting to room page');
+                this.showError('game.errors.gameNotFoundAfterRestart');
+                setTimeout(() => this.router.navigate(['/room']), 3000);
+              } else {
+                this.showError('game.errors.cannotLoadGameState');
               }
             }
-          },
-          error: (err) => {
-            console.error('❌ Error fetching game state:', err);
-            
-            // Si erreur 400, c'est que la partie n'existe plus (backend redémarré ou partie terminée)
-            if (err.status === 400) {
-              console.warn('⚠️ Game not found - redirecting to room page');
-              this.showError('game.errors.gameNotFoundAfterRestart');
-              setTimeout(() => this.router.navigate(['/room']), 3000);
-            } else {
-              this.showError('game.errors.cannotLoadGameState');
-            }
-          }
-        });
+          });
+        } else {
+          console.log('⏭️ Game state already loaded, skipping fetch');
+        }
       },
       error: (error) => {
         console.error('❌ Error loading room:', error);
