@@ -232,7 +232,16 @@
       "drawing": "Forced draw",
       "waiting": "Waiting",
       "eliminated": "Eliminated",
-      "winner": "Winner"
+      "winner": "Winner",
+      "eliminated_message": "You have been eliminated",
+      "eliminated_during_draw_message": "You were eliminated (double during +3 from {{player}})",
+      "stopped_message": "You stopped",
+      "forced_stop_message": "You received a Stop card from {{player}}",
+      "forced_stop_self_message": "You stopped yourself with a Stop card",
+      "flip7_stop_message": "Flip7! You are stopped with 7 points",
+      "your_turn": "{{player}}'s turn",
+      "start_round": "Start Round {{round}}",
+      "waiting_for_player": "Waiting for {{player}}..."
     },
     "errors": {
       "notInRoom": "You are not part of this room",

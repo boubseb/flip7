@@ -43,6 +43,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
   successMessage: string = '';
   private successTimeout: any = null;
   
+  // Flip7 Celebration
+  showFlip7Celebration: boolean = false;
+  private flip7Timeout: any = null;
+  
   // Stop Card Selection
   showStopCardModal: boolean = false;
   stopCardToAssign: any = null;
@@ -214,9 +218,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
         // Déterminer le joueur actuel à partir de l'index
         if (response.players && response.players.length > 0 && response.currentPlayerIndex >= 0) {
           const currentPlayer = response.players[response.currentPlayerIndex];
+          const previousPlayerId = this.currentPlayerId;
           this.currentPlayerId = currentPlayer.userId;
           this.isMyTurn = this.currentPlayerId === this.currentUserId;
           console.log('🎯 Current player:', this.currentPlayerId, '- My turn:', this.isMyTurn);
+          
+          // Afficher une alerte quand le tour change et que ce n'est pas notre tour (pendant un round actif)
+          if (response.gameState === 'PLAYING' && previousPlayerId && previousPlayerId !== this.currentPlayerId && !this.isMyTurn) {
+            this.showSuccess(this.translate.instant('game.status.your_turn', { player: currentPlayer.username }), 1000);
+          }
         }
 
         // Détecter l'état WAITING_NEXT_ROUND
@@ -474,12 +484,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
               console.warn('⚠️ needsStopAssignment but card is not SPECIAL:', cardData);
             }
           } else if (result.eliminated) {
-            this.showError('Double ! Vous êtes éliminé !');
+            // Message supprimé - déjà affiché dans le footer avec getPlayerStatusMessage()
           } else if (result.lifeUsed) {
             console.log('⚡ Carte Vie utilisée automatiquement');
           } else if (result.roundEnded) {
-            console.log('� FLIP7 ! 7 cartes numérotées différentes ! Le round s\'arrête et vous gagnez +15 points !');
-            this.showSuccess('🎯 FLIP7 ! 7 cartes numérotées différentes ! +15 points bonus !');
+            console.log('🎯 FLIP7 ! 7 cartes numérotées différentes ! Le round s\'arrête et vous gagnez +15 points !');
+            this.showFlip7CelebrationPopup();
           }
           
           // L'état sera mis à jour via WebSocket
@@ -550,7 +560,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
   }
 
-  showSuccess(message: string): void {
+  showSuccess(message: string, duration: number = 5000): void {
     // Effacer le timer précédent si existe
     if (this.successTimeout) {
       clearTimeout(this.successTimeout);
@@ -558,10 +568,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     
     this.successMessage = message;
     
-    // Auto-effacer après 5 secondes
+    // Auto-effacer après la durée spécifiée
     this.successTimeout = setTimeout(() => {
       this.clearSuccess();
-    }, 5000);
+    }, duration);
   }
 
   clearSuccess(): void {
@@ -570,6 +580,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
       this.successTimeout = null;
     }
     this.successMessage = '';
+  }
+
+  showFlip7CelebrationPopup(): void {
+    // Effacer le timer précédent si existe
+    if (this.flip7Timeout) {
+      clearTimeout(this.flip7Timeout);
+    }
+    
+    this.showFlip7Celebration = true;
+    
+    // Auto-fermer après 3 secondes
+    this.flip7Timeout = setTimeout(() => {
+      this.showFlip7Celebration = false;
+    }, 3000);
   }
 
   /**
@@ -581,6 +605,78 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
     const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
     return myPlayer?.status === 'ELIMINATED';
+  }
+
+  /**
+   * Retourne le message de statut du joueur actuel
+   * (utilisé pour afficher un message informatif à la place des boutons)
+   */
+  getPlayerStatusMessage(): { icon: string, message: string } | null {
+    if (!this.gameState?.players || !this.currentUserId) {
+      return null;
+    }
+
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    if (!myPlayer) return null;
+
+    // Si c'est le tour du joueur et qu'il peut jouer normalement
+    if (this.isMyTurn && myPlayer.status === 'PLAYING') {
+      return null; // Afficher les boutons normaux
+    }
+
+    // Joueur éliminé
+    if (myPlayer.status === 'ELIMINATED') {
+      // Vérifier si l'élimination a eu lieu pendant un +3
+      if (myPlayer.drawThreeByUsername) {
+        return { 
+          icon: '💀', 
+          message: this.translate.instant('game.status.eliminated_during_draw_message', { 
+            player: myPlayer.drawThreeByUsername 
+          })
+        };
+      }
+      return { 
+        icon: '💀', 
+        message: this.translate.instant('game.status.eliminated_message')
+      };
+    }
+
+    // Joueur stoppé (a choisi de s'arrêter)
+    if (myPlayer.status === 'STOPPED') {
+      return { 
+        icon: '✋', 
+        message: this.translate.instant('game.status.stopped_message')
+      };
+    }
+
+    // Joueur forcé de s'arrêter (carte Stop reçue)
+    if (myPlayer.status === 'FORCED_STOP') {
+      // Vérifier si c'est une auto-assignation ou reçue d'un autre joueur
+      if (myPlayer.stoppedByUsername) {
+        return { 
+          icon: '🛑', 
+          message: this.translate.instant('game.status.forced_stop_message', { 
+            player: myPlayer.stoppedByUsername 
+          })
+        };
+      }
+      return { 
+        icon: '🛑', 
+        message: this.translate.instant('game.status.forced_stop_self_message')
+      };
+    }
+
+    // Joueur stoppé par un Flip7 (score exactement 7)
+    if (myPlayer.status === 'FLIP7_STOP') {
+      return { 
+        icon: '🎯', 
+        message: this.translate.instant('game.status.flip7_stop_message')
+      };
+    }
+
+    // Ce n'est pas le tour du joueur - retourner null pour ne PAS afficher de message
+    // (l'alerte "Au tour de..." s'affichera en haut de l'écran)
+    return null;
   }
 
   /**
@@ -630,12 +726,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
             console.warn('⚠️ needsStopAssignment but card is not SPECIAL:', cardData);
           }
         } else if (result.eliminated) {
-          this.showError('Double ! Vous êtes éliminé !');
+          // Message supprimé - déjà affiché dans le footer avec getPlayerStatusMessage()
         } else if (result.lifeUsed) {
           console.log('⚡ Carte Vie utilisée automatiquement');
         } else if (result.roundEnded) {
           console.log('🎯 FLIP7 ! 7 cartes numérotées différentes ! Le round s\'arrête et vous gagnez +15 points !');
-          this.showSuccess('🎯 FLIP7 ! 7 cartes numérotées différentes ! +15 points bonus !');
+          this.showFlip7CelebrationPopup();
         }
         
         // L'état sera mis à jour via WebSocket

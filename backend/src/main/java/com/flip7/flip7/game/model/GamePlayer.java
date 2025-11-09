@@ -26,6 +26,12 @@ public class GamePlayer {
     private int lifeCardsInHand;          // Nombre de cartes Vie disponibles
     private List<RoundData> rounds;        // Liste de tous les rounds (le dernier = actuel)
     private int remainingForcedDraws;      // Nombre de cartes restant à piocher (pour DrawThree interrompu)
+    
+    // Contexte des actions spéciales
+    private String stoppedByUserId;        // ID du joueur qui a donné la carte Stop (null si auto-stop)
+    private String stoppedByUsername;      // Nom du joueur qui a donné la carte Stop
+    private String drawThreeByUserId;      // ID du joueur qui a donné le +3 (pour élimination pendant +3)
+    private String drawThreeByUsername;    // Nom du joueur qui a donné le +3
 
     // Constructeur par défaut pour Jackson
     public GamePlayer() {
@@ -240,6 +246,13 @@ public class GamePlayer {
         roundScore = 0;
         hasUsedLife = false;
         lifeCardsInHand = 0;
+        
+        // Réinitialiser le contexte des actions spéciales
+        stoppedByUserId = null;
+        stoppedByUsername = null;
+        drawThreeByUserId = null;
+        drawThreeByUsername = null;
+        
         System.out.println("      ✅ RESET " + username + ": hand cleared, status=" + status);
     }
 
@@ -383,4 +396,17 @@ public class GamePlayer {
         public PlayerStatus getStatus() { return status; }
         public List<Card> getHand() { return hand; }
     }
+
+    // Getters/Setters pour le contexte des actions spéciales
+    public String getStoppedByUserId() { return stoppedByUserId; }
+    public void setStoppedByUserId(String stoppedByUserId) { this.stoppedByUserId = stoppedByUserId; }
+    
+    public String getStoppedByUsername() { return stoppedByUsername; }
+    public void setStoppedByUsername(String stoppedByUsername) { this.stoppedByUsername = stoppedByUsername; }
+    
+    public String getDrawThreeByUserId() { return drawThreeByUserId; }
+    public void setDrawThreeByUserId(String drawThreeByUserId) { this.drawThreeByUserId = drawThreeByUserId; }
+    
+    public String getDrawThreeByUsername() { return drawThreeByUsername; }
+    public void setDrawThreeByUsername(String drawThreeByUsername) { this.drawThreeByUsername = drawThreeByUsername; }
 }

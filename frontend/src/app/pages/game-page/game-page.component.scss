@@ -54,6 +54,15 @@
   z-index: 999;
   animation: slideDown 0.3s ease-out;
 
+  // Variante pour affichage au-dessus du footer
+  &.footer-alert {
+    position: static; // Pas de position absolue
+    margin: 0.5rem 1rem; // Petite marge sur les côtés
+    border-radius: 12px;
+    animation: slideUp 0.3s ease-out;
+    flex-shrink: 0; // Ne pas rétrécir avec le flexbox
+  }
+
   button {
     background: transparent;
     border: none;
@@ -75,6 +84,17 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -119,6 +139,7 @@
     margin-bottom: 2rem;
     background: linear-gradient(90deg, #6d28d9, #4f46e5);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
@@ -626,6 +647,15 @@
       margin-bottom: 4rem;
     }
 
+    // Wrapper pour players-board + alerte
+    .players-board-wrapper {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+
     // Force le style sur le composant enfant
     app-players-board {
       display: flex;
@@ -767,6 +797,60 @@
         font-size: 1.5rem;
       }
     }
+
+    .status-message {
+      width: 100%;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+
+      .icon {
+        font-size: 1.5rem;
+      }
+
+      // Message éliminé (💀)
+      &.status-💀 {
+        background: linear-gradient(135deg, #7c2d12, #991b1b);
+      }
+
+      // Message stoppé (✋)
+      &.status-✋ {
+        background: linear-gradient(135deg, #ea580c, #dc2626);
+      }
+
+      // Message forced stop (🛑)
+      &.status-🛑 {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+      }
+
+      // Message Flip7 stop (🎯)
+      &.status-🎯 {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        animation: flip7-pulse 1.5s infinite;
+      }
+
+      // Message attente (⏳)
+      &.status-⏳ {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        animation: waiting-pulse 2s infinite;
+      }
+    }
+  }
+}
+
+@keyframes flip7-pulse {
+  0%, 100% {
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.6);
   }
 }
 
@@ -805,5 +889,193 @@
     animation: pulse 2s infinite;
   }
 }
+
+// ========================================
+// FLIP7 CELEBRATION POPUP
+// ========================================
+.flip7-celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-in;
+  cursor: pointer;
+}
+
+.flip7-celebration-content {
+  position: relative;
+  text-align: center;
+  padding: 3rem 4rem;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border-radius: 20px;
+  border: 3px solid #fbbf24;
+  box-shadow: 
+    0 0 40px rgba(251, 191, 36, 0.6),
+    0 0 80px rgba(251, 191, 36, 0.4),
+    inset 0 0 60px rgba(251, 191, 36, 0.1);
+  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.fireworks-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 20px;
+}
+
+.firework {
+  position: absolute;
+  bottom: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: fireworkExplode 1.5s ease-out infinite;
+  
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+  }
+  
+  &::before {
+    background: #fbbf24;
+    box-shadow: 
+      0 0 10px #fbbf24,
+      0 0 20px #f59e0b;
+  }
+  
+  &::after {
+    background: #ef4444;
+    box-shadow: 
+      0 0 10px #ef4444,
+      0 0 20px #dc2626;
+    animation-delay: 0.1s;
+  }
+}
+
+.flip7-text {
+  font-size: 5rem;
+  font-weight: 900;
+  background: linear-gradient(45deg, #fbbf24, #f59e0b, #ef4444, #ec4899, #8b5cf6);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 
+    0 0 30px rgba(251, 191, 36, 0.8),
+    0 0 60px rgba(245, 158, 11, 0.6);
+  animation: 
+    gradientShift 2s ease infinite,
+    textGlow 1.5s ease-in-out infinite,
+    bounce 0.8s ease-in-out infinite;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.flip7-bonus {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 
+    0 0 20px rgba(251, 191, 36, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.8s ease-out;
+  position: relative;
+  z-index: 1;
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.3) rotate(-5deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes fireworkExplode {
+  0% {
+    transform: translateY(0) scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-400px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes textGlow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 20px rgba(251, 191, 36, 0.8));
+  }
+  50% {
+    filter: brightness(1.3) drop-shadow(0 0 40px rgba(251, 191, 36, 1));
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-15px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 
 

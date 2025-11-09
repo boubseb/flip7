@@ -232,7 +232,16 @@
       "drawing": "Pioche forcée",
       "waiting": "En attente",
       "eliminated": "Éliminé",
-      "winner": "Gagnant"
+      "winner": "Gagnant",
+      "eliminated_message": "Vous avez été éliminé",
+      "eliminated_during_draw_message": "Vous avez été éliminé (double pendant le +3 de {{player}})",
+      "stopped_message": "Vous vous êtes arrêté",
+      "forced_stop_message": "Vous avez reçu une carte Stop de {{player}}",
+      "forced_stop_self_message": "Vous vous êtes arrêté avec une carte Stop",
+      "flip7_stop_message": "Flip7 ! Vous êtes stoppé avec 7 points",
+      "your_turn": "Au tour de {{player}}",
+      "start_round": "Lancer le Round {{round}}",
+      "waiting_for_player": "En attente de {{player}}..."
     },
     "errors": {
       "notInRoom": "Vous ne faites pas partie de cette room",

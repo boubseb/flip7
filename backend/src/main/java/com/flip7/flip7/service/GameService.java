@@ -144,7 +144,7 @@ public class GameService {
                     .findById(playerId)
                     .orElse(null);
                 if (user != null) {
-                    String displayName = user.getFirstname() + " " + user.getLastname();
+                    String displayName = user.getPseudo(); // Utiliser le pseudo
                     playerNames.put(playerId, displayName);
                 } else {
                     playerNames.put(playerId, "Player " + playerId.substring(0, Math.min(8, playerId.length())));

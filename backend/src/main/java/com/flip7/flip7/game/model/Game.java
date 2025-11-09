@@ -304,6 +304,17 @@ public class Game {
         
         // ÉTAPE 3: Appliquer le FORCED_STOP
         targetPlayer.setStatus(PlayerStatus.FORCED_STOP);
+        
+        // ÉTAPE 3b: Enregistrer qui a donné la carte Stop
+        if (!player.getUserId().equals(targetPlayer.getUserId())) {
+            // Carte donnée par un autre joueur
+            targetPlayer.setStoppedByUserId(player.getUserId());
+            targetPlayer.setStoppedByUsername(player.getUsername());
+        } else {
+            // Auto-assignation : pas de "donneur"
+            targetPlayer.setStoppedByUserId(null);
+            targetPlayer.setStoppedByUsername(null);
+        }
         System.out.println("   🛑 " + targetPlayer.getUsername() + " est maintenant FORCED_STOP");
         
         // ÉTAPE 4: Vérifier s'il y a une pioche suspendue à reprendre
@@ -431,6 +442,10 @@ public class Game {
         // ÉTAPE 4: Changer le tour vers le joueur cible
         currentPlayerIndex = players.indexOf(targetPlayer);
         System.out.println("   🔄 Changement tour: " + targetPlayer.getUsername() + " (index " + currentPlayerIndex + ")");
+        
+        // ÉTAPE 4b: Enregistrer qui a donné le +3 (pour contexte en cas d'élimination)
+        targetPlayer.setDrawThreeByUserId(player.getUserId());
+        targetPlayer.setDrawThreeByUsername(player.getUsername());
         
         // ÉTAPE 5: Faire piocher 3 cartes au joueur cible
         boolean completed = processForcedDraws(targetPlayer, 3);
