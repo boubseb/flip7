@@ -21,11 +21,13 @@ export interface Room {
   maxPlayers: number;
   currentPlayers: number; // Added for room browser
   gameState?: any; // Game state (will be typed properly later)
+  statisticsEnabled?: boolean;
 }
 
 export interface RoomCreateRequest {
   password: string;
   maxPlayers?: number;
+  statisticsEnabled?: boolean;
 }
 
 export interface RoomJoinRequest {

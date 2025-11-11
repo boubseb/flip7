@@ -43,14 +43,10 @@ public class RoomController {
     public ResponseEntity<RoomResponse> createRoom(
             @RequestBody RoomCreateRequest request,
             @RequestHeader("Authorization") String authHeader) {
-        
         // Extract user ID from token (simplified - you should use proper token validation)
         String userId = extractUserIdFromAuth(authHeader);
-        
-        Room room = roomService.createRoom(request.getPassword(), userId, request.getMaxPlayers());
-        
+        Room room = roomService.createRoom(request.getPassword(), userId, request.getMaxPlayers(), request.isStatisticsEnabled());
         RoomResponse response = roomService.toRoomResponse(room);
-        
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     

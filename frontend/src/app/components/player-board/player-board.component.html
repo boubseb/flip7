@@ -61,6 +61,23 @@
         <span>{{ 'game.hit' | translate }}</span>
       </button>
       <button 
+        class="btn btn-info" 
+        (click)="showStatsPopup = true"
+        [disabled]="!isMyTurn || isEliminated()"
+        title="{{ 'game.stats.info' | translate }}">
+        <span class="icon">ℹ️</span>
+      </button>
+      <div class="stats-popup" *ngIf="showStatsPopup">
+        <div class="popup-content">
+          <span class="popup-title">{{ 'game.stats.title' | translate }}</span>
+          <span class="popup-proba">
+            {{ 'game.stats.eliminationChance' | translate }}
+            <b>{{ eliminationProbability !== null ? (eliminationProbability | number:'1.0-1') + '%' : ('game.stats.unavailable' | translate) }}</b>
+          </span>
+          <button class="btn btn-close" (click)="showStatsPopup = false">{{ 'game.stats.close' | translate }}</button>
+        </div>
+      </div>
+      <button 
         class="btn btn-stop" 
         (click)="stopRevealing()" 
         [disabled]="!isMyTurn || isEliminated()"
@@ -68,6 +85,21 @@
         <span class="icon">✋</span>
         <span>{{ 'game.stop' | translate }}</span>
       </button>
+      <button class="btn btn-info" (click)="showStatsPopup = true" [disabled]="!gameState || isEliminated()" title="Voir mes chances d'élimination">
+        <span class="icon">ℹ️</span>
+      </button>
+    </div>
+
+    <!-- Popup proba d'élimination -->
+    <div class="stats-popup" *ngIf="showStatsPopup">
+      <div class="stats-popup-content">
+        <h3>Probabilité d'être éliminé par un double</h3>
+        <p *ngIf="eliminationProbability !== null">
+          {{ eliminationProbability | number:'1.0-2' }} %
+        </p>
+        <p *ngIf="eliminationProbability === null">Calcul impossible (état du deck inconnu)</p>
+        <button class="btn btn-close" (click)="showStatsPopup = false">Fermer</button>
+      </div>
     </div>
   </div>
 </div>

@@ -395,6 +395,14 @@
     "globalAverageRoundsPerGame": "Avg rounds/game",
     "globalTotalFlip7": "Total Flip 7",
     "globalMaxScoreInOneRound": "Absolute record (1 round)",
-    "theoreticalMaxScore": "Theoretical Max Score"
+    "theoreticalMaxScore": "Theoretical Max Score",
+    "statisticsOption": "Enable statistics (show elimination chance)",
+    "stats": {
+      "info": "Show my elimination chance",
+      "title": "Risk statistics",
+      "eliminationChance": "Chance to be eliminated by a double: ",
+      "unavailable": "Unavailable",
+      "close": "Close"
+    }
   }
 }

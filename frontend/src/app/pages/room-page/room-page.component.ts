@@ -32,6 +32,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   // Create room form
   createRoomPassword: string = '';
   createRoomMaxPlayers: number = 12;
+  createRoomStatisticsEnabled: boolean = false;
   
   // Join room form
   joinRoomId: string = '';
@@ -213,7 +214,8 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     
     const request: RoomCreateRequest = {
       password: this.createRoomPassword,
-      maxPlayers: this.createRoomMaxPlayers
+      maxPlayers: this.createRoomMaxPlayers,
+      statisticsEnabled: this.createRoomStatisticsEnabled
     };
     
     this.roomService.createRoom(request).subscribe({

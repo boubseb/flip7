@@ -3,6 +3,13 @@ package com.flip7.flip7.dto;
 public class RoomCreateRequest {
     private String password;
     private Integer maxPlayers = 12;
+    private boolean statisticsEnabled = false;
+    public boolean isStatisticsEnabled() {
+        return statisticsEnabled;
+    }
+    public void setStatisticsEnabled(boolean statisticsEnabled) {
+        this.statisticsEnabled = statisticsEnabled;
+    }
     
     public String getPassword() {
         return password;

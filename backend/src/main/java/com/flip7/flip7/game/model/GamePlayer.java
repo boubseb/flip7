@@ -16,6 +16,7 @@ import java.util.Set;
  * Représente un joueur dans le contexte du jeu
  */
 public class GamePlayer {
+    private int lifeCardsObtainedThisRound = 0; // PATCH: track life cards obtained this round
     private String userId;
     private String username;
     private List<Card> hand;              // Main du joueur
@@ -69,6 +70,7 @@ public class GamePlayer {
         hand.add(card);
         if (card instanceof SpecialCard && ((SpecialCard) card).getSpecialType() == SpecialType.LIFE) {
             lifeCardsInHand++;
+            lifeCardsObtainedThisRound++; // PATCH: increment only when card is added
         }
         // Recalculer le score en temps réel
         calculateRoundScore();
@@ -246,14 +248,17 @@ public class GamePlayer {
         roundScore = 0;
         hasUsedLife = false;
         lifeCardsInHand = 0;
-        
+        lifeCardsObtainedThisRound = 0; // PATCH: reset at start of round
         // Réinitialiser le contexte des actions spéciales
         stoppedByUserId = null;
         stoppedByUsername = null;
         drawThreeByUserId = null;
         drawThreeByUsername = null;
-        
         System.out.println("      ✅ RESET " + username + ": hand cleared, status=" + status);
+    }
+    // PATCH: expose life cards obtained this round
+    public int getLifeCardsObtainedThisRound() {
+        return lifeCardsObtainedThisRound;
     }
 
     /**

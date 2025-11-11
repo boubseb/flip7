@@ -66,7 +66,15 @@ public class Room {
     @Column
     private Integer maxPlayers = 12;
     
+    @Column(nullable = false)
+    private boolean statisticsEnabled = false;
     // Getters and Setters
+    public boolean isStatisticsEnabled() {
+        return statisticsEnabled;
+    }
+    public void setStatisticsEnabled(boolean statisticsEnabled) {
+        this.statisticsEnabled = statisticsEnabled;
+    }
     public String getId() {
         return id;
     }

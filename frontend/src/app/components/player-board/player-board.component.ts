@@ -1,4 +1,41 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+  showStatsPopup: boolean = false;
+  eliminationProbability: number | null = null;
+
+  ngOnChanges(): void {
+    // Recalcule la proba à chaque changement d'état
+    this.eliminationProbability = this.calculateEliminationProbability();
+  }
+
+  /**
+   * Calcule la probabilité d'être éliminé par un double à la prochaine pioche
+   * (Suppose que la main et le deck sont connus)
+   */
+  calculateEliminationProbability(): number | null {
+    if (!this.gameState || !this.gameState.players || !this.gameState.deck) return null;
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    if (!myPlayer || !myPlayer.hand) return null;
+    // Compte les occurrences de chaque valeur dans la main
+    const valueCounts: { [value: string]: number } = {};
+    for (const card of myPlayer.hand) {
+      const value = card.split('_')[0];
+      valueCounts[value] = (valueCounts[value] || 0) + 1;
+    }
+    // Cherche les valeurs déjà doublées (on ne compte que les valeurs uniques)
+    const hasDouble = Object.values(valueCounts).some(count => count >= 2);
+    if (hasDouble) return 100; // Déjà éliminé
+    // Compte le nombre de valeurs présentes une fois
+    const singles = Object.keys(valueCounts).filter(v => valueCounts[v] === 1);
+    // Parcourt le deck restant pour calculer la proba de piocher un double
+    let total = 0, danger = 0;
+    for (const card of this.gameState.deck) {
+      const value = card.split('_')[0];
+      total++;
+      if (singles.includes(value)) danger++;
+    }
+    if (total === 0) return null;
+    return (danger / total) * 100;
+  }
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RevealedCardsComponent } from '../revealed-cards/revealed-cards.component';
 import { TranslateModule } from '@ngx-translate/core';
@@ -10,7 +47,43 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './player-board.component.html',
   styleUrl: './player-board.component.scss'
 })
-export class PlayerBoardComponent {
+export class PlayerBoardComponent implements OnChanges {
+  showStatsPopup: boolean = false;
+  eliminationProbability: number | null = null;
+  ngOnChanges(changes: SimpleChanges): void {
+    // Recalcule la proba à chaque changement d'état
+    this.eliminationProbability = this.calculateEliminationProbability();
+  }
+
+  /**
+   * Calcule la probabilité d'être éliminé par un double à la prochaine pioche
+   * (Suppose que la main et le deck sont connus)
+   */
+  calculateEliminationProbability(): number | null {
+    if (!this.gameState || !this.gameState.players || !this.gameState.deck) return null;
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    if (!myPlayer || !myPlayer.hand) return null;
+    // Compte les occurrences de chaque valeur dans la main
+    const valueCounts: { [value: string]: number } = {};
+    for (const card of myPlayer.hand) {
+      const value = card.split('_')[0];
+      valueCounts[value] = (valueCounts[value] || 0) + 1;
+    }
+    // Cherche les valeurs déjà doublées (on ne compte que les valeurs uniques)
+    const hasDouble = Object.values(valueCounts).some(count => count >= 2);
+    if (hasDouble) return 100; // Déjà éliminé
+    // Compte le nombre de valeurs présentes une fois
+    const singles = Object.keys(valueCounts).filter(v => valueCounts[v] === 1);
+    // Parcourt le deck restant pour calculer la proba de piocher un double
+    let total = 0, danger = 0;
+    for (const card of this.gameState.deck) {
+      const value = card.split('_')[0];
+      total++;
+      if (singles.includes(value)) danger++;
+    }
+    if (total === 0) return null;
+    return (danger / total) * 100;
+  }
   @Input() gameState: any;
   @Input() currentUserId: string = '';
   @Input() isMyTurn: boolean = false;

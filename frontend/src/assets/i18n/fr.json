@@ -101,6 +101,7 @@
   "newGame": "Nouvelle partie",
   "waitingForAdminToStart": "En attente que l'admin lance la partie...",
     "kickPlayer": "Retirer ce joueur",
+    "statisticsOption": "Activer les statistiques (afficher la proba d'élimination)",
     "errors": {
       "loadingRooms": "Erreur lors du chargement des rooms",
       "notInRoom": "Vous ne faites pas partie de cette room",
@@ -396,6 +397,13 @@
     "globalAverageRoundsPerGame": "Moyenne rounds/partie",
     "globalTotalFlip7": "Flip 7 totaux",
     "globalMaxScoreInOneRound": "Record absolu (1 round)",
-    "theoreticalMaxScore": "Score Théorique Maximum"
+    "theoreticalMaxScore": "Score Théorique Maximum",
+    "stats": {
+      "info": "Voir mes chances d'élimination",
+      "title": "Statistiques de risque",
+      "eliminationChance": "Proba d'être éliminé par un double : ",
+      "unavailable": "Non disponible",
+      "close": "Fermer"
+    }
   }
 }

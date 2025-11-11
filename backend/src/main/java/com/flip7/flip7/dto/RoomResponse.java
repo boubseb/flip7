@@ -6,6 +6,13 @@ import java.util.List;
 import com.flip7.flip7.entity.Room.RoomStatus;
 
 public class RoomResponse {
+    private boolean statisticsEnabled;
+    public boolean isStatisticsEnabled() {
+        return statisticsEnabled;
+    }
+    public void setStatisticsEnabled(boolean statisticsEnabled) {
+        this.statisticsEnabled = statisticsEnabled;
+    }
     private String id;
     private String adminId;
     private List<String> players; // kept for backward compatibility
