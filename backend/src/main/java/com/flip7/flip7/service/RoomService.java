@@ -58,6 +58,7 @@ public class RoomService {
     public Room joinRoom(String roomId, String password, String playerId) {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+        System.out.println("[JOIN] roomId=" + roomId + " status(BDD)=" + room.getStatus());
         
         if (!passwordEncoder.matches(password, room.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
@@ -124,6 +125,7 @@ public class RoomService {
     public Room startGame(String roomId, String adminId) {
         Room room = roomRepository.findById(roomId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+        System.out.println("[START] roomId=" + roomId + " status(BDD)=" + room.getStatus());
         
         if (!room.getAdminId().equals(adminId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admin can start the game");
@@ -222,7 +224,7 @@ public class RoomService {
         return response;
     }
     
-    private void broadcastRoomUpdate(Room room) {
+    public void broadcastRoomUpdate(Room room) {
         messagingTemplate.convertAndSend(
             "/topic/rooms/" + room.getId(),
             toRoomResponse(room)

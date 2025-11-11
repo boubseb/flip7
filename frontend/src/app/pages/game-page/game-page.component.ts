@@ -198,7 +198,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.showGameOverPopup = false;
         // Rediriger tout le monde vers la salle d'attente (waiting room)
         setTimeout(() => {
-          this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+          // Recharge la room pour avoir le statut à jour
+          this.roomService.getRoom(this.roomId).subscribe({
+            next: (room) => {
+              // Navigue vers la waiting room avec statut à jour
+              this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+            },
+            error: () => {
+              // Navigue quand même si erreur
+              this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+            }
+          });
         }, 500);
         console.log('🚪 Redirection de tous les joueurs vers la salle d\'attente après restart');
       })
@@ -1021,15 +1031,30 @@ export class GamePageComponent implements OnInit, OnDestroy {
    */
     onPlayAgain() {
       console.log('🔄 Play again requested');
-    
+
       if (!this.roomId) {
         console.error('❌ No room ID available');
         return;
       }
-    
-      // Tout joueur peut cliquer sur "Nouvelle partie" dans le popup : rediriger vers la waiting room
+
       this.showGameOverPopup = false;
-      this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+
+      if (this.isAdmin) {
+        // Admin triggers backend reset
+        this.gameService.restartGame(this.roomId).subscribe({
+          next: () => {
+            console.log('✅ Room reset via backend');
+            this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+          },
+          error: (error) => {
+            console.error('❌ Error resetting room:', error);
+            this.showError('Erreur lors de la réinitialisation de la salle');
+          }
+        });
+      } else {
+        // Non-admin: just redirect
+        this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+      }
     }
 
   /**

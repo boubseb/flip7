@@ -26,6 +26,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -1170,6 +1171,7 @@ public class GameService {
      * Redémarre une nouvelle partie dans la même room
      * Sauvegarde la partie actuelle si elle est terminée et crée une nouvelle partie
      */
+    @Transactional
     public void restartGame(String roomId, String userId) {
         // Récupérer la room
         Room room = roomService.getRoom(roomId);
@@ -1224,21 +1226,41 @@ public class GameService {
         activeGames.remove(roomId);
         gameHistoryIds.remove(roomId);
 
-        // Forcer le statut de la room à WAITING pour que tout le monde retourne en salle d'attente
+
+        // Réinitialiser la room comme neuve (sauf admin, mot de passe, maxPlayers)
+        String adminId = room.getAdminId();
+        room.getPlayers().clear();
+        room.getPlayers().add(adminId);
+        room.setTurnIndex(0);
+        room.setGameState(null);
         room.setStatus(Room.RoomStatus.WAITING);
-        roomService.getRoomRepository().save(room);
+        System.out.println("[RESTART] Room reset (avant save): status=" + room.getStatus()
+            + ", players=" + room.getPlayers()
+            + ", turnIndex=" + room.getTurnIndex()
+            + ", gameState=" + room.getGameState());
+
+        Room managedRoom = roomService.getRoomRepository().save(room);
+        System.out.println("[RESTART] Après save: status=" + managedRoom.getStatus()
+            + ", players=" + managedRoom.getPlayers()
+            + ", turnIndex=" + managedRoom.getTurnIndex()
+            + ", gameState=" + managedRoom.getGameState());
+        roomService.getRoomRepository().flush();
+        Room roomAfterSave = roomService.getRoomRepository().findById(roomId).orElse(null);
+        if (roomAfterSave != null) {
+            System.out.println("[RESTART] Après save+flush: room.status=" + roomAfterSave.getStatus()
+                + ", players=" + roomAfterSave.getPlayers()
+                + ", turnIndex=" + roomAfterSave.getTurnIndex()
+                + ", gameState=" + roomAfterSave.getGameState());
+        } else {
+            System.out.println("[RESTART] ERREUR: Room non trouvée après save+flush!");
+        }
+        // Broadcast the updated room status to all clients (so room browser and join logic get the update)
+        roomService.broadcastRoomUpdate(roomAfterSave != null ? roomAfterSave : room);
 
         System.out.println("🔄 Partie redémarrée pour la room: " + roomId);
 
-        // Broadcaster à tous les clients qu'ils doivent retourner en salle d'attente
-        messagingTemplate.convertAndSend(
-            "/topic/rooms/" + roomId + "/game-restarted",
-            Map.of(
-                "message", "Partie réinitialisée - Retour en salle d'attente",
-                "roomStatus", "WAITING"
-            )
-        );
-        System.out.println("🚪 Tous les joueurs doivent retourner en salle d'attente après restart");
+        // (SUPPRIMÉ) Ne pas forcer les joueurs à retourner en salle d'attente après restart
+        // Les joueurs peuvent rester sur la page et cliquer sur "Nouvelle partie" quand ils le souhaitent
     }
     
     /**
