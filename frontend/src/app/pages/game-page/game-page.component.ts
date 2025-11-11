@@ -24,28 +24,60 @@ export class GamePageComponent implements OnInit, OnDestroy {
   showStatsPopup: boolean = false;
 
   /**
-   * Calcule la probabilité d'élimination pour le joueur courant
+   * Calcule la probabilité d'élimination : somme des probabilités de piocher une carte numérotée déjà présente dans la main
    */
   calculateEliminationProbability(): number | null {
-    if (!this.gameState || !this.gameState.players || !this.gameState.deck) return null;
+    if (!this.gameState || !this.gameState.players || !this.gameState.deck) {
+      console.warn('[Proba] gameState/players/deck manquant', {
+        gameState: this.gameState,
+        players: this.gameState?.players,
+        deck: this.gameState?.deck
+      });
+      return null;
+    }
     const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
-    if (!myPlayer || !myPlayer.hand) return null;
-    const valueCounts: { [value: string]: number } = {};
-    for (const card of myPlayer.hand) {
-      const value = card.split('_')[0];
-      valueCounts[value] = (valueCounts[value] || 0) + 1;
+    if (!myPlayer || !myPlayer.hand) {
+      console.warn('[Proba] myPlayer ou hand manquant', { myPlayer });
+      return null;
     }
-    const hasDouble = Object.values(valueCounts).some(count => count >= 2);
-    if (hasDouble) return 100;
-    const singles = Object.keys(valueCounts).filter(v => valueCounts[v] === 1);
-    let total = 0, danger = 0;
-    for (const card of this.gameState.deck) {
-      const value = card.split('_')[0];
-      total++;
-      if (singles.includes(value)) danger++;
+    // On ne considère que les cartes numérotées (pas les actions/modificateurs)
+    const handValues = myPlayer.hand
+      .filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number')
+      .map((card: any) => card.value);
+    if (handValues.length === 0) {
+      console.warn('[Proba] Aucune carte numérotée dans la main', { hand: myPlayer.hand });
     }
-    if (total === 0) return null;
-    return (danger / total) * 100;
+    // Si déjà un doublon, proba = 100
+    const valueCounts: { [value: number]: number } = {};
+    for (const v of handValues) valueCounts[v] = (valueCounts[v] || 0) + 1;
+    if (Object.values(valueCounts).some(count => count >= 2)) {
+      console.info('[Proba] Doublon détecté dans la main, proba=100', { valueCounts });
+      return 100;
+    }
+    // Compte les valeurs déjà dans la main
+    const uniqueValues = Array.from(new Set(handValues));
+    // Compte les occurrences de chaque valeur dans le deck restant
+    const deckValues = this.gameState.deck
+      .filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number')
+      .map((card: any) => card.value);
+    const deckCount: { [value: number]: number } = {};
+    for (const v of deckValues) deckCount[v] = (deckCount[v] || 0) + 1;
+    // Utilise directement remainingCards pour le total
+    const totalDeck = this.gameState.remainingCards;
+    if (!totalDeck || totalDeck === 0) {
+      console.warn('[Proba] totalDeck (remainingCards) nul ou 0', { totalDeck, deck: this.gameState.deck });
+      return null;
+    }
+    // Somme des probabilités d'avoir à nouveau une des valeurs déjà en main
+    let prob = 0;
+    for (const v of uniqueValues) {
+      const key = Number(v);
+      if (deckCount[key]) {
+        prob += deckCount[key] / totalDeck;
+      }
+    }
+    console.info('[Proba] Calcul final', { handValues, uniqueValues, deckCount, totalDeck, prob });
+    return Math.min(prob * 100, 100);
   }
   // Room ID from URL
   roomId: string = '';
