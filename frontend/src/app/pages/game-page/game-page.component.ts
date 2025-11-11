@@ -24,59 +24,58 @@ export class GamePageComponent implements OnInit, OnDestroy {
   showStatsPopup: boolean = false;
 
   /**
-   * Calcule la probabilité d'élimination : somme des probabilités de piocher une carte numérotée déjà présente dans la main
+   * Calcule la probabilité d'élimination : somme des probabilités de piocher une carte numérotée déjà présente dans la main.
+   * Ne dépend que de la main du joueur et des mains visibles, en utilisant la composition initiale du deck (1x0, 1x1, 2x2, ..., 12x12).
+   * Les cartes spéciales sont ignorées.
    */
   calculateEliminationProbability(): number | null {
-    if (!this.gameState || !this.gameState.players || !this.gameState.deck) {
-      console.warn('[Proba] gameState/players/deck manquant', {
-        gameState: this.gameState,
-        players: this.gameState?.players,
-        deck: this.gameState?.deck
-      });
+    if (!this.gameState || !this.gameState.players) {
       return null;
     }
     const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
     if (!myPlayer || !myPlayer.hand) {
-      console.warn('[Proba] myPlayer ou hand manquant', { myPlayer });
       return null;
     }
-    // On ne considère que les cartes numérotées (pas les actions/modificateurs)
+    // Cartes numérotées dans la main du joueur
     const handValues = myPlayer.hand
       .filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number')
       .map((card: any) => card.value);
     if (handValues.length === 0) {
-      console.warn('[Proba] Aucune carte numérotée dans la main', { hand: myPlayer.hand });
+      return null;
     }
     // Si déjà un doublon, proba = 100
     const valueCounts: { [value: number]: number } = {};
     for (const v of handValues) valueCounts[v] = (valueCounts[v] || 0) + 1;
     if (Object.values(valueCounts).some(count => count >= 2)) {
-      console.info('[Proba] Doublon détecté dans la main, proba=100', { valueCounts });
       return 100;
     }
-    // Compte les valeurs déjà dans la main
-    const uniqueValues = Array.from(new Set(handValues));
-    // Compte les occurrences de chaque valeur dans le deck restant
-    const deckValues = this.gameState.deck
-      .filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number')
-      .map((card: any) => card.value);
-    const deckCount: { [value: number]: number } = {};
-    for (const v of deckValues) deckCount[v] = (deckCount[v] || 0) + 1;
-    // Utilise directement remainingCards pour le total
-    const totalDeck = this.gameState.remainingCards;
-    if (!totalDeck || totalDeck === 0) {
-      console.warn('[Proba] totalDeck (remainingCards) nul ou 0', { totalDeck, deck: this.gameState.deck });
+    // Deck initial : 1x0, 1x1, 2x2, ..., 12x12
+    const initialDeck: { [value: number]: number } = {};
+    for (let v = 0; v <= 12; v++) {
+      initialDeck[v] = (v === 0 || v === 1) ? 1 : v;
+    }
+    // Compte les cartes numérotées visibles dans toutes les mains
+    const allHands = this.gameState.players.flatMap((p: any) => Array.isArray(p.hand) ? p.hand : []);
+    const usedCount: { [value: number]: number } = {};
+    allHands.forEach((card: any) => {
+      if (card.cardType === 'NUMBER' && typeof card.value === 'number') {
+        usedCount[card.value] = (usedCount[card.value] || 0) + 1;
+      }
+    });
+    // Calcul de la proba d'élimination :
+    // Pour chaque valeur unique de la main, on regarde combien il en reste dans le deck
+    // Le dénominateur est le nombre total de cartes restantes à piocher (NUMBER + spéciales/bonus)
+    const totalRemaining = typeof this.gameState.remainingCards === 'number' ? this.gameState.remainingCards : 0;
+    if (totalRemaining === 0) {
       return null;
     }
-    // Somme des probabilités d'avoir à nouveau une des valeurs déjà en main
-    let prob = 0;
-    for (const v of uniqueValues) {
-      const key = Number(v);
-      if (deckCount[key]) {
-        prob += deckCount[key] / totalDeck;
-      }
+    let eliminationNumerator = 0;
+    for (const v of new Set(handValues)) {
+      const value = Number(v);
+      const remaining = Math.max(0, initialDeck[value] - (usedCount[value] || 0));
+      eliminationNumerator += remaining;
     }
-    console.info('[Proba] Calcul final', { handValues, uniqueValues, deckCount, totalDeck, prob });
+    const prob = eliminationNumerator / totalRemaining;
     return Math.min(prob * 100, 100);
   }
   // Room ID from URL
