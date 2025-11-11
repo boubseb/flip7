@@ -182,14 +182,25 @@ export class GamePageComponent implements OnInit, OnDestroy {
       })
     );
 
+    // Subscribe to game over
+    this.subscriptions.push(
+      this.wsService.gameOver$.subscribe((data: any) => {
+        console.log('🏁 Game over event received:', data);
+        this.prepareGameOverData(data);
+      })
+    );
+
     // Subscribe to game restarted
     this.subscriptions.push(
       this.wsService.gameRestarted$.subscribe(data => {
         console.log('🔄 Game restarted event received:', data);
-        // Fermer le popup - la nouvelle partie va démarrer automatiquement
+        // Fermer le popup
         this.showGameOverPopup = false;
-        // Ne PAS rediriger - attendre que gameStarts$ soit déclenché automatiquement
-        console.log('⏳ En attente du démarrage automatique de la nouvelle partie...');
+        // Rediriger tout le monde vers la salle d'attente (waiting room)
+        setTimeout(() => {
+          this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+        }, 500);
+        console.log('🚪 Redirection de tous les joueurs vers la salle d\'attente après restart');
       })
     );
     
@@ -980,12 +991,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Prépare les données pour la popup de fin de partie
    */
   prepareGameOverData(gameState: any): void {
-    if (!gameState.players || gameState.players.length === 0) {
+    if (!gameState.finalScores || gameState.finalScores.length === 0) {
       return;
     }
 
     // Trier les joueurs par score total décroissant
-    const sortedPlayers = [...gameState.players].sort((a, b) => b.totalScore - a.totalScore);
+    const sortedPlayers = [...gameState.finalScores].sort((a, b) => b.totalScore - a.totalScore);
     
     // Créer le classement
     this.gameOverRankings = sortedPlayers.map((player, index) => ({
@@ -1008,32 +1019,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
   /**
    * Gère le clic sur "Rejouer"
    */
-  onPlayAgain(): void {
-    console.log('🔄 Play again requested');
+    onPlayAgain() {
+      console.log('🔄 Play again requested');
     
-    if (!this.roomId) {
-      console.error('❌ No room ID available');
-      return;
-    }
-    
-    // Appeler le backend pour redémarrer la partie
-    this.gameService.restartGame(this.roomId).subscribe({
-      next: (response) => {
-        console.log('✅ Game restarted:', response);
-        this.showGameOverPopup = false;
-        // Le WebSocket va notifier tous les joueurs que la partie a redémarré
-      },
-      error: (error) => {
-        console.error('❌ Error restarting game:', error);
-        // Afficher un message d'erreur si nécessaire
-        if (error.error?.error === 'Only the room admin can restart the game') {
-          alert('Seul l\'admin de la salle peut relancer une partie');
-        } else {
-          alert('Erreur lors du redémarrage de la partie');
-        }
+      if (!this.roomId) {
+        console.error('❌ No room ID available');
+        return;
       }
-    });
-  }
+    
+      // Tout joueur peut cliquer sur "Nouvelle partie" dans le popup : rediriger vers la waiting room
+      this.showGameOverPopup = false;
+      this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+    }
 
   /**
    * Gère le clic sur "Quitter la salle"

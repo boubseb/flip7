@@ -97,6 +97,8 @@
     "copyRoomId": "Copy ID",
     "shareRoom": "Share",
     "minPlayers": "Minimum {{min}} players required",
+  "newGame": "New game",
+  "waitingForAdminToStart": "Waiting for the admin to start the game...",
     "kickPlayer": "Kick this player",
     "errors": {
       "loadingRooms": "Error loading rooms",
@@ -157,7 +159,7 @@
     "LEAVE_ROOM": "Leave Room",
     "BACK_TO_HOME": "Back to Home",
     "HIDE_TEMPORARILY": "Hide Temporarily",
-    "CLICK_TO_SHOW": "Click to show"
+  "CLICK_TO_SHOW": "Click to show"
   },
   "game": {
     "yourTurn": "It's your turn!",

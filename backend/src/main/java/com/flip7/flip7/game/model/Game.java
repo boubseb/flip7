@@ -521,6 +521,18 @@ public class Game {
             int remaining = cardsToDraw - i - 1;
             System.out.println("   Carte " + (i+1) + "/" + cardsToDraw + ": " + card.getDisplayName() + " (restantes: " + remaining + ")");
             System.out.println("   Score actuel: " + targetPlayer.getRoundScore());
+
+            // Vérifier Flip7 après chaque pioche forcée
+            if (targetPlayer.hasFlip7()) {
+                targetPlayer.setStatus(PlayerStatus.FLIP7_STOP);
+                System.out.println("🎯 FLIP7 ! " + targetPlayer.getUsername() + " a 7 cartes numérotées différentes pendant un +3 !");
+                System.out.println("   Le round s'arrête pour tous. Bonus de +15 points pour " + targetPlayer.getUsername());
+                System.out.println("   📞 Calling endRound()...");
+                endRound();
+                System.out.println("   ✅ endRound() completed. GameState is now: " + gameState);
+                targetPlayer.setRemainingForcedDraws(0);
+                break;
+            }
             
             // Si c'est une carte spéciale (Stop ou DrawThree), elle doit être résolue immédiatement
             if (card instanceof SpecialCard) {

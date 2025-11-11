@@ -49,7 +49,6 @@
         </div>
       </div>
 
-      <!-- Boutons d'action -->
       <div class="actions-section">
         <button 
           class="modal-button hide-button"
@@ -58,14 +57,13 @@
           <span>{{ 'GAME.HIDE_TEMPORARILY' | translate }}</span>
         </button>
         
-        @if (isAdmin) {
-          <button 
-            class="modal-button primary"
-            (click)="onPlayAgain()">
-            <span class="button-icon">🔄</span>
-            <span>{{ 'GAME.PLAY_AGAIN' | translate }}</span>
-          </button>
-        }
+
+        <button 
+          class="modal-button primary"
+          (click)="onPlayAgain()">
+          <span class="button-icon">🔄</span>
+          <span>{{ 'room.newGame' | translate }}</span>
+        </button>
         
         <button 
           class="modal-button secondary"

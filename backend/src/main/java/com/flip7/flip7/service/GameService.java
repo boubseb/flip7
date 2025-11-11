@@ -522,8 +522,10 @@ public class GameService {
      * Broadcaster la fin de la partie
      */
     private void broadcastGameOver(String roomId, Game game) {
-        GameOverDTO dto = createGameOverDTO(game);
-        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game-over", dto);
+    GameOverDTO dto = createGameOverDTO(game);
+    // Ajout du flag waitingForAdmin pour le front
+    dto.setWaitingForAdmin(true);
+    messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game-over", dto);
     }
 
     /**
@@ -798,6 +800,7 @@ public class GameService {
         private String winnerName;
         private int winningScore;
         private java.util.List<FinalPlayerScore> finalScores = new java.util.ArrayList<>();
+    private boolean waitingForAdmin;
 
         public String getWinnerId() { return winnerId; }
         public void setWinnerId(String winnerId) { this.winnerId = winnerId; }
@@ -807,6 +810,8 @@ public class GameService {
         public void setWinningScore(int winningScore) { this.winningScore = winningScore; }
         public java.util.List<FinalPlayerScore> getFinalScores() { return finalScores; }
         public void addFinalScore(FinalPlayerScore score) { this.finalScores.add(score); }
+    public boolean isWaitingForAdmin() { return waitingForAdmin; }
+    public void setWaitingForAdmin(boolean waitingForAdmin) { this.waitingForAdmin = waitingForAdmin; }
     }
 
     public static class FinalPlayerScore {
@@ -1218,31 +1223,22 @@ public class GameService {
         // Supprimer l'ancienne partie de la mémoire
         activeGames.remove(roomId);
         gameHistoryIds.remove(roomId);
-        
-        // Réinitialiser le statut de la room à WAITING temporairement
+
+        // Forcer le statut de la room à WAITING pour que tout le monde retourne en salle d'attente
         room.setStatus(Room.RoomStatus.WAITING);
         roomService.getRoomRepository().save(room);
-        
+
         System.out.println("🔄 Partie redémarrée pour la room: " + roomId);
-        
-        // Démarrer automatiquement une nouvelle partie
-        System.out.println("🎮 Démarrage automatique de la nouvelle partie...");
-        try {
-            Game newGame = initializeGame(roomId);
-            newGame.startGame();
-            broadcastGameState(roomId, newGame);
-            System.out.println("✅ Nouvelle partie démarrée automatiquement");
-        } catch (Exception e) {
-            System.err.println("❌ Erreur lors du démarrage automatique: " + e.getMessage());
-            // En cas d'erreur, broadcaster un message de fallback
-            messagingTemplate.convertAndSend(
-                "/topic/rooms/" + roomId + "/game-restarted",
-                Map.of(
-                    "message", "Partie réinitialisée - Veuillez démarrer manuellement",
-                    "roomStatus", "WAITING"
-                )
-            );
-        }
+
+        // Broadcaster à tous les clients qu'ils doivent retourner en salle d'attente
+        messagingTemplate.convertAndSend(
+            "/topic/rooms/" + roomId + "/game-restarted",
+            Map.of(
+                "message", "Partie réinitialisée - Retour en salle d'attente",
+                "roomStatus", "WAITING"
+            )
+        );
+        System.out.println("🚪 Tous les joueurs doivent retourner en salle d'attente après restart");
     }
     
     /**

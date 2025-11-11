@@ -98,6 +98,8 @@
     "copyRoomId": "Copier l'ID",
     "shareRoom": "Partager",
     "minPlayers": "Minimum {{min}} joueurs requis",
+  "newGame": "Nouvelle partie",
+  "waitingForAdminToStart": "En attente que l'admin lance la partie...",
     "kickPlayer": "Retirer ce joueur",
     "errors": {
       "loadingRooms": "Erreur lors du chargement des rooms",
@@ -158,7 +160,7 @@
     "LEAVE_ROOM": "Quitter la salle",
     "BACK_TO_HOME": "Retour à l'accueil",
     "HIDE_TEMPORARILY": "Masquer temporairement",
-    "CLICK_TO_SHOW": "Cliquer pour afficher"
+  "CLICK_TO_SHOW": "Cliquer pour afficher"
   },
   "game": {
     "yourTurn": "C'est votre tour !",

@@ -189,8 +189,8 @@ export class WebSocketService {
     const gameOverSub = this.stompClient.subscribe(
       `/topic/rooms/${roomId}/game-over`,
       (message: IMessage) => {
-        const data: GameOverData = JSON.parse(message.body);
-        this.gameOver.next(data);
+  const data: GameOverData = JSON.parse(message.body);
+  this.gameOver.next(data);
       }
     );
     this.subscriptions.set(`game-over-${roomId}`, gameOverSub);

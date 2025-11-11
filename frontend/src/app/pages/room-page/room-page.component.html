@@ -112,32 +112,21 @@
         </div>
       </div>
 
-      <!-- Admin: always show start button if >= 2 players -->
-      @if (isAdmin) {
-        <button 
-          class="btn-start-game" 
-          [disabled]="currentRoom.players.length < 2"
-          (click)="startGame()">
-          @if (currentRoom.players.length >= 2) {
-            <span>🎮 {{ 'room.startGame' | translate }}</span>
-          }
-          @if (currentRoom.players.length < 2) {
-            <span>⏳ {{ 'room.waitingForPlayers' | translate }}</span>
-          }
-        </button>
-      }
-
-      <!-- Non-admin: always show waiting message -->
-      @if (!isAdmin) {
-        <p class="waiting-admin">
-          @if (currentRoom.players.length < 2) {
-            <span>⏳ {{ 'room.waitingForMorePlayers' | translate }}</span>
-          }
-          @if (currentRoom.players.length >= 2) {
-            <span>{{ 'room.waitingForAdmin' | translate }}</span>
-          }
-        </p>
-      }
+      <!-- Bouton unique pour tous, texte et état selon admin ou non -->
+      <button 
+        class="btn-start-game" 
+        [disabled]="currentRoom.players.length < 2 || !isAdmin"
+        (click)="isAdmin ? startGame() : null">
+        <ng-container *ngIf="currentRoom.players.length < 2">
+          <span>⏳ {{ 'room.waitingForPlayers' | translate }}</span>
+        </ng-container>
+        <ng-container *ngIf="currentRoom.players.length >= 2 && isAdmin">
+          <span>🎮 {{ 'room.startGame' | translate }}</span>
+        </ng-container>
+        <ng-container *ngIf="currentRoom.players.length >= 2 && !isAdmin">
+          <span>⏳ {{ 'room.waitingForAdminToStart' | translate }}</span>
+        </ng-container>
+      </button>
     </div>
   }
 </div>

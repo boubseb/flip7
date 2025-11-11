@@ -20,6 +20,7 @@ export class GameOverPopupComponent {
   @Input() rankings: PlayerRanking[] = [];
   @Input() winnerName: string = '';
   @Input() isAdmin: boolean = false; // NOUVEAU : pour vérifier si l'utilisateur est admin
+
   @Output() playAgain = new EventEmitter<void>();
   @Output() leaveRoom = new EventEmitter<void>();
   @Output() hideTemporarily = new EventEmitter<void>();
