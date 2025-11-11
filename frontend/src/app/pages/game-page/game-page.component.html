@@ -94,11 +94,21 @@
             <span>{{ 'game.hit' | translate }}</span>
           </button>
       
-           @if(gameState?.statisticsEnabled) {
-          <button class="btn btn-info" (click)="showStatsPopup = true" style="margin-left: 8px;">
-            <span class="icon">ℹ️</span>
-          </button>
-        }
+          @if(gameState?.statisticsEnabled) {
+            <span class="survival-probability">
+              <ng-container *ngIf="hasLifeCard(); else noLife">
+                🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: 100 } }}
+              </ng-container>
+              <ng-template #noLife>
+                <ng-container *ngIf="calculateEliminationProbability() as proba; else alwaysSafe">
+                  🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: (proba | number:'1.0-1') } }}
+                </ng-container>
+                <ng-template #alwaysSafe>
+                  🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: 100 } }}
+                </ng-template>
+              </ng-template>
+            </span>
+          }
           <button 
             class="btn btn-stop"
             [disabled]="!isMyTurn || isPlayerEliminated() || !hasCards()"

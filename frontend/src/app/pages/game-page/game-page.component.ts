@@ -1,3 +1,4 @@
+// ...existing code...
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -76,7 +77,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
       eliminationNumerator += remaining;
     }
     const prob = eliminationNumerator / totalRemaining;
-    return Math.min(prob * 100, 100);
+    return Math.min((1-prob) * 100, 100);
+  }
+
+  /**
+   * Retourne true si le joueur courant a une carte vie dans sa main
+   */
+  hasLifeCard(): boolean {
+    if (!this.gameState?.players || !this.currentUserId) return false;
+    const me = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    if (!me || !Array.isArray(me.hand)) return false;
+    // On ne compte que les cartes vie non utilisées (cancelled !== true)
+    return me.hand.some((card: any) => card.cardType === 'LIFE' && !card.cancelled);
   }
   // Room ID from URL
   roomId: string = '';

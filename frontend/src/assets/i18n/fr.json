@@ -164,7 +164,8 @@
   "CLICK_TO_SHOW": "Cliquer pour afficher"
   },
   "game": {
-        "statsPopup": {
+      "statsPopup": {
+  "survivalChance": "{{value}}% survie",
       "title": "Probabilité d'élimination",
       "desc": "Cette estimation est basée sur les cartes visibles et le deck restant.",
       "close": "Fermer",

@@ -1,4 +1,20 @@
+
 @use "../../../import" as *;
+// Style pour la proba de survie à côté du bouton piocher
+.survival-probability {
+  display: inline-block;
+  margin-left: 14px;
+  padding: 4px 14px;
+  border-radius: 18px;
+  background: rgba(30, 30, 40, 0.75);
+  color: #fff;
+  font-size: 1.18em;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  vertical-align: middle;
+  user-select: none;
+}
 
 .game-page-container {
     display: flex;
