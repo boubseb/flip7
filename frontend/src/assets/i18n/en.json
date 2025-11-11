@@ -395,7 +395,6 @@
     "globalAverageRoundsPerGame": "Avg rounds/game",
     "globalTotalFlip7": "Total Flip 7",
     "globalMaxScoreInOneRound": "Absolute record (1 round)",
-    "theoreticalMaxScore": "Theoretical Max Score",
-    "theoreticalDescription": "+2 +4 +6 +8 +10 + (12+11+10+9+8+7+6) with x2 card"
+    "theoreticalMaxScore": "Theoretical Max Score"
   }
 }

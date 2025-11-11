@@ -20,125 +20,86 @@
     <div class="statistics-container">
       <!-- Statistiques personnelles -->
       <div class="stats-section">
-  <h2 class="section-title">📈 {{ 'home.statistics' | translate }}</h2>
-        
+        <h2 class="section-title">📈 {{ 'home.statistics' | translate }}</h2>
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">🎮</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.totalGames }}</div>
-              <div class="stat-label">{{ 'profile.gamesPlayed' | translate }}</div>
-            </div>
+            <span class="stat-icon">🎮</span>
+            <span class="stat-label">{{ 'profile.gamesPlayed' | translate }} : </span>
+            <span class="stat-value">{{ statistics.totalGames }}</span>
           </div>
-
           <div class="stat-card">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.completedGames }}</div>
-              <div class="stat-label">{{ 'statistics.completedGames' | translate }}</div>
-            </div>
+            <span class="stat-icon">✅</span>
+            <span class="stat-label">{{ 'statistics.completedGames' | translate }} : </span>
+            <span class="stat-value">{{ statistics.completedGames }}</span>
           </div>
-
           <div class="stat-card highlight">
-            <div class="stat-icon">🏆</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.victories }}</div>
-              <div class="stat-label">{{ 'profile.gamesWon' | translate }}</div>
-            </div>
+            <span class="stat-icon">🏆</span>
+            <span class="stat-label">{{ 'profile.gamesWon' | translate }} : </span>
+            <span class="stat-value">{{ statistics.victories }}</span>
           </div>
-
           <div class="stat-card highlight">
-            <div class="stat-icon">🎯</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.totalFlip7 }}</div>
-              <div class="stat-label">{{ 'statistics.flip7' | translate }}</div>
-            </div>
+            <span class="stat-icon">🎯</span>
+            <span class="stat-label">{{ 'statistics.flip7' | translate }} : </span>
+            <span class="stat-value">{{ statistics.totalFlip7 }}</span>
           </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">🔢</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.totalRounds }}</div>
-              <div class="stat-label">{{ 'statistics.roundsPlayed' | translate }}</div>
-            </div>
+            <span class="stat-icon">🔢</span>
+            <span class="stat-label">{{ 'statistics.roundsPlayed' | translate }} : </span>
+            <span class="stat-value">{{ statistics.totalRounds }}</span>
           </div>
-
           <div class="stat-card danger">
-            <div class="stat-icon">💥</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.roundsEliminatedByDouble }}</div>
-              <div class="stat-label">{{ 'statistics.eliminatedByDouble' | translate }}</div>
-            </div>
+            <span class="stat-icon">💥</span>
+            <span class="stat-label">{{ 'statistics.eliminatedByDouble' | translate }} : </span>
+            <span class="stat-value">{{ statistics.roundsEliminatedByDouble }}</span>
           </div>
-
           <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.maxScoreInOneRound }}</div>
-              <div class="stat-label">{{ 'statistics.maxScoreInOneRound' | translate }}</div>
-            </div>
+            <span class="stat-icon">⭐</span>
+            <span class="stat-label">{{ 'statistics.maxScoreInOneRound' | translate }} : </span>
+            <span class="stat-value">{{ statistics.maxScoreInOneRound }}</span>
           </div>
-
           <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ formatNumber(statistics.averagePointsPerRound) }}</div>
-              <div class="stat-label">{{ 'statistics.averagePointsPerRound' | translate }}</div>
-            </div>
+            <span class="stat-icon">📊</span>
+            <span class="stat-label">{{ 'statistics.averagePointsPerRound' | translate }} : </span>
+            <span class="stat-value">{{ formatNumber(statistics.averagePointsPerRound) }}</span>
           </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">📈</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ formatNumber(statistics.averagePointsPerScoringRound) }}</div>
-              <div class="stat-label">{{ 'statistics.averagePointsPerScoringRound' | translate }}</div>
-            </div>
+            <span class="stat-icon">📈</span>
+            <span class="stat-label">{{ 'statistics.averagePointsPerScoringRound' | translate }} : </span>
+            <span class="stat-value">{{ formatNumber(statistics.averagePointsPerScoringRound) }}</span>
           </div>
-
           <div class="stat-card danger">
-            <div class="stat-icon">🛑</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.stopCardsReceived }}</div>
-              <div class="stat-label">{{ 'statistics.stopCardsReceived' | translate }}</div>
-            </div>
+            <span class="stat-icon">🛑</span>
+            <span class="stat-label">{{ 'statistics.stopCardsReceived' | translate }} : </span>
+            <span class="stat-value">{{ statistics.stopCardsReceived }}</span>
           </div>
-
           <div class="stat-card success">
-            <div class="stat-icon">💚</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.lifeCardsObtained }}</div>
-              <div class="stat-label">{{ 'statistics.lifeCardsObtained' | translate }}</div>
-            </div>
+            <span class="stat-icon">💚</span>
+            <span class="stat-label">{{ 'statistics.lifeCardsObtained' | translate }} : </span>
+            <span class="stat-value">{{ statistics.lifeCardsObtained }}</span>
           </div>
-
           <div class="stat-card">
-            <div class="stat-icon">➕</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.drawThreeReceived }}</div>
-              <div class="stat-label">{{ 'statistics.drawThreeReceived' | translate }}</div>
-            </div>
+            <span class="stat-icon">➕</span>
+            <span class="stat-label">{{ 'statistics.drawThreeReceived' | translate }} : </span>
+            <span class="stat-value">{{ statistics.drawThreeReceived }}</span>
           </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card success">
-            <div class="stat-icon">✨</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.drawThreeCompleted }}</div>
-              <div class="stat-label">{{ 'statistics.drawThreeCompleted' | translate }}</div>
-            </div>
+            <span class="stat-icon">✨</span>
+            <span class="stat-label">{{ 'statistics.drawThreeCompleted' | translate }} : </span>
+            <span class="stat-value">{{ statistics.drawThreeCompleted }}</span>
           </div>
-
           <div class="stat-card danger">
-            <div class="stat-icon">💀</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.drawThreeWithElimination }}</div>
-              <div class="stat-label">{{ 'statistics.drawThreeWithElimination' | translate }}</div>
-            </div>
+            <span class="stat-icon">💀</span>
+            <span class="stat-label">{{ 'statistics.drawThreeWithElimination' | translate }} : </span>
+            <span class="stat-value">{{ statistics.drawThreeWithElimination }}</span>
           </div>
         </div>
       </div>
@@ -146,54 +107,34 @@
       <!-- Statistiques globales -->
       <div class="stats-section global">
         <h2 class="section-title">🌍 {{ 'statistics.globalStats' | translate }}</h2>
-        
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">🎮</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.globalCompletedGames }}</div>
-              <div class="stat-label">{{ 'statistics.globalCompletedGames' | translate }}</div>
-            </div>
+            <span class="stat-icon">🎮</span>
+            <span class="stat-label">{{ 'statistics.globalCompletedGames' | translate }} : </span>
+            <span class="stat-value">{{ statistics.globalCompletedGames }}</span>
           </div>
-
           <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ formatNumber(statistics.globalAverageRoundsPerGame) }}</div>
-              <div class="stat-label">{{ 'statistics.globalAverageRoundsPerGame' | translate }}</div>
-            </div>
+            <span class="stat-icon">📊</span>
+            <span class="stat-label">{{ 'statistics.globalAverageRoundsPerGame' | translate }} : </span>
+            <span class="stat-value">{{ formatNumber(statistics.globalAverageRoundsPerGame) }}</span>
           </div>
-
           <div class="stat-card highlight">
-            <div class="stat-icon">🎯</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.globalTotalFlip7 }}</div>
-              <div class="stat-label">{{ 'statistics.globalTotalFlip7' | translate }}</div>
-            </div>
+            <span class="stat-icon">🎯</span>
+            <span class="stat-label">{{ 'statistics.globalTotalFlip7' | translate }} : </span>
+            <span class="stat-value">{{ statistics.globalTotalFlip7 }}</span>
           </div>
-
           <div class="stat-card">
-            <div class="stat-icon">🔥</div>
-            <div class="stat-content">
-              <div class="stat-value">{{ statistics.globalMaxScoreInOneRound }}</div>
-              <div class="stat-label">{{ 'statistics.globalMaxScoreInOneRound' | translate }}</div>
-            </div>
+            <span class="stat-icon">🔥</span>
+            <span class="stat-label">{{ 'statistics.globalMaxScoreInOneRound' | translate }} : </span>
+            <span class="stat-value">{{ statistics.globalMaxScoreInOneRound }}</span>
           </div>
         </div>
-
-        <div class="theoretical-max">
-          <div class="theoretical-card">
-            <div class="theoretical-icon">🌟</div>
-            <div class="theoretical-content">
-              <div class="theoretical-title">{{ 'statistics.theoreticalMaxScore' | translate }}</div>
-              <div class="theoretical-value">{{ statistics.theoreticalMaxScore }}</div>
-              <div class="theoretical-description">
-                {{ 'statistics.theoreticalDescription' | translate }}
-              </div>
-            </div>
+        <div class="stat-card">
+          <span class="stat-icon">🌟</span>
+            <span class="stat-label">{{ 'statistics.theoreticalMaxScore' | translate }} : </span>
+            <span class="stat-value">{{ statistics.theoreticalMaxScore }}</span>
           </div>
         </div>
-      </div>
     </div>
   }
-</div>
+
