@@ -1,3 +1,5 @@
+// ...existing code...
+
 package com.flip7.flip7.entity;
 
 import java.time.LocalDateTime;
@@ -19,6 +21,16 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "rooms")
 public class Room {
+    @jakarta.persistence.Transient
+    private List<String> previousPlayers = new ArrayList<>();
+
+    public List<String> getPreviousPlayers() {
+        return previousPlayers;
+    }
+
+    public void setPreviousPlayers(List<String> previousPlayers) {
+        this.previousPlayers = previousPlayers;
+    }
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

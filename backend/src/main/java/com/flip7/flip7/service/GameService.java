@@ -1226,6 +1226,10 @@ public class GameService {
         activeGames.remove(roomId);
         gameHistoryIds.remove(roomId);
 
+        // Stocker temporairement les anciens joueurs (hors admin) pour rejoin sans mot de passe
+        List<String> previousPlayers = new java.util.ArrayList<>(room.getPlayers());
+        previousPlayers.remove(room.getAdminId());
+        room.setPreviousPlayers(previousPlayers);
 
         // Réinitialiser la room comme neuve (sauf admin, mot de passe, maxPlayers)
         String adminId = room.getAdminId();
@@ -1237,7 +1241,8 @@ public class GameService {
         System.out.println("[RESTART] Room reset (avant save): status=" + room.getStatus()
             + ", players=" + room.getPlayers()
             + ", turnIndex=" + room.getTurnIndex()
-            + ", gameState=" + room.getGameState());
+            + ", gameState=" + room.getGameState()
+            + ", previousPlayers=" + room.getPreviousPlayers());
 
         Room managedRoom = roomService.getRoomRepository().save(room);
         System.out.println("[RESTART] Après save: status=" + managedRoom.getStatus()

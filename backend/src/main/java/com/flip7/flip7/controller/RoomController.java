@@ -1,3 +1,4 @@
+// ...existing code...
 package com.flip7.flip7.controller;
 
 import java.util.HashMap;
@@ -26,6 +27,14 @@ import com.flip7.flip7.service.RoomService;
 @RestController
 @RequestMapping("/api/rooms")
 public class RoomController {
+    @PostMapping("/{roomId}/rejoin-after-restart")
+    public ResponseEntity<RoomResponse> rejoinAfterRestart(
+            @PathVariable String roomId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = extractUserIdFromAuth(authHeader);
+        Room room = roomService.rejoinAfterRestart(roomId, userId);
+        return ResponseEntity.ok(roomService.toRoomResponse(room));
+    }
     
     @Autowired
     private RoomService roomService;

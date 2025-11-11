@@ -16,6 +16,18 @@ export class RoomService {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
+
+  /**
+   * Rejoin a room after restart without password (for previous players)
+   */
+  rejoinAfterRestart(roomId: string): Observable<Room> {
+    return this.http.post<any>(
+      `${this.apiUrl}/${roomId}/rejoin-after-restart`,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(map(room => this.enrichRoom(room)));
+  }
+
   // Helper to add currentPlayers to Room objects
   private enrichRoom(room: any): Room {
     return {

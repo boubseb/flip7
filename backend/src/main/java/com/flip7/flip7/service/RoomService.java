@@ -1,3 +1,4 @@
+// ...existing code...
 package com.flip7.flip7.service;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,30 @@ import com.flip7.flip7.repository.UserRepository;
 
 @Service
 public class RoomService {
+    /**
+     * Permet à un ancien joueur de rejoindre la room après un restart sans mot de passe
+     */
+    public Room rejoinAfterRestart(String roomId, String playerId) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+        // Vérifier si le joueur est dans previousPlayers
+        if (room.getPlayers().contains(playerId)) {
+            // Déjà dans la room (reconnexion)
+            return room;
+        }
+        List<String> previousPlayers = room.getPreviousPlayers();
+        if (previousPlayers == null || !previousPlayers.contains(playerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to rejoin without password");
+        }
+        // Ajouter le joueur à la room
+        room.getPlayers().add(playerId);
+        // Retirer le joueur de previousPlayers
+        previousPlayers.remove(playerId);
+        room.setPreviousPlayers(previousPlayers);
+        room = roomRepository.save(room);
+        broadcastRoomUpdate(room);
+        return room;
+    }
     
     @Autowired
     private RoomRepository roomRepository;
