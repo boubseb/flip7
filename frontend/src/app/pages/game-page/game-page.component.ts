@@ -10,15 +10,43 @@ import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
 import { PlayerSelectorComponent } from '../../components/player-selector/player-selector.component';
 import { GameOverPopupComponent, PlayerRanking } from '../../components/game-over-popup/game-over-popup.component';
+import { StatsPopupComponent } from './components/stats-popup/stats-popup.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-game-page',
-  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, GameOverPopupComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, PlayersBoardComponent, PlayerSelectorComponent, GameOverPopupComponent, StatsPopupComponent, TranslateModule],
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
 export class GamePageComponent implements OnInit, OnDestroy {
+  // Popup statistiques
+  showStatsPopup: boolean = false;
+
+  /**
+   * Calcule la probabilité d'élimination pour le joueur courant
+   */
+  calculateEliminationProbability(): number | null {
+    if (!this.gameState || !this.gameState.players || !this.gameState.deck) return null;
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    if (!myPlayer || !myPlayer.hand) return null;
+    const valueCounts: { [value: string]: number } = {};
+    for (const card of myPlayer.hand) {
+      const value = card.split('_')[0];
+      valueCounts[value] = (valueCounts[value] || 0) + 1;
+    }
+    const hasDouble = Object.values(valueCounts).some(count => count >= 2);
+    if (hasDouble) return 100;
+    const singles = Object.keys(valueCounts).filter(v => valueCounts[v] === 1);
+    let total = 0, danger = 0;
+    for (const card of this.gameState.deck) {
+      const value = card.split('_')[0];
+      total++;
+      if (singles.includes(value)) danger++;
+    }
+    if (total === 0) return null;
+    return (danger / total) * 100;
+  }
   // Room ID from URL
   roomId: string = '';
   
@@ -165,6 +193,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.gameService.getGameState(this.roomId).subscribe({
           next: (gameState) => {
             console.log('✅ Initial game state received:', gameState);
+            console.log('🔎 statisticsEnabled:', gameState.statisticsEnabled);
             this.gameState = gameState;
             if (gameState.players && gameState.players.length > 0) {
               gameState.players.forEach((p: any) => {

@@ -1,0 +1,10 @@
+<div class="stats-popup-overlay" (click)="close.emit()">
+  <div class="stats-popup-content" (click)="$event.stopPropagation()">
+    <h3>Probabilité d'élimination</h3>
+    <div style="font-size: 2em; font-weight: bold; margin: 12px 0;">
+      {{ probability !== null ? formatProbability(probability) + ' %' : 'N/A' }}
+    </div>
+    <div style="font-size: 0.95em; color: #666;">Cette estimation est basée sur les cartes visibles et le deck restant.</div>
+    <button class="btn btn-close" (click)="close.emit()" style="margin-top: 16px;">Fermer</button>
+  </div>
+</div>

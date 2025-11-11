@@ -93,6 +93,12 @@
             <span class="icon">🎴</span>
             <span>{{ 'game.hit' | translate }}</span>
           </button>
+      
+           @if(gameState?.statisticsEnabled) {
+          <button class="btn btn-info" (click)="showStatsPopup = true" style="margin-left: 8px;">
+            <span class="icon">ℹ️</span>
+          </button>
+        }
           <button 
             class="btn btn-stop"
             [disabled]="!isMyTurn || isPlayerEliminated() || !hasCards()"
@@ -101,6 +107,9 @@
             <span class="icon">✋</span>
             <span>{{ 'game.stop' | translate }}</span>
           </button>
+
+          <!-- Popup statistiques -->
+         
         }
       </div>
     </div>
@@ -134,6 +143,14 @@
   (onPlayerSelected)="assignDrawThreeToPlayer($event)"
   (onCancel)="closeDrawThreeModal()">
 </app-player-selector>
+
+
+@if (showStatsPopup) {
+  <app-stats-popup
+    [probability]="calculateEliminationProbability()"
+    (close)="showStatsPopup = false">
+  </app-stats-popup>
+}
 
 <!-- Game Over Popup -->
 @if (showGameOverPopup) {

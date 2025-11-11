@@ -534,6 +534,9 @@ public class GameService {
      * PUBLIC pour être accessible depuis GameController
      */
     public GameStateDTO createGameStateDTO(Game game) {
+    // Récupérer la room pour l'option statistiques
+    Room room = roomService.getRoom(game.getRoomId());
+    boolean statisticsEnabled = room != null && room.isStatisticsEnabled();
         System.out.println("\n🎮 === CREATE GAME STATE DTO ===");
         System.out.println("   Round: " + game.getRoundNumber());
         System.out.println("   Game State: " + game.getGameState());
@@ -544,6 +547,7 @@ public class GameService {
         dto.setRoundNumber(game.getRoundNumber());
         dto.setCurrentPlayerIndex(game.getCurrentPlayerIndex());
         dto.setRemainingCards(game.getRemainingCards());
+    dto.setStatisticsEnabled(statisticsEnabled);
         
         // Convertir les joueurs
         for (GamePlayer player : game.getPlayers()) {
@@ -708,12 +712,15 @@ public class GameService {
 
     // DTOs internes
     public static class GameStateDTO {
-        private GameState gameState;
-        private int roundNumber;
-        private int currentPlayerIndex;
-        private int remainingCards;
-        private java.util.List<PlayerDTO> players = new java.util.ArrayList<>();
-        private java.util.List<java.util.Map<String, Object>> pendingSpecialCards = new java.util.ArrayList<>();
+    private GameState gameState;
+    private int roundNumber;
+    private int currentPlayerIndex;
+    private int remainingCards;
+    private java.util.List<PlayerDTO> players = new java.util.ArrayList<>();
+    private java.util.List<java.util.Map<String, Object>> pendingSpecialCards = new java.util.ArrayList<>();
+    private boolean statisticsEnabled;
+    public boolean isStatisticsEnabled() { return statisticsEnabled; }
+    public void setStatisticsEnabled(boolean statisticsEnabled) { this.statisticsEnabled = statisticsEnabled; }
 
         // Getters et Setters
         public GameState getGameState() { return gameState; }

@@ -63,6 +63,7 @@ export interface GameStateResponse {
   winnerId?: string;
   players: GamePlayer[];
   pendingSpecialCards?: PendingSpecialCard[];
+  statisticsEnabled?: boolean;
 }
 
 /**
