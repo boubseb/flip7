@@ -51,7 +51,21 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private translate: TranslateService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) {
+    // Nettoyer le localStorage/sessionStorage si navigation vers /home ou /room sans intention de reconnexion
+    this.router.events.subscribe(event => {
+      // Vérifie si c'est une navigation vers /home ou /room sans queryParams
+      if (event && (event as any).url) {
+        const url = (event as any).url;
+        if ((url === '/home' || url === '/room') && !window.location.search) {
+          localStorage.removeItem('currentRoomId');
+          localStorage.removeItem('currentRoomPassword');
+          sessionStorage.removeItem('currentRoomId');
+          sessionStorage.removeItem('currentRoomPassword');
+        }
+      }
+    });
+  }
 
   ngOnInit(): void {
     // Skip during SSR
@@ -458,10 +472,11 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   }
   
   leaveRoom(): void {
-    // Nettoyer le localStorage quand on quitte intentionnellement
+    // Nettoyer le localStorage et sessionStorage quand on quitte intentionnellement
     localStorage.removeItem('currentRoomId');
     localStorage.removeItem('currentRoomPassword');
-    
+    sessionStorage.removeItem('currentRoomId');
+    sessionStorage.removeItem('currentRoomPassword');
     if (this.currentRoom) {
       this.wsService.unsubscribeFromRoom(this.currentRoom.id);
       this.currentRoom = null;
@@ -470,7 +485,12 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   }
   
   backToHome(): void {
-    this.router.navigate(['/home']);
+  // Nettoyer le localStorage et sessionStorage pour éviter la reconnexion automatique
+  localStorage.removeItem('currentRoomId');
+  localStorage.removeItem('currentRoomPassword');
+  sessionStorage.removeItem('currentRoomId');
+  sessionStorage.removeItem('currentRoomPassword');
+  this.router.navigate(['/home']);
   }
   
   switchToJoin(): void {

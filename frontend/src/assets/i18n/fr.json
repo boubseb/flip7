@@ -270,76 +270,76 @@
     "title": "Règles du Jeu - Flip 7",
     "objective": {
       "title": "🎯 Objectif du Jeu",
-      "description": "Dans ce jeu de hasard, l'objectif est d'être le premier joueur à marquer 200 points pour déclencher le scoring final. Vous marquez des points en fonction de la valeur totale des cartes numérotées devant vous. Si vous réussissez à retourner 7 cartes numérotées dans votre rangée, vous mettez automatiquement fin au tour et vous marquez 15 points de bonus. Attention : si vous tirez une deuxième carte avec la même valeur qu'une carte déjà présente, vous êtes éliminé du tour et ne marquez aucun point !"
+      "description": "Être le premier à atteindre 200 points pour déclencher la fin de partie. Les points sont marqués selon la somme des cartes numérotées devant soi. Retourner 7 cartes numérotées met fin au tour et rapporte 15 points bonus. Attention : si vous piochez une carte déjà présente dans votre rangée, vous êtes éliminé du tour et ne marquez aucun point !"
     },
     "deck": {
       "title": "🎴 Composition du Jeu",
-      "description": "Jeu de cartes spécial contenant : douze 12, onze 11, dix 10... jusqu'à un 1, et même un 0 (qui ne vaut aucun point). Plus une carte a de valeur, plus il y a d'exemplaires dans le jeu.",
-      "cards": "Vous trouverez aussi des cartes Action (Flip Three, Freeze, Second Chance) et des cartes Modificateur de score (+2 à +10, x2)."
+      "description": "Le jeu contient : douze 12, onze 11, dix 10... jusqu'à un 1, et un 0 (qui vaut 0 point). Plus la valeur est élevée, plus il y a d'exemplaires.",
+      "cards": "Il existe aussi des cartes Action (Flip Three, Freeze, Second Chance) et des cartes Modificateur (+2 à +10, x2)."
     },
     "setup": {
-      "title": "� Mise en Place",
-      "step1": "Mélangez le jeu et choisissez un donneur pour le tour",
-      "step2": "Le donneur distribue une carte face visible à chaque joueur (y compris lui-même)",
-      "step3": "Si une carte Action apparaît, interrompez immédiatement la distribution pour la résoudre",
-      "step4": "Une fois toutes les cartes Action résolues, continuez jusqu'à ce que chacun ait au moins une carte"
+      "title": "📋 Mise en Place",
+      "step1": "Mélangez le jeu et désignez un donneur.",
+      "step2": "Le donneur distribue une carte face visible à chaque joueur (lui compris).",
+      "step3": "Si une carte Action apparaît, arrêtez la distribution et résolvez-la immédiatement.",
+      "step4": "Une fois toutes les cartes Action résolues, continuez la distribution jusqu'à ce que chacun ait au moins une carte."
     },
     "gameplay": {
-      "title": "� Déroulement du Tour",
-      "description": "Le donneur propose à chaque joueur, à tour de rôle, l'option de « recevoir une nouvelle carte » ou de « rester » (quitter le tour et accumuler ses points).",
-      "hit": "Si vous « recevez une nouvelle carte » : placez les cartes sur une seule rangée avec les cartes Modificateur au-dessus",
-      "stop": "Si vous « restez » : vous quittez le tour et conservez vos points actuels",
-      "bust": "Si vous tirez une carte avec la même valeur qu'une carte déjà présente : vous êtes éliminé du tour et ne marquez AUCUN point",
-      "flip7": "Si vous retournez 7 cartes numérotées : le tour se termine immédiatement pour tous et vous gagnez 15 points de bonus"
+      "title": "▶️ Déroulement du Tour",
+      "description": "À tour de rôle, chaque joueur choisit de piocher une carte (HIT) ou de s'arrêter (STOP) pour conserver ses points.",
+      "hit": "HIT : Piochez une carte et ajoutez-la à votre rangée. Placez les modificateurs au-dessus.",
+      "stop": "STOP : Quittez le tour et conservez vos points actuels.",
+      "bust": "BUST : Si vous piochez un doublon, vous êtes éliminé du tour et ne marquez aucun point.",
+      "flip7": "FLIP 7 : Si vous retournez 7 cartes numérotées, le tour s'arrête pour tous et vous gagnez 15 points bonus."
     },
     "actionCards": {
       "title": "🎭 Cartes Action",
-      "description": "Les cartes Action peuvent être jouées via n'importe quel joueur actif (y compris vous). Placez-les au-dessus de vos cartes numérotées.",
+      "description": "Les cartes Action sont jouées dès qu'elles apparaissent. Placez-les au-dessus de votre rangée.",
       "freeze": {
-        "title": "GEL / FREEZE 🧊",
-        "description": "Le joueur qui reçoit cette carte perd tous les points accumulés et est éliminé pour la fin du tour."
+  "title": "FREEZE 🧊",
+  "description": "Le joueur qui reçoit cette carte est éliminé pour la fin du tour mais conserve les points déjà acquis."
       },
       "flipThree": {
-        "title": "TROIS / FLIP THREE 🎴",
-        "description": "Le joueur qui reçoit cette carte doit accepter trois nouvelles cartes. Si une autre carte Action apparaît lors du tirage des 3 cartes, elle doit être résolue après."
+        "title": "FLIP THREE 🎴",
+        "description": "Le joueur doit piocher trois cartes d'affilée. Si une carte Action apparaît, elle est résolue après."
       },
       "secondChance": {
-        "title": "SECONDE CHANCE / SECOND CHANCE 🍀",
-        "description": "Conservez cette carte. Si vous tirez une carte en double, défaussez le doublon et la carte Seconde Chance. Un joueur ne peut avoir qu'une seule carte Seconde Chance à la fois. Toutes les cartes Seconde Chance sont défaussées en fin de tour."
+        "title": "SECOND CHANCE 🍀",
+        "description": "Gardez cette carte. Si vous piochez un doublon, défaussez le doublon et la carte Second Chance. Une seule par joueur. Toutes sont défaussées en fin de tour."
       }
     },
     "modifierCards": {
       "title": "⭐ Cartes Modificateur",
-      "plus": "Cartes +2 à +10 : Ajoutez le montant indiqué à la somme de vos cartes numérotées",
-      "times": "Carte x2 : Doublez les points de toutes vos cartes numérotées (ne double pas les autres modificateurs)",
-      "note": "Les cartes Action et Modificateur ne peuvent pas être détruites ! Placez-les au-dessus de vos cartes numérotées."
+      "plus": "+2 à +10 : Ajoutez la valeur à votre total de points.",
+      "times": "x2 : Doublez la somme de vos cartes numérotées (hors autres modificateurs).",
+      "note": "Les cartes Action et Modificateur ne sont jamais détruites. Placez-les au-dessus de votre rangée."
     },
     "scoring": {
       "title": "💯 Calcul des Points",
-      "step1": "1. Additionnez la valeur de toutes vos cartes numérotées",
-      "step2": "2. Doublez ce total si vous avez une carte x2",
-      "step3": "3. Ajoutez tous les modificateurs (+2, +3, etc.)",
-      "step4": "4. Si vous avez retourné 7 cartes numérotées (Flip 7), ajoutez 15 points de bonus",
-      "example": "Exemple : 11 + 5 + 12 = 28 points, avec un modificateur +4 = 32 points au total"
+      "step1": "Additionnez toutes vos cartes numérotées.",
+      "step2": "Doublez ce total si vous avez un x2.",
+      "step3": "Ajoutez tous les modificateurs (+2, +3, etc.).",
+      "step4": "Si vous avez retourné 7 cartes numérotées (Flip 7), ajoutez 15 points bonus.",
+      "example": "Exemple : 11 + 5 + 12 = 28 points, +4 = 32 points."
     },
     "endTurn": {
-      "title": "� Fin du Tour",
+      "title": "⏹️ Fin du Tour",
       "description": "Le tour se termine quand :",
       "case1": "Il n'y a plus de joueurs actifs (tous éliminés ou arrêtés)",
       "case2": "OU un joueur a retourné 7 cartes numérotées (Flip 7)",
-      "next": "Mettez les cartes du tour de côté (ne les remélangez pas). Passez le paquet au joueur à gauche qui devient le nouveau donneur."
+      "next": "Mettez les cartes du tour de côté (ne les remélangez pas). Passez le paquet au joueur à gauche, il devient donneur."
     },
     "endGame": {
       "title": "🏆 Fin de Partie",
-      "description": "La partie se termine si, à la fin d'un tour, au moins un joueur a atteint 200 points. Le joueur qui a le PLUS de points gagne.",
-      "note": "Le premier joueur qui atteint 200 points n'est pas forcément le vainqueur !"
+      "description": "La partie se termine si, à la fin d'un tour, au moins un joueur a atteint 200 points. Le joueur avec le PLUS de points gagne.",
+      "note": "Le premier à 200 points n'est pas forcément le vainqueur !"
     },
     "tips": {
       "title": "💡 Conseils Stratégiques",
-      "tip1": "🎯 Gardez en tête le nombre de cartes jouées et restantes",
-      "tip2": "🎴 Attention aux doublons : c'est le risque majeur du jeu !",
-      "tip3": "🏅 Viser le Flip 7 (7 cartes) donne 15 points de bonus et termine le tour",
-      "tip4": "🧊 Utilisez les cartes Action stratégiquement contre vos adversaires"
+      "tip1": "Comptez les cartes jouées et celles qui restent.",
+      "tip2": "Attention aux doublons, c'est le principal risque !",
+      "tip3": "Tenter le Flip 7 rapporte 15 points bonus et termine le tour.",
+      "tip4": "Utilisez les cartes Action au bon moment contre vos adversaires."
     }
   },
   "profile": {
