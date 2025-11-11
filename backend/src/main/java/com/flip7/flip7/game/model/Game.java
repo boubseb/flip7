@@ -202,6 +202,8 @@ public class Game {
         if (player.getLifeCardsInHand() > 0) {
             // Le joueur peut utiliser sa carte Vie
             player.useLifeCard();
+            // Correction : s'assurer que le joueur reste en statut PLAYING après avoir utilisé la carte Vie
+            player.setStatus(PlayerStatus.PLAYING);
             if (skipNextPlayer) {
                 nextPlayer(); // Passer au joueur suivant après utilisation de la carte Vie
             }

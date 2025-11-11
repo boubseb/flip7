@@ -25,7 +25,7 @@
   },
   "login": {
     "title": "Connexion",
-    "username": "Nom d'utilisateur",
+    "username": "Pseudo",
     "password": "Mot de passe",
     "loginButton": "Se connecter",
     "register": "S'inscrire",
@@ -37,7 +37,7 @@
   },
   "register": {
     "title": "Inscription",
-    "username": "Nom d'utilisateur",
+    "username": "Pseudo",
     "email": "Email",
     "password": "Mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
@@ -56,7 +56,7 @@
     "passwordMatchError": "Les mots de passe ne correspondent pas",
     "errors": {
       "passwordMismatch": "Les mots de passe ne correspondent pas",
-      "usernameTaken": "Nom d'utilisateur déjà pris",
+      "usernameTaken": "Pseudo déjà pris",
       "invalidEmail": "Email invalide"
     }
   },
@@ -352,7 +352,7 @@
     "firstNameError": "Le prénom est requis (min. 2 caractères)",
     "lastNameError": "Le nom est requis (min. 2 caractères)",
     "birthDateError": "La date de naissance est requise",
-    "username": "Nom d'utilisateur",
+    "username": "Pseudo",
     "email": "Email",
     "stats": "Statistiques",
     "gamesPlayed": "Parties jouées",

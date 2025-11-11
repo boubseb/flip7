@@ -25,7 +25,7 @@
   },
   "login": {
     "title": "Login",
-    "username": "Username",
+    "username": "Pseudo",
     "password": "Password",
     "loginButton": "Log in",
     "register": "Sign up",
@@ -37,7 +37,7 @@
   },
   "register": {
     "title": "Sign up",
-    "username": "Username",
+    "username": "Pseudo",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm password",
@@ -56,7 +56,7 @@
     "passwordMatchError": "Passwords do not match",
     "errors": {
       "passwordMismatch": "Passwords do not match",
-      "usernameTaken": "Username already taken",
+      "usernameTaken": "Pseudo already taken",
       "invalidEmail": "Invalid email"
     }
   },
@@ -351,7 +351,7 @@
     "firstNameError": "First name is required (min. 2 characters)",
     "lastNameError": "Last name is required (min. 2 characters)",
     "birthDateError": "Date of birth is required",
-    "username": "Username",
+    "username": "Pseudo",
     "email": "Email",
     "stats": "Statistics",
     "gamesPlayed": "Games played",

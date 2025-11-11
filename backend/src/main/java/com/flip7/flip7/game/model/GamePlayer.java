@@ -91,7 +91,7 @@ public class GamePlayer {
     public boolean hasDouble() {
         Map<Integer, Integer> numberCount = new HashMap<>();
         for (Card card : hand) {
-            if (card instanceof NumberCard) {
+            if (card instanceof NumberCard && !card.isCancelled()) {
                 int value = ((NumberCard) card).getValue();
                 numberCount.put(value, numberCount.getOrDefault(value, 0) + 1);
                 if (numberCount.get(value) >= 2) {
