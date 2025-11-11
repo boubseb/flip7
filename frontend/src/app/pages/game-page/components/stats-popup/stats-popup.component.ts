@@ -1,7 +1,10 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-stats-popup',
+  standalone: true,
+  imports: [TranslateModule],
   templateUrl: './stats-popup.component.html',
   styleUrls: ['./stats-popup.component.scss']
 })

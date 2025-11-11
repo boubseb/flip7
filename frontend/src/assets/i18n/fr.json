@@ -164,6 +164,12 @@
   "CLICK_TO_SHOW": "Cliquer pour afficher"
   },
   "game": {
+        "statsPopup": {
+      "title": "Probabilité d'élimination",
+      "desc": "Cette estimation est basée sur les cartes visibles et le deck restant.",
+      "close": "Fermer",
+      "na": "N/A"
+    },
     "yourTurn": "C'est votre tour !",
     "waitingFor": "En attente de {{player}}...",
     "deck": "Pioche",
