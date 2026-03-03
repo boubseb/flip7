@@ -17,9 +17,47 @@ export class PlayerSelectorComponent implements OnChanges {
   @Input() currentUserId: string = '';
   @Input() cardType: 'STOP' | 'DRAW_THREE' = 'STOP';
   @Input() show: boolean = false;
+  @Input() statisticsEnabled: boolean = false;
+  @Input() remainingCards: number = 0;
   
   @Output() onPlayerSelected = new EventEmitter<string>();
   @Output() onCancel = new EventEmitter<void>();
+
+  // Pourcentage cubé pour +3
+  getCubedProbability(prob: number | null): string {
+    if (prob === null || prob === undefined) return 'N/A';
+    const cubed = Math.pow(prob / 100, 3) * 100;
+    return '≈ ' + cubed.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' %';
+  }
+
+  // Calcule la proba d'élimination pour un joueur donné
+  getPlayerEliminationProb(player: any): number | null {
+    if (!player.hand) return null;
+    const handValues = player.hand.filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number').map((card: any) => card.value);
+    if (handValues.length === 0) return null;
+    const valueCounts: { [value: number]: number } = {};
+    for (const v of handValues) valueCounts[v] = (valueCounts[v] || 0) + 1;
+    if (Object.values(valueCounts).some(count => count >= 2)) return 100;
+    const initialDeck: { [value: number]: number } = {};
+    for (let v = 0; v <= 12; v++) initialDeck[v] = (v === 0 || v === 1) ? 1 : v;
+    const allHands = this.players.flatMap((pl: any) => Array.isArray(pl.hand) ? pl.hand : []);
+    const usedCount: { [value: number]: number } = {};
+    allHands.forEach((card: any) => {
+      if (card.cardType === 'NUMBER' && typeof card.value === 'number') {
+        usedCount[card.value] = (usedCount[card.value] || 0) + 1;
+      }
+    });
+    const totalRemaining = this.remainingCards || 0;
+    if (totalRemaining === 0) return null;
+    let eliminationNumerator = 0;
+    for (const v of new Set(handValues)) {
+      const value = Number(v);
+      const remaining = Math.max(0, initialDeck[value] - (usedCount[value] || 0));
+      eliminationNumerator += remaining;
+    }
+    const prob = eliminationNumerator / totalRemaining;
+    return Math.min((1 - prob) * 100, 100);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['show'] && changes['show'].currentValue === true) {
@@ -34,8 +72,8 @@ export class PlayerSelectorComponent implements OnChanges {
 
   /**
    * Vérifie si un joueur est éligible
-   * - Carte STOP: Tous les joueurs sauf éliminés
-   * - Carte DRAW_THREE: Tous les joueurs sauf éliminés ET stoppés
+   * - Carte STOP: Joueurs en jeu uniquement (pas stoppés, pas éliminés)
+   * - Carte DRAW_THREE: Joueurs en jeu uniquement (pas stoppés, pas éliminés)
    */
   isPlayerEligible(player: any): boolean {
     // Toujours exclure les éliminés
@@ -43,15 +81,15 @@ export class PlayerSelectorComponent implements OnChanges {
       return false;
     }
     
-    // Pour les cartes +3, exclure aussi les joueurs stoppés
-    if (this.cardType === 'DRAW_THREE') {
-      return player.status !== PlayerStatus.STOPPED && 
-             player.status !== PlayerStatus.FORCED_STOP &&
-             player.status !== PlayerStatus.FLIP7_STOP;
+    // Exclure les joueurs stoppés pour STOP et +3
+    if (player.status === PlayerStatus.STOPPED || 
+        player.status === PlayerStatus.FORCED_STOP ||
+        player.status === PlayerStatus.FLIP7_STOP) {
+      return false;
     }
     
-    // Pour les cartes Stop, tous les non-éliminés sont éligibles
-    return true;
+    // Seuls les joueurs PLAYING sont éligibles
+    return player.status === PlayerStatus.PLAYING;
   }
 
   /**

@@ -7,12 +7,23 @@ import com.flip7.flip7.entity.Room.RoomStatus;
 
 public class RoomResponse {
     private boolean statisticsEnabled;
+    private Integer targetScore = 200; // Score cible pour gagner
+    
     public boolean isStatisticsEnabled() {
         return statisticsEnabled;
     }
     public void setStatisticsEnabled(boolean statisticsEnabled) {
         this.statisticsEnabled = statisticsEnabled;
     }
+    
+    public Integer getTargetScore() {
+        return targetScore;
+    }
+    
+    public void setTargetScore(Integer targetScore) {
+        this.targetScore = targetScore != null ? targetScore : 200;
+    }
+    
     private String id;
     private String adminId;
     private List<String> players; // kept for backward compatibility

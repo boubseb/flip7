@@ -1,5 +1,5 @@
 // Import des styles utilisateur
-@import '../../styles/user-profil.scss';
+@use '../../styles/user-profil.scss' as *;
 
 .modal-overlay {
   position: fixed;

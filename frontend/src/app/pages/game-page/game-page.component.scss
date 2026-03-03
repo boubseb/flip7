@@ -466,10 +466,29 @@
     padding: 2rem;
     color: #6b7280;
 
+    &.distributing-message {
+      animation: pulse-distribute 1.5s ease-in-out infinite;
+      
+      .icon {
+        display: inline-block;
+        animation: card-flip 1s ease-in-out infinite;
+      }
+    }
+
     .hint {
       font-size: 0.875rem;
       margin-top: 0.5rem;
     }
+  }
+
+  @keyframes pulse-distribute {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes card-flip {
+    0%, 100% { transform: rotateY(0deg); }
+    50% { transform: rotateY(180deg); }
   }
 
   .btn-start-game {

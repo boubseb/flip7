@@ -34,6 +34,9 @@
               <span class="player-status" [class]="'status-' + player.status.toLowerCase()">
                 {{ getStatusKey(player.status) | translate }}
               </span>
+              @if (statisticsEnabled && cardType === 'DRAW_THREE') {
+                <span class="draw-three-prob">{{ getCubedProbability(getPlayerEliminationProb(player)) }}</span>
+              }
             </div>
 
             @if (isPlayerEligible(player)) {

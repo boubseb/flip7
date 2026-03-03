@@ -68,12 +68,24 @@ public class Room {
     
     @Column(nullable = false)
     private boolean statisticsEnabled = false;
+    
+    @Column(nullable = false)
+    private Integer targetScore = 200; // Score cible pour gagner
+    
     // Getters and Setters
     public boolean isStatisticsEnabled() {
         return statisticsEnabled;
     }
     public void setStatisticsEnabled(boolean statisticsEnabled) {
         this.statisticsEnabled = statisticsEnabled;
+    }
+    
+    public Integer getTargetScore() {
+        return targetScore;
+    }
+    
+    public void setTargetScore(Integer targetScore) {
+        this.targetScore = targetScore != null ? targetScore : 200;
     }
     public String getId() {
         return id;

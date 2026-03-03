@@ -11,5 +11,8 @@
 .idea/
 *.iml
 
+# Docker
+.env
+
 # macOS
 .DS_Store

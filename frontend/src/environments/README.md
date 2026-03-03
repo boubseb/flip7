@@ -23,7 +23,7 @@ Ce projet utilise différents fichiers d'environnement selon le contexte d'utili
 ### 3. `environment.ts` (production/internet)
 **Usage :** Accès depuis Internet
 - Frontend accessible depuis n'importe où
-- API : `http://88.163.1.215:3200` (IP publique)
+- API : `http://82.67.194.54:3200` (IP publique)
 - Nécessite ouverture des ports 3200 et 4200 sur la box
 
 **Commande :** `ng serve` ou `ng build`

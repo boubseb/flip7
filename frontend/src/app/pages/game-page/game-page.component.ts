@@ -1,4 +1,3 @@
-// ...existing code...
 import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -1128,6 +1127,40 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
       }
     }
+
+  /**
+   * Calcule la proba d'élimination pour chaque joueur (pour +3)
+   */
+  getAllPlayersProbabilities(): { name: string, probability: number | null }[] {
+    if (!this.gameState?.players) return [];
+    return this.gameState.players.map((p: any) => {
+      if (!p.hand) return { name: p.username || p.userId, probability: null };
+      const handValues = p.hand.filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number').map((card: any) => card.value);
+      if (handValues.length === 0) return { name: p.username || p.userId, probability: null };
+      const valueCounts: { [value: number]: number } = {};
+      for (const v of handValues) valueCounts[v] = (valueCounts[v] || 0) + 1;
+      if (Object.values(valueCounts).some(count => count >= 2)) return { name: p.username || p.userId, probability: 100 };
+      const initialDeck: { [value: number]: number } = {};
+      for (let v = 0; v <= 12; v++) initialDeck[v] = (v === 0 || v === 1) ? 1 : v;
+      const allHands = this.gameState.players.flatMap((pl: any) => Array.isArray(pl.hand) ? pl.hand : []);
+      const usedCount: { [value: number]: number } = {};
+      allHands.forEach((card: any) => {
+        if (card.cardType === 'NUMBER' && typeof card.value === 'number') {
+          usedCount[card.value] = (usedCount[card.value] || 0) + 1;
+        }
+      });
+      const totalRemaining = typeof this.gameState.remainingCards === 'number' ? this.gameState.remainingCards : 0;
+      if (totalRemaining === 0) return { name: p.username || p.userId, probability: null };
+      let eliminationNumerator = 0;
+      for (const v of new Set(handValues)) {
+        const value = Number(v);
+        const remaining = Math.max(0, initialDeck[value] - (usedCount[value] || 0));
+        eliminationNumerator += remaining;
+      }
+      const prob = eliminationNumerator / totalRemaining;
+      return { name: p.username || p.userId, probability: Math.min((1-prob) * 100, 100) };
+    });
+  }
 
   /**
    * Gère le clic sur "Quitter la salle"

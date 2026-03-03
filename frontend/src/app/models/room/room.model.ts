@@ -22,12 +22,14 @@ export interface Room {
   currentPlayers: number; // Added for room browser
   gameState?: any; // Game state (will be typed properly later)
   statisticsEnabled?: boolean;
+  targetScore?: number; // Score cible pour gagner (défaut: 200)
 }
 
 export interface RoomCreateRequest {
   password: string;
   maxPlayers?: number;
   statisticsEnabled?: boolean;
+  targetScore?: number; // Score cible pour gagner
 }
 
 export interface RoomJoinRequest {

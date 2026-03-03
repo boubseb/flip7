@@ -72,7 +72,7 @@ public class GameService {
         
         try {
             List<GameSnapshot> snapshots = gameSnapshotRepository.findByGameStatusIn(
-                Arrays.asList("PLAYING", "WAITING_NEXT_ROUND")
+                Arrays.asList("PLAYING", "WAITING_NEXT_ROUND", "DISTRIBUTING")
             );
             
             System.out.println("📊 Snapshots trouvés: " + snapshots.size());
@@ -156,7 +156,8 @@ public class GameService {
             }
         }
 
-        Game game = new Game(roomId, room.getPlayers(), playerNames);
+        int targetScore = room.getTargetScore() != null ? room.getTargetScore() : 200;
+        Game game = new Game(roomId, room.getPlayers(), playerNames, targetScore);
         activeGames.put(roomId, game);
         
         // Créer un nouvel historique de partie
@@ -196,10 +197,10 @@ public class GameService {
         // Sauvegarder le début du round dans l'historique
         saveRoundStart(roomId, game);
 
-        // NOUVEAU: Pas de distribution automatique - broadcaster directement l'état PLAYING
-        // Les joueurs peuvent maintenant HIT ou STOP
-        System.out.println("📡 Broadcasting game state - round started, players can HIT/STOP");
-        broadcastGameState(roomId, game);
+        // Démarrer la distribution initiale (1 carte par joueur)
+        // La distribution s'interrompt si une carte spéciale est piochée
+        System.out.println("🎴 Starting initial distribution...");
+        continueDistributionWithBroadcast(roomId, game);
     }
     
     /**
@@ -299,6 +300,12 @@ public class GameService {
         // Broadcaster l'état du jeu
         broadcastGameState(roomId, game);
 
+        // Si on est en mode DISTRIBUTING et qu'il n'y a plus de cartes spéciales en attente, reprendre la distribution
+        if (game.getGameState() == GameState.DISTRIBUTING && game.getPendingSpecialCards().isEmpty()) {
+            System.out.println("🎴 Reprise de la distribution après assignation STOP");
+            continueDistributionWithBroadcast(roomId, game);
+        }
+
         // Si le round est terminé, calculer les scores
         if (game.isRoundOver()) {
             handleRoundEnd(roomId, game);
@@ -322,6 +329,12 @@ public class GameService {
 
         // Broadcaster l'état du jeu
         broadcastGameState(roomId, game);
+
+        // Si on est en mode DISTRIBUTING et qu'il n'y a plus de cartes spéciales en attente, reprendre la distribution
+        if (game.getGameState() == GameState.DISTRIBUTING && game.getPendingSpecialCards().isEmpty()) {
+            System.out.println("🎴 Reprise de la distribution après assignation +3");
+            continueDistributionWithBroadcast(roomId, game);
+        }
 
         // Si le round est terminé, calculer les scores
         if (game.isRoundOver()) {
@@ -353,12 +366,12 @@ public class GameService {
         }
 
         // Appeler la méthode startNewRound sans distribution
-        game.startNewRound(); // Initialise le round en mode PLAYING
+        game.startNewRound(); // Initialise le round en mode DISTRIBUTING
         saveRoundStart(roomId, game); // Sauvegarde
         
-        // Broadcaster l'état PLAYING - les joueurs peuvent HIT/STOP
-        System.out.println("📡 Broadcasting game state - round started, players can HIT/STOP");
-        broadcastGameState(roomId, game);
+        // Démarrer la distribution initiale
+        System.out.println("🎴 Starting initial distribution for next round...");
+        continueDistributionWithBroadcast(roomId, game);
 
         System.out.println("🎮 C'est au tour de " + currentPlayer.getUsername());
         return "Round " + game.getRoundNumber() + " démarré !";

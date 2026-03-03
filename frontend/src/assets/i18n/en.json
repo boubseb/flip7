@@ -70,6 +70,7 @@
   },
   "room": {
     "statisticsOption": "Enable statistics (show elimination chance)",
+    "targetScore": "Target score to win",
     "title": "Room",
     "createRoom": "Create room",
     "joinRoom": "Join room",
@@ -250,6 +251,7 @@
       "forced_stop_self_message": "You stopped yourself with a Stop card",
       "flip7_stop_message": "Flip7! You are stopped with 7 points",
       "your_turn": "{{player}}'s turn",
+      "distributing": "Dealing cards...",
       "start_round": "Start Round {{round}}",
       "waiting_for_player": "Waiting for {{player}}..."
     },

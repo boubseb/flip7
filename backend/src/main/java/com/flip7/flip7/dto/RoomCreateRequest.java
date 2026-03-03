@@ -4,6 +4,15 @@ public class RoomCreateRequest {
     private String password;
     private Integer maxPlayers = 12;
     private boolean statisticsEnabled = false;
+    private Integer targetScore = 200; // Score cible pour gagner (défaut: 200)
+    
+    public Integer getTargetScore() {
+        return targetScore;
+    }
+    
+    public void setTargetScore(Integer targetScore) {
+        this.targetScore = targetScore;
+    }
     public boolean isStatisticsEnabled() {
         return statisticsEnabled;
     }

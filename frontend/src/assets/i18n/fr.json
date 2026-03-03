@@ -102,6 +102,7 @@
   "waitingForAdminToStart": "En attente que l'admin lance la partie...",
     "kickPlayer": "Retirer ce joueur",
     "statisticsOption": "Activer les statistiques (afficher la proba d'élimination)",
+    "targetScore": "Score cible pour gagner",
     "errors": {
       "loadingRooms": "Erreur lors du chargement des rooms",
       "notInRoom": "Vous ne faites pas partie de cette room",
@@ -251,6 +252,7 @@
       "forced_stop_self_message": "Vous vous êtes arrêté avec une carte Stop",
       "flip7_stop_message": "Flip7 ! Vous êtes stoppé avec 7 points",
       "your_turn": "Au tour de {{player}}",
+      "distributing": "Distribution des cartes en cours...",
       "start_round": "Lancer le Round {{round}}",
       "waiting_for_player": "En attente de {{player}}..."
     },

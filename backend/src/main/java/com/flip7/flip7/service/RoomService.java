@@ -69,7 +69,7 @@ public class RoomService {
     
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     
-    public Room createRoom(String password, String adminId, Integer maxPlayers, boolean statisticsEnabled) {
+    public Room createRoom(String password, String adminId, Integer maxPlayers, boolean statisticsEnabled, Integer targetScore) {
         Room room = new Room();
         room.setPassword(passwordEncoder.encode(password));
         room.setAdminId(adminId);
@@ -77,6 +77,7 @@ public class RoomService {
         room.getPlayers().add(adminId);
         room.setStatus(RoomStatus.WAITING);
         room.setStatisticsEnabled(statisticsEnabled);
+        room.setTargetScore(targetScore != null ? targetScore : 200);
         return roomRepository.save(room);
     }
     
@@ -246,6 +247,7 @@ public class RoomService {
         );
         response.setPlayerInfos(playerInfos);
         response.setStatisticsEnabled(room.isStatisticsEnabled());
+        response.setTargetScore(room.getTargetScore());
         return response;
     }
     
