@@ -22,7 +22,7 @@ export class RegisterPageComponent {
 
   constructor(private fb: FormBuilder) {
     this.registerForm = this.fb.group({
-      name: ['', [Validators.required]],
+      firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       birthDate: ['', [Validators.required]],
       pseudo: ['', [Validators.required]],
