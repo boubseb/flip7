@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Flip 7",
+    "appName": "Flip7",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -20,7 +20,7 @@
     "language": "Language"
   },
   "footer": {
-    "copyright": "© 2024 Flip 7. All rights reserved.",
+    "copyright": "© 2024 Flip7. All rights reserved.",
     "version": "Version"
   },
   "login": {
@@ -61,7 +61,7 @@
     }
   },
   "home": {
-    "title": "Welcome to Flip 7",
+    "title": "Welcome to Flip7",
     "subtitle": "The strategic card game",
     "createRoom": "Create a game",
     "joinRoom": "Join a game",
@@ -276,7 +276,7 @@
     }
   },
   "rules": {
-    "title": "Game Rules - Flip 7",
+    "title": "Game Rules - Flip7",
     "objective": {
       "title": "🎯 Game Objective",
       "description": "Be the first to reach 200 points to trigger the end of the game. Points are scored according to the sum of the numbered cards in front of you. Flipping 7 numbered cards ends the round and gives you a 15-point bonus. Warning: if you draw a card already present in your row, you are eliminated from the round and score no points!"
@@ -299,7 +299,7 @@
       "hit": "HIT: Draw a card and add it to your row. Place modifiers above.",
       "stop": "STOP: Leave the round and keep your current points.",
       "bust": "BUST: If you draw a duplicate, you are eliminated from the round and score no points.",
-      "flip7": "FLIP 7: If you flip 7 numbered cards, the round ends for all and you get a 15-point bonus."
+      "flip7": "Flip7: If you Flip7 numbered cards, the round ends for all and you get a 15-point bonus."
     },
     "actionCards": {
       "title": "🎭 Action Cards",
@@ -328,14 +328,14 @@
       "step1": "Add up all your numbered cards.",
       "step2": "Double this total if you have an x2.",
       "step3": "Add all modifiers (+2, +3, etc.).",
-      "step4": "If you flipped 7 numbered cards (Flip 7), add 15 bonus points.",
+      "step4": "If you flipped 7 numbered cards (Flip7), add 15 bonus points.",
       "example": "Example: 11 + 5 + 12 = 28 points, +4 = 32 points."
     },
     "endTurn": {
       "title": "⏹️ End of Round",
       "description": "The round ends when:",
       "case1": "There are no more active players (all eliminated or stopped)",
-      "case2": "OR a player has flipped 7 numbered cards (Flip 7)",
+      "case2": "OR a player has flipped 7 numbered cards (Flip7)",
       "next": "Set aside the cards from the round (do not reshuffle them). Pass the deck to the player on the left, who becomes the dealer."
     },
     "endGame": {
@@ -347,7 +347,7 @@
       "title": "💡 Strategic Tips",
       "tip1": "Count the cards played and those remaining.",
       "tip2": "Watch out for duplicates, that's the main risk!",
-      "tip3": "Trying for Flip 7 gives 15 bonus points and ends the round.",
+      "tip3": "Trying for Flip7 gives 15 bonus points and ends the round.",
       "tip4": "Use Action cards at the right moment against your opponents."
     }
   },
@@ -389,7 +389,7 @@
   },
   "statistics": {
     "completedGames": "Games completed",
-    "flip7": "Flip 7 achieved",
+    "flip7": "Flip7 achieved",
     "roundsPlayed": "Rounds played",
     "eliminatedByDouble": "Eliminated by double",
     "maxScoreInOneRound": "Highest score (1 round)",
@@ -403,7 +403,7 @@
     "globalStats": "Global Statistics",
     "globalCompletedGames": "Games completed (total)",
     "globalAverageRoundsPerGame": "Avg rounds/game",
-    "globalTotalFlip7": "Total Flip 7",
+    "globalTotalFlip7": "Total Flip7",
     "globalMaxScoreInOneRound": "Absolute record (1 round)",
     "theoreticalMaxScore": "Theoretical Max Score",
     "stats": {

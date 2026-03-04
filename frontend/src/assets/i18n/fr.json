@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Flip 7",
+    "appName": "Flip7",
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",
@@ -20,7 +20,7 @@
     "language": "Langue"
   },
   "footer": {
-    "copyright": "© 2024 Flip 7. Tous droits réservés.",
+    "copyright": "© 2024 Flip7. Tous droits réservés.",
     "version": "Version"
   },
   "login": {
@@ -61,7 +61,7 @@
     }
   },
   "home": {
-    "title": "Bienvenue sur Flip 7",
+    "title": "Bienvenue sur Flip7",
     "subtitle": "Le jeu de cartes stratégique",
     "createRoom": "Créer une partie",
     "joinRoom": "Rejoindre une partie",
@@ -277,7 +277,7 @@
     }
   },
   "rules": {
-    "title": "Règles du Jeu - Flip 7",
+    "title": "Règles du Jeu - Flip7",
     "objective": {
       "title": "🎯 Objectif du Jeu",
       "description": "Être le premier à atteindre 200 points pour déclencher la fin de partie. Les points sont marqués selon la somme des cartes numérotées devant soi. Retourner 7 cartes numérotées met fin au tour et rapporte 15 points bonus. Attention : si vous piochez une carte déjà présente dans votre rangée, vous êtes éliminé du tour et ne marquez aucun point !"
@@ -300,7 +300,7 @@
       "hit": "HIT : Piochez une carte et ajoutez-la à votre rangée. Placez les modificateurs au-dessus.",
       "stop": "STOP : Quittez le tour et conservez vos points actuels.",
       "bust": "BUST : Si vous piochez un doublon, vous êtes éliminé du tour et ne marquez aucun point.",
-      "flip7": "FLIP 7 : Si vous retournez 7 cartes numérotées, le tour s'arrête pour tous et vous gagnez 15 points bonus."
+      "flip7": "Flip7 : Si vous retournez 7 cartes numérotées, le tour s'arrête pour tous et vous gagnez 15 points bonus."
     },
     "actionCards": {
       "title": "🎭 Cartes Action",
@@ -329,14 +329,14 @@
       "step1": "Additionnez toutes vos cartes numérotées.",
       "step2": "Doublez ce total si vous avez un x2.",
       "step3": "Ajoutez tous les modificateurs (+2, +3, etc.).",
-      "step4": "Si vous avez retourné 7 cartes numérotées (Flip 7), ajoutez 15 points bonus.",
+      "step4": "Si vous avez retourné 7 cartes numérotées (Flip7), ajoutez 15 points bonus.",
       "example": "Exemple : 11 + 5 + 12 = 28 points, +4 = 32 points."
     },
     "endTurn": {
       "title": "⏹️ Fin du Tour",
       "description": "Le tour se termine quand :",
       "case1": "Il n'y a plus de joueurs actifs (tous éliminés ou arrêtés)",
-      "case2": "OU un joueur a retourné 7 cartes numérotées (Flip 7)",
+      "case2": "OU un joueur a retourné 7 cartes numérotées (Flip7)",
       "next": "Mettez les cartes du tour de côté (ne les remélangez pas). Passez le paquet au joueur à gauche, il devient donneur."
     },
     "endGame": {
@@ -348,7 +348,7 @@
       "title": "💡 Conseils Stratégiques",
       "tip1": "Comptez les cartes jouées et celles qui restent.",
       "tip2": "Attention aux doublons, c'est le principal risque !",
-      "tip3": "Tenter le Flip 7 rapporte 15 points bonus et termine le tour.",
+      "tip3": "Tenter le Flip7 rapporte 15 points bonus et termine le tour.",
       "tip4": "Utilisez les cartes Action au bon moment contre vos adversaires."
     }
   },
@@ -390,7 +390,7 @@
   },
   "statistics": {
     "completedGames": "Parties finies",
-    "flip7": "Flip 7 réalisés",
+    "flip7": "Flip7 réalisés",
     "roundsPlayed": "Rounds joués",
     "eliminatedByDouble": "Éliminé par double",
     "maxScoreInOneRound": "Plus gros score (1 round)",
@@ -404,7 +404,7 @@
     "globalStats": "Statistiques Globales",
     "globalCompletedGames": "Parties finies (total)",
     "globalAverageRoundsPerGame": "Moyenne rounds/partie",
-    "globalTotalFlip7": "Flip 7 totaux",
+    "globalTotalFlip7": "Flip7 totaux",
     "globalMaxScoreInOneRound": "Record absolu (1 round)",
     "theoreticalMaxScore": "Score Théorique Maximum",
     "stats": {

@@ -47,8 +47,8 @@ function proxyToBackend(req: any, res: any) {
 }
 
 PROXY_PATHS.forEach((path) => {
-  app.all(path, proxyToBackend);
-  app.all(`${path}/**`, proxyToBackend);
+  app.post(path, proxyToBackend);
+  app.post(`${path}/**`, proxyToBackend);
 });
 
 /**
