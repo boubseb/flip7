@@ -7,7 +7,8 @@ import {
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { request as httpRequest } from 'node:http';
+import { URL } from 'node:url';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -15,21 +16,40 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-// ── Backend API Proxy ──────────────────────────────────────
+// ── Backend API Proxy (Node.js native) ─────────────────────
 const BACKEND_URL = process.env['BACKEND_URL'] || 'http://backend:3200';
 
-// WebSocket proxy
-app.use('/ws', createProxyMiddleware({
-  target: BACKEND_URL,
-  changeOrigin: true,
-  ws: true,
-}));
+const PROXY_PATHS = ['/api', '/ws', '/register', '/login', '/profil', '/updateProfile', '/changePassword', '/deleteAccount'];
 
-// REST API proxy
-app.use(['/api', '/register', '/login', '/profil', '/updateProfile', '/changePassword', '/deleteAccount'], createProxyMiddleware({
-  target: BACKEND_URL,
-  changeOrigin: true,
-}));
+function proxyToBackend(req: any, res: any) {
+  const target = new URL(BACKEND_URL);
+  const options = {
+    hostname: target.hostname,
+    port: target.port,
+    path: req.originalUrl,
+    method: req.method,
+    headers: { ...req.headers, host: target.host },
+  };
+
+  const proxyReq = httpRequest(options, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode || 500, proxyRes.headers);
+    proxyRes.pipe(res, { end: true });
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error('Proxy error:', err.message);
+    if (!res.headersSent) {
+      res.status(502).json({ error: 'Backend unavailable' });
+    }
+  });
+
+  req.pipe(proxyReq, { end: true });
+}
+
+PROXY_PATHS.forEach((path) => {
+  app.all(path, proxyToBackend);
+  app.all(`${path}/**`, proxyToBackend);
+});
 
 /**
  * Serve static files from /browser

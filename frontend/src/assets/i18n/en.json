@@ -37,7 +37,7 @@
   },
   "register": {
     "title": "Sign up",
-    "username": "Pseudo",
+    "username": "Last name",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm password",

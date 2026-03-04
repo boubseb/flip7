@@ -151,6 +151,16 @@
     color: var(--text-primary);
   }
 
+  .draw-three-prob {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+
+    @media (max-width: 480px) {
+      font-size: 0.7rem;
+    }
+  }
+
   .player-status {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;

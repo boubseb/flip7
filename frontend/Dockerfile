@@ -18,8 +18,8 @@ WORKDIR /app
 COPY --from=build /app/dist/flip7-frontend ./dist/flip7-frontend
 
 # Install only production dependencies for the SSR server
-COPY --from=build /app/package.json ./
-RUN npm ci --omit=dev 2>/dev/null || true
+COPY --from=build /app/package.json /app/package-lock.json* ./
+RUN npm ci --omit=dev || npm install --omit=dev
 
 EXPOSE 4000
 
