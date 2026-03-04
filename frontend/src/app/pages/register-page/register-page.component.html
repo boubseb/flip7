@@ -2,30 +2,28 @@
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
         <h1>{{ 'register.title' | translate }}</h1>
 
-        <label for="name">{{ 'register.username' | translate }} *</label>
-        <input id="name" formControlName="name" type="text" required [title]="'register.username' | translate">
-
-        <label for="lastName">{{ 'register.firstName' | translate }} *</label>
-        <input id="lastName" formControlName="lastName" type="text" required [title]="'register.firstNamePlaceholder' | translate">
-
-        <label for="birthDate">{{ 'register.birthDate' | translate }} *</label>
-        <input id="birthDate" formControlName="birthDate" type="date" required
-            [title]="'register.birthDatePlaceholder' | translate">
 
         <label for="pseudo">{{ 'register.pseudo' | translate }} *</label>
         <input id="pseudo" formControlName="pseudo" type="text" required [title]="'register.pseudoPlaceholder' | translate">
 
+        <label for="firstName">{{ 'register.firstName' | translate }} *</label>
+        <input id="firstName" formControlName="firstName" type="text" required [title]="'register.firstNamePlaceholder' | translate">
+
+        <label for="lastName">{{ 'register.username' | translate }} *</label>
+        <input id="lastName" formControlName="lastName" type="text" required [title]="'register.username' | translate">
+
+        <label for="birthDate">{{ 'register.birthDate' | translate }} *</label>
+        <input id="birthDate" formControlName="birthDate" type="date" required [title]="'register.birthDatePlaceholder' | translate">
+
+
         <label for="Mail">{{ 'register.email' | translate }} *</label>
-        <input id="Mail" formControlName="mailAddress" type="email" required
-            [title]="'register.email' | translate">
+        <input id="Mail" formControlName="mailAddress" type="email" required [title]="'register.email' | translate">
 
         <label for="password">{{ 'register.password' | translate }} * {{ 'register.passwordRequirements' | translate }}</label>
-        <input id="password" formControlName="password" type="password" required
-            [title]="'register.password' | translate">
+        <input id="password" formControlName="password" type="password" required [title]="'register.password' | translate">
 
         <label for="confirmationPassword">{{ 'register.confirmPassword' | translate }} *</label>
-        <input id="confirmationPassword" formControlName="passwordConfirmation" type="password" required
-            [title]="'register.confirmPassword' | translate">
+        <input id="confirmationPassword" formControlName="passwordConfirmation" type="password" required [title]="'register.confirmPassword' | translate">
 
         <button id="register-button" type="submit">{{ 'register.registerButton' | translate }}</button>
 </form>
