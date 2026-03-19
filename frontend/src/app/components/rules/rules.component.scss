@@ -1,0 +1,109 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.rules-container {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  padding: 2rem 1rem;
+  overflow-y: auto;
+  box-sizing: border-box;
+  color: var(--text-primary);
+
+  @media (min-width: 769px) {
+    padding: 3rem 2rem;
+  }
+
+  .rules-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    margin-top: 1rem;
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  .rules-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+
+    h2 {
+      font-size: 1.75rem;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    ul, ol {
+      margin-left: 1.5rem;
+      
+      li {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+      }
+    }
+
+    .card-types {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+
+      .card-type {
+        padding: 1rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+
+        h3 {
+          font-size: 1.25rem;
+          color: var(--text-primary);
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          font-size: 1rem;
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .rules-title {
+      font-size: 2rem;
+    }
+
+    .rules-section {
+      padding: 1rem;
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      p, ul li, ol li {
+        font-size: 1rem;
+      }
+    }
+  }
+}

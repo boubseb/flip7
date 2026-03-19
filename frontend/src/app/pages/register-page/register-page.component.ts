@@ -1,0 +1,63 @@
+import { Component, inject } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { User } from '../../models/user/user';
+import { AuthenticationService } from '../../services/authentication/authentification.service';
+import { FooterComponent } from '../../components/footer/footer.component';
+import { TranslateModule } from '@ngx-translate/core';
+
+@Component({
+  selector: 'app-register-page',
+  standalone: true,
+  imports: [ReactiveFormsModule, FooterComponent, TranslateModule],
+  templateUrl: './register-page.component.html',
+  styleUrl: './register-page.component.scss'
+})
+export class RegisterPageComponent {
+  registerForm: FormGroup;
+  user?: User;
+  router = inject(Router);
+
+  authentificationService = inject(AuthenticationService);
+
+  constructor(private fb: FormBuilder) {
+    this.registerForm = this.fb.group({
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
+      birthDate: ['', [Validators.required]],
+      pseudo: ['', [Validators.required]],
+      mailAddress: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(4)]],
+      passwordConfirmation: ['', [Validators.required]],
+    }, { });
+  }
+
+  // passwordValidator(control: FormControl): { [key: string]: boolean } | null {
+  //   const value = control.value;
+  //   if (!/[A-Z]/.test(value) || !/[0-9]/.test(value) || !/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+  //     return { 'weakPassword': true };
+  //   }
+  //   return null;
+  // }
+
+
+  onSubmit(): void {
+    console.log(this.registerForm.value);
+    if (this.registerForm.valid) {
+      
+      this.user = new User(
+        this.registerForm.value.pseudo,
+        this.registerForm.value.lastName,
+        this.registerForm.value.name,
+        this.registerForm.value.password,
+        this.registerForm.value.mailAddress,
+        this.registerForm.value.birthDate,
+      );
+      this.authentificationService.register(this.user).subscribe(() => {
+        this.router.navigateByUrl('/');
+      });
+    } else {
+      // Handle form errors
+    }
+  }
+}

@@ -1,0 +1,118 @@
+@use "import" as *;
+@use '@angular/material' as mat;
+
+/* ===========================
+   THEME VARIABLES
+   =========================== */
+
+:root {
+  /* Light Theme (default) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --border-color: #e2e8f0;
+  --border-hover: #cbd5e1;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-hover: rgba(0, 0, 0, 0.15);
+  
+  /* Card colors */
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-shadow: rgba(0, 0, 0, 0.08);
+  
+  /* Button colors */
+  --btn-primary-bg: #3b82f6;
+  --btn-primary-hover: #2563eb;
+  --btn-secondary-bg: #64748b;
+  --btn-secondary-hover: #475569;
+  --btn-success-bg: #10b981;
+  --btn-success-hover: #059669;
+  --btn-danger-bg: #ef4444;
+  --btn-danger-hover: #dc2626;
+  
+  /* Game specific */
+  --game-board-bg: #1e293b;
+  --player-board-bg: rgba(255, 255, 255, 0.95);
+  --popup-overlay: rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme {
+  /* Dark Theme */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
+  --border-color: #334155;
+  --border-hover: #475569;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-hover: rgba(0, 0, 0, 0.4);
+  
+  /* Card colors */
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --card-shadow: rgba(0, 0, 0, 0.3);
+  
+  /* Button colors */
+  --btn-primary-bg: #3b82f6;
+  --btn-primary-hover: #2563eb;
+  --btn-secondary-bg: #475569;
+  --btn-secondary-hover: #334155;
+  --btn-success-bg: #10b981;
+  --btn-success-hover: #059669;
+  --btn-danger-bg: #ef4444;
+  --btn-danger-hover: #dc2626;
+  
+  /* Game specific */
+  --game-board-bg: #0f172a;
+  --player-board-bg: rgba(30, 41, 59, 0.95);
+  --popup-overlay: rgba(0, 0, 0, 0.7);
+}
+
+/* ===========================
+   GLOBAL STYLES
+   =========================== */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* HEADER */
+app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: $headerHeight;
+}
+
+
+
+/* FOOTER */
+app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: $footerHeight;
+}
+
+/* MAIN prend exactement l'espace entre header et footer */
+main {
+  position: absolute;
+  top: var(--header-height, $headerHeight);   /* espace égal à la hauteur du header */
+  left: 0;
+  right: 0;
+  bottom: 0; /* prend toute la hauteur jusqu'en bas */
+  overflow: hidden;
+}

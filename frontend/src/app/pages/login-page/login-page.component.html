@@ -1,0 +1,40 @@
+<div class="login-container">
+    <form class="login-form">
+        <h1 class="connect">
+            {{ 'login.title' | translate }}
+        </h1>
+        <div class="input-container">
+            <div class="inputLogin">
+                <label for="login" class="formatText">
+                    {{ 'login.username' | translate }} :
+                </label>
+            </div>
+
+            <div class="inputLogin">
+                <input id="login" name="login" type="text" [(ngModel)]="login.login"
+                    [ngModelOptions]="{standalone: true}" />
+            </div>
+
+            <div class="inputLogin">
+                <label for="password" class="formatText">
+                    {{ 'login.password' | translate }} :
+                </label>
+            </div>
+
+            <div class="inputLogin">
+                <input id="password" name="password" type="password" [(ngModel)]="login.password"
+                    [ngModelOptions]="{standalone: true}" />
+            </div>
+        </div>
+        <button (click)="onLogin(login.login,login.password)" class="connectButton">{{ 'login.loginButton' | translate }}</button>
+        <div>
+            <a class="registerButton" routerLink="/register">{{ 'login.register' | translate }}</a>
+
+            <a class="forgot-password">
+                {{ 'login.forgotPassword' | translate }}
+            </a>
+        </div>
+
+    </form>
+</div>
+<app-footer></app-footer>

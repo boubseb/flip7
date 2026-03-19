@@ -1,0 +1,191 @@
+.revealed-cards-container {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+  
+  // Statut: En cours de jeu (blanc/neutre)
+  &.status-playing {
+    background: var(--card-bg);
+  }
+
+  // Statut: Arrêt volontaire (vert clair)
+  &.status-stopped {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left: 4px solid #10b981;
+  }
+
+  // Statut: Arrêt forcé par carte Stop (orange clair)
+  &.status-forced_stop {
+    background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    border-left: 4px solid #f97316;
+  }
+
+  // Statut: Flip7 réussi (bleu clair)
+  &.status-flip7_stop {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-left: 4px solid #3b82f6;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  }
+
+  // Statut: Éliminé (rouge clair)
+  &.status-eliminated {
+    background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+    border-left: 4px solid #ef4444;
+    opacity: 0.85;
+  }
+
+  // Statut: En attente (gris clair)
+  &.status-waiting {
+    background: var(--bg-tertiary);
+    opacity: 0.7;
+  }
+  
+  .cards-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    
+    .cards-count {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .score-separator {
+      color: var(--text-tertiary);
+      font-weight: 400;
+    }
+    
+    .cards-score {
+      font-weight: 700;
+      color: #f59e0b;
+      font-size: 0.9rem;
+    }
+  }
+  
+  .cards-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    
+    .card {
+      position: relative;
+      width: 50px;
+      height: 70px;
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px var(--card-shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px var(--shadow-hover);
+      }
+      
+      .card-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1;
+      }
+      
+      // Default card styling
+      color: #2c3e50;
+      border-color: #34495e;
+      
+      // Cartes opérateurs (+2, +4, +6, +8, +10, ×2) - ORANGE doux
+      &.card-operator {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.7) 0%, rgba(234, 88, 12, 0.7) 100%);
+        border-color: #fb923c;
+        color: var(--text-primary);
+        font-weight: 700;
+      }
+      
+      // Cartes nombres basses/moyennes (0-9) - BLEU doux
+      &.card-number {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.7) 0%, rgba(37, 99, 235, 0.7) 100%);
+        border-color: #60a5fa;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      
+      // Cartes nombres hautes (10, 11, 12) - VIOLET/POURPRE
+      &.card-number-high {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.7) 0%, rgba(147, 51, 234, 0.7) 100%);
+        border-color: #c084fc;
+        color: var(--text-primary);
+        font-weight: 700;
+      }
+      
+      // Cartes spéciales
+      &.card-special {
+        background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+        border-width: 3px;
+        
+        &.card-life {
+          border-color: #dc2626;
+          color: var(--text-primary);
+          background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+          font-weight: 600;
+          
+          // Carte Vie utilisée : devient noire
+          &.life-used {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border-color: #374151;
+            opacity: 0.8;
+          }
+        }
+        
+        &.card-stop {
+          border-color: #e74c3c;
+          color: #e74c3c;
+          background: linear-gradient(135deg, #fadbd8 0%, #f5b7b1 100%);
+        }
+        
+        &.card-draw_three {
+          border-color: #3498db;
+          color: #3498db;
+          background: linear-gradient(135deg, #d6eaf8 0%, #aed6f1 100%);
+        }
+      }
+      
+      // Carte barrée (annulée par la carte Vie)
+      &.cancelled {
+        opacity: 0.6;
+        position: relative;
+        filter: grayscale(30%);
+        
+        .cancel-line {
+          position: absolute;
+          top: 50%;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: #ef4444;
+          transform: translateY(-50%) rotate(-15deg);
+          box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+          z-index: 10;
+        }
+      }
+    }
+  }
+  
+  .no-cards {
+    padding: 1rem;
+    text-align: center;
+    color: #95a5a6;
+    font-style: italic;
+    
+    .placeholder-text {
+      font-size: 0.9rem;
+    }
+  }
+}

@@ -1,0 +1,149 @@
+<div class="room-page-container">
+  <!-- Messages -->
+  @if (errorMessage) {
+    <div class="message-banner error">
+      <span>❌ {{ errorMessage }}</span>
+      <button (click)="clearMessages()">✕</button>
+    </div>
+  }
+
+  @if (successMessage) {
+    <div class="message-banner success">
+      <span>✅ {{ successMessage }}</span>
+      <button (click)="clearMessages()">✕</button>
+    </div>
+  }
+
+  <!-- CREATE VIEW (create room form) -->
+  @if (currentView === 'create') {
+    <div class="create-view">
+      <div class="view-header">
+        <button class="btn-back" (click)="backToHome()">← {{ 'room.back' | translate }}</button>
+        <h1>🆕 {{ 'room.createRoom' | translate }}</h1>
+        <button class="btn-switch" (click)="switchToJoin()">🚺 {{ 'room.join' | translate }}</button>
+      </div>
+
+      <div class="form-container">
+        <div class="form-group">
+          <label>{{ 'room.roomPassword' | translate }}</label>
+          <input 
+            type="password" 
+            [(ngModel)]="createRoomPassword" 
+            [placeholder]="'room.enterPassword' | translate"
+            (keyup.enter)="createRoom()">
+        </div>
+        <div class="form-group">
+          <label>{{ 'room.maxPlayers' | translate }}</label>
+          <input 
+            type="number" 
+            [(ngModel)]="createRoomMaxPlayers" 
+            min="2" 
+            max="8"
+            placeholder="4">
+        </div>
+        <div class="form-group">
+          <label>{{ 'room.targetScore' | translate }}</label>
+          <input 
+            type="number" 
+            [(ngModel)]="createRoomTargetScore" 
+            min="50" 
+            max="500"
+            step="50"
+            placeholder="200">
+        </div>
+        <div>
+          <label>
+            <input type="checkbox" [(ngModel)]="createRoomStatisticsEnabled">
+            {{ 'room.statisticsOption' | translate }}
+          </label>
+        </div>
+        <button class="btn btn-primary btn-large" (click)="createRoom()">
+          🎯 {{ 'room.createRoom' | translate }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- JOIN VIEW (room browser with tabs) -->
+  @if (currentView === 'join') {
+    <div class="join-view">
+      <div class="view-header">
+        <button class="btn-back" (click)="backToHome()">← {{ 'room.back' | translate }}</button>
+        <h1>🚪 {{ 'room.joinRoom' | translate }}</h1>
+        <button class="btn-switch" (click)="switchToCreate()">🆕 {{ 'room.create' | translate }}</button>
+      </div>
+
+      <div class="join-content">
+        <app-room-browser
+          [availableRooms]="availableRooms"
+          (onJoinById)="handleJoinById($event)"
+          (onRefreshRooms)="loadAvailableRooms()">
+        </app-room-browser>
+      </div>
+    </div>
+  }
+
+  <!-- WAITING ROOM VIEW (when in a room) -->
+  @if (currentView === 'waiting' && currentRoom) {
+    <div class="waiting-room">
+      <div class="room-header">
+        <h1>🎮 {{ 'room.waitingRoom' | translate }}</h1>
+        <button class="btn-leave" (click)="leaveRoom()">❌</button>
+      </div>
+
+      <div class="room-id-display">
+        <label>{{ 'room.roomId' | translate }}:</label>
+        <code class="room-id-code">{{ currentRoom.id }}</code>
+        <button class="btn-copy-id" (click)="copyRoomId()" [title]="'room.copyRoomId' | translate">
+          📋 {{ 'room.copy' | translate }}
+        </button>
+      </div>
+
+      <div class="players-section">
+        <div class="players-header">
+          <h2>{{ 'room.playersInRoom' | translate }} ({{ currentRoom.players.length }}/{{ currentRoom.maxPlayers }})</h2>
+          <button class="btn-refresh" (click)="refreshCurrentRoom()" [title]="'room.browseTab.refresh' | translate">🔄</button>
+        </div>
+        <div class="players-list">
+          @for (playerId of currentRoom.players; track playerId; let i = $index) {
+            <div class="player-card">
+              <span class="player-number">{{ i + 1 }}</span>
+              <span class="player-id">{{ getPlayerPseudo(playerId) }}</span>
+              @if (playerId === currentUserId) {
+                <span class="badge-you">{{ 'room.you' | translate }}</span>
+              }
+              @if (playerId === currentRoom.adminId) {
+                <span class="badge-admin">👑 {{ 'room.admin' | translate }}</span>
+              }
+              @if (isAdmin && playerId !== currentUserId) {
+                <button 
+                  class="btn-kick" 
+                  (click)="kickPlayer(playerId)"
+                  [title]="'room.kickPlayer' | translate">
+                  ❌
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Bouton unique pour tous, texte et état selon admin ou non -->
+      <button 
+        class="btn-start-game" 
+        [disabled]="currentRoom.players.length < 2 || !isAdmin"
+        (click)="isAdmin ? startGame() : null">
+        <ng-container *ngIf="currentRoom.players.length < 2">
+          <span>⏳ {{ 'room.waitingForPlayers' | translate }}</span>
+        </ng-container>
+        <ng-container *ngIf="currentRoom.players.length >= 2 && isAdmin">
+          <span>🎮 {{ 'room.startGame' | translate }}</span>
+        </ng-container>
+        <ng-container *ngIf="currentRoom.players.length >= 2 && !isAdmin">
+          <span>⏳ {{ 'room.waitingForAdminToStart' | translate }}</span>
+        </ng-container>
+      </button>
+    </div>
+  }
+</div>
+<app-footer></app-footer>

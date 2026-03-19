@@ -1,0 +1,19 @@
+<div 
+  class="card" 
+  [class.selectable]="selectable"
+  [class.selected]="selected"
+  [style.background]="getCardColor()"
+  (click)="onCardClick()">
+  
+  <div class="card-content">
+    @if (getCardIcon()) {
+      <div class="card-icon">
+        {{ getCardIcon() }}
+      </div>
+    } @else {
+      <div class="card-value">
+        {{ card.displayName }}
+      </div>
+    }
+  </div>
+</div>

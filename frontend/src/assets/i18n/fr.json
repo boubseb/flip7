@@ -1,0 +1,418 @@
+{
+  "common": {
+    "appName": "Flip7",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "back": "Retour"
+  },
+  "header": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "theme": "Thème",
+    "language": "Langue"
+  },
+  "footer": {
+    "copyright": "© 2024 Flip7. Tous droits réservés.",
+    "version": "Version"
+  },
+  "login": {
+    "title": "Connexion",
+    "username": "Pseudo",
+    "password": "Mot de passe",
+    "loginButton": "Se connecter",
+    "register": "S'inscrire",
+    "forgotPassword": "Mot de passe oublié ?",
+    "errors": {
+      "invalidCredentials": "Identifiants invalides",
+      "serverError": "Erreur serveur"
+    }
+  },
+  "register": {
+    "title": "Inscription",
+    "username": "Nom",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "registerButton": "S'inscrire",
+    "alreadyAccount": "Déjà un compte ?",
+    "loginLink": "Se connecter",
+    "firstName": "Prénom",
+    "birthDate": "Date de naissance",
+    "pseudo": "Pseudo",
+    "firstNamePlaceholder": "Veuillez entrer votre prénom.",
+    "birthDatePlaceholder": "Veuillez entrer votre date de naissance.",
+    "pseudoPlaceholder": "Veuillez entrer votre pseudo.",
+    "passwordRequirements": "(8 caractères min, num, maj, spé)",
+    "emailError": "L'email est invalide",
+    "passwordError": "Minimum 6 caractères",
+    "passwordMatchError": "Les mots de passe ne correspondent pas",
+    "errors": {
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "usernameTaken": "Pseudo déjà pris",
+      "invalidEmail": "Email invalide"
+    }
+  },
+  "home": {
+    "title": "Bienvenue sur Flip7",
+    "subtitle": "Le jeu de cartes stratégique",
+    "createRoom": "Créer une partie",
+    "joinRoom": "Rejoindre une partie",
+    "rules": "Règles du jeu",
+    "stats": "Statistiques",
+    "statistics": "Mes Statistiques"
+  },
+  "room": {
+    "title": "Salon",
+    "createRoom": "Créer une room",
+    "joinRoom": "Rejoindre une room",
+    "back": "Retour",
+    "create": "Créer",
+    "join": "Rejoindre",
+    "roomPassword": "Mot de passe de la room",
+    "enterPassword": "Entrez un mot de passe",
+    "maxPlayers": "Nombre maximum de joueurs",
+    "waitingRoom": "Salle d'attente",
+    "roomId": "ID de la room",
+    "copy": "Copier",
+    "playersInRoom": "Joueurs dans la room",
+    "you": "Vous",
+    "admin": "Admin",
+    "startGame": "Lancer la partie",
+    "waitingForPlayers": "En attente d'un autre joueur...",
+    "waitingForAdmin": "En attente que l'admin lance la partie...",
+    "waitingForMorePlayers": "En attente d'autres joueurs...",
+    "password": "Mot de passe",
+    "players": "Joueurs",
+    "waiting": "En attente de joueurs...",
+    "ready": "Prêt",
+    "notReady": "Pas prêt",
+    "leaveRoom": "Quitter",
+    "copyRoomId": "Copier l'ID",
+    "shareRoom": "Partager",
+    "minPlayers": "Minimum {{min}} joueurs requis",
+  "newGame": "Nouvelle partie",
+  "waitingForAdminToStart": "En attente que l'admin lance la partie...",
+    "kickPlayer": "Retirer ce joueur",
+    "statisticsOption": "Activer les statistiques (afficher la proba d'élimination)",
+    "targetScore": "Score cible pour gagner",
+    "errors": {
+      "loadingRooms": "Erreur lors du chargement des rooms",
+      "notInRoom": "Vous ne faites pas partie de cette room",
+      "roomNotFound": "Room introuvable",
+      "passwordRequired": "Le mot de passe est requis",
+      "invalidMaxPlayers": "Le nombre de joueurs doit être entre 2 et 12",
+      "createError": "Erreur lors de la création de la room",
+      "credentialsRequired": "ID et mot de passe requis",
+      "joinError": "Mot de passe incorrect ou room introuvable",
+      "reconnectionFailed": "Impossible de se reconnecter (room expirée ou fermée)",
+      "minPlayersRequired": "Au moins 2 joueurs sont requis pour lancer la partie",
+      "startGameError": "Erreur lors du démarrage de la partie",
+      "refreshError": "Erreur lors du rafraîchissement",
+      "cannotKickYourself": "Vous ne pouvez pas vous retirer vous-même",
+      "kickPlayerError": "Erreur lors du retrait du joueur"
+    },
+    "success": {
+      "roomCreated": "Room créée ! ID: {{roomId}}",
+      "roomJoined": "Room rejointe avec succès !",
+      "reconnected": "Reconnecté à la partie !",
+      "idCopied": "✅ ID copié dans le presse-papier !",
+      "playersRefreshed": "✅ Liste des joueurs mise à jour !",
+      "playerKicked": "✅ Joueur retiré de la room !"
+    },
+    "browseTabs": {
+      "browse": "Parcourir les salles",
+      "joinById": "Rejoindre par ID"
+    },
+    "joinByIdTab": {
+      "title": "Rejoindre par ID",
+      "roomIdLabel": "ID de la salle",
+      "roomIdPlaceholder": "Coller l'ID de la salle",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Mot de passe de la salle",
+      "joinButton": "Rejoindre la salle"
+    },
+    "browseTab": {
+      "title": "Salles disponibles",
+      "searchPlaceholder": "🔍 Rechercher par ID ou statut...",
+      "refresh": "Rafraîchir",
+      "roomIdLabel": "ID",
+      "players": "Joueurs",
+      "status": "Statut",
+      "noResults": "Aucune salle trouvée pour \"{{query}}\"",
+      "noRooms": "Aucune salle disponible",
+      "noRoomsSubtext": "Soyez le premier à en créer une !",
+      "clickToJoin": "Cliquer pour rejoindre cette salle"
+    }
+  },
+  "GAME": {
+    "GAME_OVER": "Partie Terminée",
+    "HAS_WON": "a remporté la victoire",
+    "FINAL_RANKINGS": "Classement Final",
+    "WINNER": "Vainqueur",
+    "POINTS": "pts",
+    "PLAY_AGAIN": "Rejouer",
+    "LEAVE_ROOM": "Quitter la salle",
+    "BACK_TO_HOME": "Retour à l'accueil",
+    "HIDE_TEMPORARILY": "Masquer temporairement",
+  "CLICK_TO_SHOW": "Cliquer pour afficher"
+  },
+  "game": {
+      "statsPopup": {
+  "survivalChance": "{{value}}% survie",
+      "title": "Probabilité d'élimination",
+      "desc": "Cette estimation est basée sur les cartes visibles et le deck restant.",
+      "close": "Fermer",
+      "na": "N/A"
+    },
+    "yourTurn": "C'est votre tour !",
+    "waitingFor": "En attente de {{player}}...",
+    "deck": "Pioche",
+    "discard": "Défausse",
+    "hand": "Main",
+    "playCard": "Jouer une carte",
+    "draw": "Piocher",
+    "pass": "Passer",
+    "winner": "{{player}} a gagné !",
+    "gameOver": "Partie terminée",
+    "newGame": "Nouvelle partie",
+    "round": "Round",
+    "score": "Score",
+    "total": "Total",
+    "centerCards": "Cartes au centre",
+    "hit": "Piocher",
+    "stop": "Stop",
+    "you": "Vous",
+    "gameOrder": "Ordre de jeu",
+    "currentRanking": "Classement actuel",
+    "theoreticalRanking": "Classement théorique",
+    "cardsCount": "carte(s)",
+    "noCardsRevealed": "Aucune carte découverte",
+    "roundScore": "Score du tour",
+    "totalScore": "Score total",
+    "noPlayers": "Aucun joueur dans la partie",
+    "cardCountSingular": "carte",
+    "cardCountPlural": "cartes",
+    "START_ROUND_YOUR_TURN": "C'est à vous de commencer le round {{round}} !",
+    "START_ROUND_WAITING": "En attente de {{player}} pour démarrer le round {{round}}...",
+    "START_ROUND_BUTTON": "Commencer le round",
+    "START_ROUND_READY": "Cliquez quand vous êtes prêt",
+    "PLEASE_WAIT": "Veuillez patienter...",
+    "loadingGame": "Chargement de la partie...",
+    "loadingRoom": "Chargement de la room...",
+    "cards": {
+      "number": "Carte numéro",
+      "operator": "Carte opérateur",
+      "special": "Carte spéciale",
+      "life": "Vie",
+      "stop": "Stop",
+      "drawThree": "+3"
+    },
+    "actions": {
+      "selectPlayer": "Sélectionnez un joueur",
+      "selectTarget": "Choisir une cible",
+      "useLifeCard": "Utiliser la carte Vie",
+      "assignStop": "Assigner Stop",
+      "assignDrawThree": "Assigner +3",
+      "mustDraw": "Vous devez piocher {{count}} cartes",
+      "stopped": "Vous êtes arrêté !"
+    },
+    "playerSelector": {
+      "stopCard": {
+        "title": "🛑 Carte Stop",
+        "description": "Choisissez le joueur qui recevra la carte Stop et sera forcé de s'arrêter :"
+      },
+      "drawThreeCard": {
+        "title": "➕3️⃣ Carte +3",
+        "description": "Choisissez le joueur qui recevra la carte +3 et devra piocher 3 cartes :"
+      },
+      "eligibleCount": "{{count}} joueur(s) éligible(s)",
+      "you": "🎮 Vous",
+      "noPlayers": "Aucun joueur éligible disponible",
+      "obligation": "⚠️ Vous devez choisir un joueur pour continuer"
+    },
+    "status": {
+      "playing": "En cours",
+      "stopped": "Arrêté",
+      "drawing": "Pioche forcée",
+      "waiting": "En attente",
+      "eliminated": "Éliminé",
+      "winner": "Gagnant",
+      "eliminated_message": "Vous avez été éliminé",
+      "eliminated_during_draw_message": "Vous avez été éliminé (double pendant le +3 de {{player}})",
+      "stopped_message": "Vous vous êtes arrêté",
+      "forced_stop_message": "Vous avez reçu une carte Stop de {{player}}",
+      "forced_stop_self_message": "Vous vous êtes arrêté avec une carte Stop",
+      "flip7_stop_message": "Flip7 ! Vous êtes stoppé avec 7 points",
+      "your_turn": "Au tour de {{player}}",
+      "distributing": "Distribution des cartes en cours...",
+      "start_round": "Lancer le Round {{round}}",
+      "waiting_for_player": "En attente de {{player}}..."
+    },
+    "errors": {
+      "notInRoom": "Vous ne faites pas partie de cette room",
+      "cannotLoadGameState": "Impossible de récupérer l'état de la partie",
+      "roomNotFound": "Room introuvable",
+      "gameNotFoundAfterRestart": "La partie a été perdue suite à un redémarrage du serveur. Veuillez retourner à la salle d'attente et relancer la partie.",
+      "duplicate": "Double ! Vous êtes éliminé !",
+      "errorDrawing": "Erreur lors de la pioche",
+      "errorStopping": "Erreur lors de l'arrêt",
+      "notYourTurn": "Ce n'est pas votre tour",
+      "noStopCard": "Aucune carte Stop à assigner",
+      "errorAssignStop": "Erreur lors de l'assignation de la carte Stop",
+      "noDrawThreeCard": "Aucune carte DrawThree à assigner",
+      "errorAssignDrawThree": "Erreur lors de l'assignation de la carte DrawThree",
+      "notYourTurnToStart": "Ce n'est pas à vous de démarrer le round",
+      "errorStartRound": "Erreur lors du démarrage du round"
+    },
+    "success": {
+      "flip7": "🎯 FLIP7 ! 7 cartes numérotées différentes ! +15 points bonus !"
+    }
+  },
+  "rules": {
+    "title": "Règles du Jeu - Flip7",
+    "objective": {
+      "title": "🎯 Objectif du Jeu",
+      "description": "Être le premier à atteindre 200 points pour déclencher la fin de partie. Les points sont marqués selon la somme des cartes numérotées devant soi. Retourner 7 cartes numérotées met fin au tour et rapporte 15 points bonus. Attention : si vous piochez une carte déjà présente dans votre rangée, vous êtes éliminé du tour et ne marquez aucun point !"
+    },
+    "deck": {
+      "title": "🎴 Composition du Jeu",
+      "description": "Le jeu contient : douze 12, onze 11, dix 10... jusqu'à un 1, et un 0 (qui vaut 0 point). Plus la valeur est élevée, plus il y a d'exemplaires.",
+      "cards": "Il existe aussi des cartes Action (Flip Three, Freeze, Second Chance) et des cartes Modificateur (+2 à +10, x2)."
+    },
+    "setup": {
+      "title": "📋 Mise en Place",
+      "step1": "Mélangez le jeu et désignez un donneur.",
+      "step2": "Le donneur distribue une carte face visible à chaque joueur (lui compris).",
+      "step3": "Si une carte Action apparaît, arrêtez la distribution et résolvez-la immédiatement.",
+      "step4": "Une fois toutes les cartes Action résolues, continuez la distribution jusqu'à ce que chacun ait au moins une carte."
+    },
+    "gameplay": {
+      "title": "▶️ Déroulement du Tour",
+      "description": "À tour de rôle, chaque joueur choisit de piocher une carte (HIT) ou de s'arrêter (STOP) pour conserver ses points.",
+      "hit": "HIT : Piochez une carte et ajoutez-la à votre rangée. Placez les modificateurs au-dessus.",
+      "stop": "STOP : Quittez le tour et conservez vos points actuels.",
+      "bust": "BUST : Si vous piochez un doublon, vous êtes éliminé du tour et ne marquez aucun point.",
+      "flip7": "Flip7 : Si vous retournez 7 cartes numérotées, le tour s'arrête pour tous et vous gagnez 15 points bonus."
+    },
+    "actionCards": {
+      "title": "🎭 Cartes Action",
+      "description": "Les cartes Action sont jouées dès qu'elles apparaissent. Placez-les au-dessus de votre rangée.",
+      "freeze": {
+  "title": "FREEZE 🧊",
+  "description": "Le joueur qui reçoit cette carte est éliminé pour la fin du tour mais conserve les points déjà acquis."
+      },
+      "flipThree": {
+        "title": "FLIP THREE 🎴",
+        "description": "Le joueur doit piocher trois cartes d'affilée. Si une carte Action apparaît, elle est résolue après."
+      },
+      "secondChance": {
+        "title": "SECOND CHANCE 🍀",
+        "description": "Gardez cette carte. Si vous piochez un doublon, défaussez le doublon et la carte Second Chance. Une seule par joueur. Toutes sont défaussées en fin de tour."
+      }
+    },
+    "modifierCards": {
+      "title": "⭐ Cartes Modificateur",
+      "plus": "+2 à +10 : Ajoutez la valeur à votre total de points.",
+      "times": "x2 : Doublez la somme de vos cartes numérotées (hors autres modificateurs).",
+      "note": "Les cartes Action et Modificateur ne sont jamais détruites. Placez-les au-dessus de votre rangée."
+    },
+    "scoring": {
+      "title": "💯 Calcul des Points",
+      "step1": "Additionnez toutes vos cartes numérotées.",
+      "step2": "Doublez ce total si vous avez un x2.",
+      "step3": "Ajoutez tous les modificateurs (+2, +3, etc.).",
+      "step4": "Si vous avez retourné 7 cartes numérotées (Flip7), ajoutez 15 points bonus.",
+      "example": "Exemple : 11 + 5 + 12 = 28 points, +4 = 32 points."
+    },
+    "endTurn": {
+      "title": "⏹️ Fin du Tour",
+      "description": "Le tour se termine quand :",
+      "case1": "Il n'y a plus de joueurs actifs (tous éliminés ou arrêtés)",
+      "case2": "OU un joueur a retourné 7 cartes numérotées (Flip7)",
+      "next": "Mettez les cartes du tour de côté (ne les remélangez pas). Passez le paquet au joueur à gauche, il devient donneur."
+    },
+    "endGame": {
+      "title": "🏆 Fin de Partie",
+      "description": "La partie se termine si, à la fin d'un tour, au moins un joueur a atteint 200 points. Le joueur avec le PLUS de points gagne.",
+      "note": "Le premier à 200 points n'est pas forcément le vainqueur !"
+    },
+    "tips": {
+      "title": "💡 Conseils Stratégiques",
+      "tip1": "Comptez les cartes jouées et celles qui restent.",
+      "tip2": "Attention aux doublons, c'est le principal risque !",
+      "tip3": "Tenter le Flip7 rapporte 15 points bonus et termine le tour.",
+      "tip4": "Utilisez les cartes Action au bon moment contre vos adversaires."
+    }
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "personalInfo": "Informations personnelles",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "birthDate": "Date de naissance",
+    "firstNamePlaceholder": "Votre prénom",
+    "lastNamePlaceholder": "Votre nom",
+    "emailPlaceholder": "votre.email@exemple.com",
+    "firstNameError": "Le prénom est requis (min. 2 caractères)",
+    "lastNameError": "Le nom est requis (min. 2 caractères)",
+    "birthDateError": "La date de naissance est requise",
+    "username": "Pseudo",
+    "email": "Email",
+    "stats": "Statistiques",
+    "gamesPlayed": "Parties jouées",
+    "gamesWon": "Victoires",
+    "winRate": "Taux de victoire",
+    "bestScore": "Meilleur score",
+    "edit": "Modifier le profil",
+    "changePassword": "Changer le mot de passe",
+    "dangerZone": "Zone de danger",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteAccountWarning": "Une fois supprimé, votre compte ne pourra pas être récupéré. Cette action est irréversible.",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+    "success": {
+      "updateProfile": "Profil mis à jour avec succès !",
+      "changePassword": "Mot de passe modifié avec succès !"
+    },
+    "errors": {
+      "loadData": "Erreur lors du chargement des données",
+      "updateProfile": "Erreur lors de la mise à jour du profil",
+      "changePassword": "Erreur lors du changement de mot de passe",
+      "deleteAccount": "Erreur lors de la suppression du compte"
+    }
+  },
+  "statistics": {
+    "completedGames": "Parties finies",
+    "flip7": "Flip7 réalisés",
+    "roundsPlayed": "Rounds joués",
+    "eliminatedByDouble": "Éliminé par double",
+    "maxScoreInOneRound": "Plus gros score (1 round)",
+    "averagePointsPerRound": "Moyenne par round",
+    "averagePointsPerScoringRound": "Moyenne (rounds > 0)",
+    "stopCardsReceived": "Cartes Stop reçues",
+    "lifeCardsObtained": "Cartes Vie obtenues",
+    "drawThreeReceived": "Cartes +3 reçues",
+    "drawThreeCompleted": "+3 réussis",
+    "drawThreeWithElimination": "+3 avec élimination",
+    "globalStats": "Statistiques Globales",
+    "globalCompletedGames": "Parties finies (total)",
+    "globalAverageRoundsPerGame": "Moyenne rounds/partie",
+    "globalTotalFlip7": "Flip7 totaux",
+    "globalMaxScoreInOneRound": "Record absolu (1 round)",
+    "theoreticalMaxScore": "Score Théorique Maximum",
+    "stats": {
+      "info": "Voir mes chances d'élimination",
+      "title": "Statistiques de risque",
+      "eliminationChance": "Proba d'être éliminé par un double : ",
+      "unavailable": "Non disponible",
+      "close": "Fermer"
+    }
+  }
+}

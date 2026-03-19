@@ -1,0 +1,43 @@
+<footer class="footer" [class.game-footer]="isGamePage">
+  <!-- Game Page Footer: Action Buttons (Hit/Stop) -->
+  @if (isGamePage) {
+    <div class="game-actions">
+      <button 
+        class="btn btn-hit"
+        [disabled]="!isMyTurn || isEliminated"
+        [class.active]="isMyTurn && !isEliminated"
+        (click)="onHit()">
+        <span class="icon">�</span>
+        <span>Hit</span>
+      </button>
+      <button 
+        class="btn btn-stop"
+        [disabled]="!isMyTurn || isEliminated"
+        [class.active]="isMyTurn && !isEliminated"
+        (click)="onStop()">
+        <span class="icon">✋</span>
+        <span>Stop</span>
+      </button>
+    </div>
+  }
+
+  <!-- Standard Footer: FAQ, Credits, Social -->
+  @if (!isGamePage) {
+    <div class="containerFooter">
+      <a routerLink="construction">FAQ</a>
+      <div class="credits">
+        FLIP7
+      </div>
+      <div class="social">
+        <a routerLink="/home">
+          <img
+            class="iconDiscord"
+            src="\assets\pictures\discord-icone.png"
+            alt="logo Discod"
+          />
+        </a>
+      </div>
+    </div>
+  }
+</footer>
+

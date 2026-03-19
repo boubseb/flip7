@@ -1,0 +1,417 @@
+{
+  "common": {
+    "appName": "Flip7",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back"
+  },
+  "header": {
+    "home": "Home",
+    "profile": "Profile",
+    "logout": "Logout",
+    "theme": "Theme",
+    "language": "Language"
+  },
+  "footer": {
+    "copyright": "© 2024 Flip7. All rights reserved.",
+    "version": "Version"
+  },
+  "login": {
+    "title": "Login",
+    "username": "Pseudo",
+    "password": "Password",
+    "loginButton": "Log in",
+    "register": "Sign up",
+    "forgotPassword": "Forgot password?",
+    "errors": {
+      "invalidCredentials": "Invalid credentials",
+      "serverError": "Server error"
+    }
+  },
+  "register": {
+    "title": "Sign up",
+    "username": "Last name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "registerButton": "Sign up",
+    "alreadyAccount": "Already have an account?",
+    "loginLink": "Log in",
+    "firstName": "First name",
+    "birthDate": "Birth date",
+    "pseudo": "Pseudo",
+    "firstNamePlaceholder": "Please enter your first name.",
+    "birthDatePlaceholder": "Please enter your birth date.",
+    "pseudoPlaceholder": "Please enter your pseudo.",
+    "passwordRequirements": "(8 chars min, number, uppercase, special)",
+    "emailError": "Invalid email",
+    "passwordError": "Minimum 6 characters",
+    "passwordMatchError": "Passwords do not match",
+    "errors": {
+      "passwordMismatch": "Passwords do not match",
+      "usernameTaken": "Pseudo already taken",
+      "invalidEmail": "Invalid email"
+    }
+  },
+  "home": {
+    "title": "Welcome to Flip7",
+    "subtitle": "The strategic card game",
+    "createRoom": "Create a game",
+    "joinRoom": "Join a game",
+    "rules": "Game rules",
+    "stats": "Statistics"
+  },
+  "room": {
+    "statisticsOption": "Enable statistics (show elimination chance)",
+    "targetScore": "Target score to win",
+    "title": "Room",
+    "createRoom": "Create room",
+    "joinRoom": "Join room",
+    "back": "Back",
+    "create": "Create",
+    "join": "Join",
+    "roomPassword": "Room password",
+    "enterPassword": "Enter a password",
+    "maxPlayers": "Maximum number of players",
+    "waitingRoom": "Waiting room",
+    "roomId": "Room ID",
+    "copy": "Copy",
+    "playersInRoom": "Players in room",
+    "you": "You",
+    "admin": "Admin",
+    "startGame": "Start game",
+    "waitingForPlayers": "Waiting for another player...",
+    "waitingForAdmin": "Waiting for admin to start the game...",
+    "waitingForMorePlayers": "Waiting for more players...",
+    "password": "Password",
+    "players": "Players",
+    "waiting": "Waiting for players...",
+    "ready": "Ready",
+    "notReady": "Not ready",
+    "leaveRoom": "Leave",
+    "copyRoomId": "Copy ID",
+    "shareRoom": "Share",
+    "minPlayers": "Minimum {{min}} players required",
+  "newGame": "New game",
+  "waitingForAdminToStart": "Waiting for the admin to start the game...",
+    "kickPlayer": "Kick this player",
+    "errors": {
+      "loadingRooms": "Error loading rooms",
+      "notInRoom": "You are not part of this room",
+      "roomNotFound": "Room not found",
+      "passwordRequired": "Password is required",
+      "invalidMaxPlayers": "Number of players must be between 2 and 12",
+      "createError": "Error creating the room",
+      "credentialsRequired": "ID and password required",
+      "joinError": "Incorrect password or room not found",
+      "reconnectionFailed": "Unable to reconnect (room expired or closed)",
+      "minPlayersRequired": "At least 2 players are required to start the game",
+      "startGameError": "Error starting the game",
+      "refreshError": "Error refreshing",
+      "cannotKickYourself": "You cannot kick yourself",
+      "kickPlayerError": "Error kicking player"
+    },
+    "success": {
+      "roomCreated": "Room created! ID: {{roomId}}",
+      "roomJoined": "Successfully joined room!",
+      "reconnected": "Reconnected to the game!",
+      "idCopied": "✅ ID copied to clipboard!",
+      "playersRefreshed": "✅ Player list updated!",
+      "playerKicked": "✅ Player removed from room!"
+    },
+    "browseTabs": {
+      "browse": "Browse Rooms",
+      "joinById": "Join by ID"
+    },
+    "joinByIdTab": {
+      "title": "Join by ID",
+      "roomIdLabel": "Room ID",
+      "roomIdPlaceholder": "Paste room ID",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Room password",
+      "joinButton": "Join Room"
+    },
+    "browseTab": {
+      "title": "Available Rooms",
+      "searchPlaceholder": "🔍 Search by ID or status...",
+      "refresh": "Refresh",
+      "roomIdLabel": "ID",
+      "players": "Players",
+      "status": "Status",
+      "noResults": "No rooms found matching \"{{query}}\"",
+      "noRooms": "No rooms available",
+      "noRoomsSubtext": "Be the first to create one!",
+      "clickToJoin": "Click to join this room"
+    }
+  },
+  "GAME": {
+    "GAME_OVER": "Game Over",
+    "HAS_WON": "has won the game",
+    "FINAL_RANKINGS": "Final Rankings",
+    "WINNER": "Winner",
+    "POINTS": "pts",
+    "PLAY_AGAIN": "Play Again",
+    "LEAVE_ROOM": "Leave Room",
+    "BACK_TO_HOME": "Back to Home",
+    "HIDE_TEMPORARILY": "Hide Temporarily",
+  "CLICK_TO_SHOW": "Click to show"
+  },
+  "game": {
+      "statsPopup": {
+  "survivalChance": "{{value}}% survival",
+      "title": "Elimination Probability",
+      "desc": "This estimate is based on visible cards and the remaining deck.",
+      "close": "Close",
+      "na": "N/A"
+    },
+    "yourTurn": "It's your turn!",
+    "waitingFor": "Waiting for {{player}}...",
+    "deck": "Deck",
+    "discard": "Discard",
+    "hand": "Hand",
+    "playCard": "Play a card",
+    "draw": "Draw",
+    "pass": "Pass",
+    "winner": "{{player}} won!",
+    "gameOver": "Game over",
+    "newGame": "New game",
+    "round": "Round",
+    "score": "Score",
+    "total": "Total",
+    "centerCards": "Center cards",
+    "hit": "Hit",
+    "stop": "Stop",
+    "you": "You",
+    "gameOrder": "Game order",
+    "currentRanking": "Current ranking",
+    "theoreticalRanking": "Theoretical ranking",
+    "cardsCount": "card(s)",
+    "noCardsRevealed": "No cards revealed",
+    "roundScore": "Round score",
+    "totalScore": "Total score",
+    "noPlayers": "No players in the game",
+    "cardCountSingular": "card",
+    "cardCountPlural": "cards",
+    "START_ROUND_YOUR_TURN": "It's your turn to start round {{round}}!",
+    "START_ROUND_WAITING": "Waiting for {{player}} to start round {{round}}...",
+    "START_ROUND_BUTTON": "Start round",
+    "START_ROUND_READY": "Click when you're ready",
+    "PLEASE_WAIT": "Please wait...",
+    "loadingGame": "Loading game...",
+    "loadingRoom": "Loading room...",
+    "cards": {
+      "number": "Number card",
+      "operator": "Operator card",
+      "special": "Special card",
+      "life": "Life",
+      "stop": "Stop",
+      "drawThree": "+3"
+    },
+    "actions": {
+      "selectPlayer": "Select a player",
+      "selectTarget": "Choose a target",
+      "useLifeCard": "Use Life card",
+      "assignStop": "Assign Stop",
+      "assignDrawThree": "Assign +3",
+      "mustDraw": "You must draw {{count}} cards",
+      "stopped": "You are stopped!"
+    },
+    "playerSelector": {
+      "stopCard": {
+        "title": "🛑 Stop Card",
+        "description": "Choose the player who will receive the Stop card and be forced to stop:"
+      },
+      "drawThreeCard": {
+        "title": "➕3️⃣ +3 Card",
+        "description": "Choose the player who will receive the +3 card and must draw 3 cards:"
+      },
+      "eligibleCount": "{{count}} eligible player(s)",
+      "you": "🎮 You",
+      "noPlayers": "No eligible players available",
+      "obligation": "⚠️ You must choose a player to continue"
+    },
+    "status": {
+      "playing": "Playing",
+      "stopped": "Stopped",
+      "drawing": "Forced draw",
+      "waiting": "Waiting",
+      "eliminated": "Eliminated",
+      "winner": "Winner",
+      "eliminated_message": "You have been eliminated",
+      "eliminated_during_draw_message": "You were eliminated (double during +3 from {{player}})",
+      "stopped_message": "You stopped",
+      "forced_stop_message": "You received a Stop card from {{player}}",
+      "forced_stop_self_message": "You stopped yourself with a Stop card",
+      "flip7_stop_message": "Flip7! You are stopped with 7 points",
+      "your_turn": "{{player}}'s turn",
+      "distributing": "Dealing cards...",
+      "start_round": "Start Round {{round}}",
+      "waiting_for_player": "Waiting for {{player}}..."
+    },
+    "errors": {
+      "notInRoom": "You are not part of this room",
+      "cannotLoadGameState": "Unable to load game state",
+      "roomNotFound": "Room not found",
+      "gameNotFoundAfterRestart": "The game was lost due to a server restart. Please return to the waiting room and restart the game.",
+      "duplicate": "Duplicate! You are eliminated!",
+      "errorDrawing": "Error while drawing",
+      "errorStopping": "Error while stopping",
+      "notYourTurn": "It's not your turn",
+      "noStopCard": "No Stop card to assign",
+      "errorAssignStop": "Error assigning Stop card",
+      "noDrawThreeCard": "No DrawThree card to assign",
+      "errorAssignDrawThree": "Error assigning DrawThree card",
+      "notYourTurnToStart": "It's not your turn to start the round",
+      "errorStartRound": "Error starting the round"
+    },
+    "success": {
+      "flip7": "🎯 FLIP7! 7 different numbered cards! +15 bonus points!"
+    }
+  },
+  "rules": {
+    "title": "Game Rules - Flip7",
+    "objective": {
+      "title": "🎯 Game Objective",
+      "description": "Be the first to reach 200 points to trigger the end of the game. Points are scored according to the sum of the numbered cards in front of you. Flipping 7 numbered cards ends the round and gives you a 15-point bonus. Warning: if you draw a card already present in your row, you are eliminated from the round and score no points!"
+    },
+    "deck": {
+      "title": "🎴 Deck Composition",
+      "description": "The deck contains: twelve 12s, eleven 11s, ten 10s... down to one 1, and a 0 (worth 0 points). The higher the value, the more copies.",
+      "cards": "There are also Action cards (Flip Three, Freeze, Second Chance) and Modifier cards (+2 to +10, x2)."
+    },
+    "setup": {
+      "title": "📋 Setup",
+      "step1": "Shuffle the deck and choose a dealer.",
+      "step2": "The dealer deals one face-up card to each player (including themselves).",
+      "step3": "If an Action card appears, stop dealing and resolve it immediately.",
+      "step4": "Once all Action cards are resolved, continue dealing until everyone has at least one card."
+    },
+    "gameplay": {
+      "title": "▶️ Round Gameplay",
+      "description": "In turn, each player chooses to draw a card (HIT) or stop (STOP) to keep their points.",
+      "hit": "HIT: Draw a card and add it to your row. Place modifiers above.",
+      "stop": "STOP: Leave the round and keep your current points.",
+      "bust": "BUST: If you draw a duplicate, you are eliminated from the round and score no points.",
+      "flip7": "Flip7: If you Flip7 numbered cards, the round ends for all and you get a 15-point bonus."
+    },
+    "actionCards": {
+      "title": "🎭 Action Cards",
+      "description": "Action cards are played as soon as they appear. Place them above your row.",
+      "freeze": {
+  "title": "FREEZE 🧊",
+  "description": "The player who receives this card is eliminated for the rest of the round but keeps the points already earned."
+      },
+      "flipThree": {
+        "title": "FLIP THREE 🎴",
+        "description": "The player must draw three cards in a row. If an Action card appears, it is resolved after."
+      },
+      "secondChance": {
+        "title": "SECOND CHANCE 🍀",
+        "description": "Keep this card. If you draw a duplicate, discard the duplicate and the Second Chance card. Only one per player. All are discarded at the end of the round."
+      }
+    },
+    "modifierCards": {
+      "title": "⭐ Modifier Cards",
+      "plus": "+2 to +10: Add the value to your total points.",
+      "times": "x2: Double the sum of your numbered cards (excluding other modifiers).",
+      "note": "Action and Modifier cards are never destroyed. Place them above your row."
+    },
+    "scoring": {
+      "title": "💯 Scoring",
+      "step1": "Add up all your numbered cards.",
+      "step2": "Double this total if you have an x2.",
+      "step3": "Add all modifiers (+2, +3, etc.).",
+      "step4": "If you flipped 7 numbered cards (Flip7), add 15 bonus points.",
+      "example": "Example: 11 + 5 + 12 = 28 points, +4 = 32 points."
+    },
+    "endTurn": {
+      "title": "⏹️ End of Round",
+      "description": "The round ends when:",
+      "case1": "There are no more active players (all eliminated or stopped)",
+      "case2": "OR a player has flipped 7 numbered cards (Flip7)",
+      "next": "Set aside the cards from the round (do not reshuffle them). Pass the deck to the player on the left, who becomes the dealer."
+    },
+    "endGame": {
+      "title": "🏆 End of Game",
+      "description": "The game ends if, at the end of a round, at least one player has reached 200 points. The player with the MOST points wins.",
+      "note": "The first to 200 points is not necessarily the winner!"
+    },
+    "tips": {
+      "title": "💡 Strategic Tips",
+      "tip1": "Count the cards played and those remaining.",
+      "tip2": "Watch out for duplicates, that's the main risk!",
+      "tip3": "Trying for Flip7 gives 15 bonus points and ends the round.",
+      "tip4": "Use Action cards at the right moment against your opponents."
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "personalInfo": "Personal information",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "birthDate": "Date of birth",
+    "firstNamePlaceholder": "Your first name",
+    "lastNamePlaceholder": "Your last name",
+    "emailPlaceholder": "your.email@example.com",
+    "firstNameError": "First name is required (min. 2 characters)",
+    "lastNameError": "Last name is required (min. 2 characters)",
+    "birthDateError": "Date of birth is required",
+    "username": "Pseudo",
+    "email": "Email",
+    "stats": "Statistics",
+    "gamesPlayed": "Games played",
+    "gamesWon": "Wins",
+    "winRate": "Win rate",
+    "bestScore": "Best score",
+    "edit": "Edit profile",
+    "changePassword": "Change password",
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete my account",
+    "deleteAccountWarning": "Once deleted, your account cannot be recovered. This action is irreversible.",
+    "confirmDelete": "Are you sure you want to delete your account? This action is irreversible.",
+    "success": {
+      "updateProfile": "Profile updated successfully!",
+      "changePassword": "Password changed successfully!"
+    },
+    "errors": {
+      "loadData": "Error loading data",
+      "updateProfile": "Error updating profile",
+      "changePassword": "Error changing password",
+      "deleteAccount": "Error deleting account"
+    }
+  },
+  "statistics": {
+    "completedGames": "Games completed",
+    "flip7": "Flip7 achieved",
+    "roundsPlayed": "Rounds played",
+    "eliminatedByDouble": "Eliminated by double",
+    "maxScoreInOneRound": "Highest score (1 round)",
+    "averagePointsPerRound": "Average per round",
+    "averagePointsPerScoringRound": "Average (rounds > 0)",
+    "stopCardsReceived": "Stop cards received",
+    "lifeCardsObtained": "Life cards obtained",
+    "drawThreeReceived": "+3 cards received",
+    "drawThreeCompleted": "+3 completed",
+    "drawThreeWithElimination": "+3 with elimination",
+    "globalStats": "Global Statistics",
+    "globalCompletedGames": "Games completed (total)",
+    "globalAverageRoundsPerGame": "Avg rounds/game",
+    "globalTotalFlip7": "Total Flip7",
+    "globalMaxScoreInOneRound": "Absolute record (1 round)",
+    "theoreticalMaxScore": "Theoretical Max Score",
+    "stats": {
+      "info": "Show my elimination chance",
+      "title": "Risk statistics",
+      "eliminationChance": "Chance to be eliminated by a double: ",
+      "unavailable": "Unavailable",
+      "close": "Close"
+    }
+  }
+}

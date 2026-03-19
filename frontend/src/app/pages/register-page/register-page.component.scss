@@ -1,0 +1,142 @@
+.register-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap:0.3rem;
+    margin: 0 auto;
+    padding: 2rem 2.5rem;
+    color: var(--text-primary);
+    position: relative;
+    max-width: 600px;
+    width: 100%;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px var(--shadow);
+    box-sizing: border-box;
+}
+
+.register-form h1 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 25px;
+    font-family: 'Cinzel';
+    color: var(--text-primary);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+.register-form label {
+    text-align: left;
+    padding-right: 1rem;
+    white-space: nowrap;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.register-form input[type="text"],
+.register-form input[type="date"],
+.register-form input[type="email"],
+.register-form input[type="password"] {
+    width: 100%;
+    padding: 0.72rem 0.9rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    box-sizing: border-box;
+    transition: box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    color: var(--text-primary);
+}
+
+.register-form input[type="text"]:focus,
+.register-form input[type="date"]:focus,
+.register-form input[type="email"]:focus,
+.register-form input[type="password"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    background: var(--bg-primary);
+}
+
+input {
+    color: var(--text-primary);
+}
+
+label, input {
+    font-family: 'Inika';
+}
+
+.cgu-button {
+    margin-top: 20px;
+    padding: 10px;
+    width: 100%;
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    text-align: center;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    display: inline-block;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.cgu-button:hover {
+    background: rgba(102, 126, 234, 0.2);
+    transform: translateY(-2px);
+}
+
+#register-button {
+    margin-top: 20px;
+    padding: 0.8rem 1.1rem;
+    width: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Cinzel', cursive;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    align-self: center;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+#register-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+#register-button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+}
+
+.register-form button:disabled {
+    background: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.4);
+    cursor: not-allowed;
+    box-shadow: none;
+}
