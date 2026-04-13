@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, inject } from '@angular/core';
 import { RulesComponent } from '../rules/rules.component';
 import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs/internal/Observable';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
 import { ProfilComponent } from '../profil/profil.component';
 import { StatisticsComponent } from '../statistics/statistics.component';
+import { GameHistoryComponent } from '../game-history/game-history.component';
 import { ThemeService, Theme } from '../../services/theme/theme.service';
 import { LanguageService, Language } from '../../services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18,6 +19,7 @@ import { TranslateModule } from '@ngx-translate/core';
     RulesComponent,
     ProfilComponent,
     StatisticsComponent,
+    GameHistoryComponent,
     RouterLink,
     TranslateModule
   ],
@@ -26,10 +28,20 @@ import { TranslateModule } from '@ngx-translate/core';
 })
 export class HeaderComponent {
 
+  private elementRef = inject(ElementRef);
+
   constructor() { }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.isProfilMenuOpen && !this.elementRef.nativeElement.contains(event.target)) {
+      this.isProfilMenuOpen = false;
+    }
+  }
 
   isRules: boolean = false;
   isStatistics: boolean = false;
+  isHistory: boolean = false;
 
   authenticationService = inject(AuthenticationService);
   themeService = inject(ThemeService);
@@ -93,9 +105,27 @@ export class HeaderComponent {
   openStats() {
     this.isProfilMenuOpen = false;
     this.isStatistics = true;
-    // Fermer les règles et le profil si ouverts
     this.isRules = false;
     this.isProfil = false;
+    this.isHistory = false;
+  }
+
+  openHistory() {
+    this.isProfilMenuOpen = false;
+    this.isHistory = true;
+    this.isRules = false;
+    this.isProfil = false;
+    this.isStatistics = false;
+  }
+
+  toggleIsHistory() {
+    this.isHistory = !this.isHistory;
+    if (this.isHistory) {
+      this.isRules = false;
+      this.isProfil = false;
+      this.isStatistics = false;
+      this.isProfilMenuOpen = false;
+    }
   }
 
   onTitleClick(event: Event) {
@@ -112,6 +142,7 @@ export class HeaderComponent {
     this.isProfil = false;
     this.isRules = false;
     this.isStatistics = false;
+    this.isHistory = false;
     this.isProfilMenuOpen = false;
   }
 
@@ -121,7 +152,8 @@ export class HeaderComponent {
     this.isProfil = false;
     this.isRules = false;
     this.isStatistics = false;
-    
+    this.isHistory = false;
+
     // Supprimer le token
     this.authenticationService.removeToken();
     

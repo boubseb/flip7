@@ -388,6 +388,24 @@
       "deleteAccount": "Erreur lors de la suppression du compte"
     }
   },
+  "history": {
+    "menuItem": "Historique",
+    "title": "Historique des parties",
+    "refresh": "Actualiser",
+    "loading": "Chargement...",
+    "retry": "Réessayer",
+    "noGames": "Aucune partie jouée pour l'instant.",
+    "errorLoading": "Impossible de charger l'historique.",
+    "rounds": "rounds",
+    "won": "Victoire",
+    "lost": "Défaite",
+    "inProgress": "En cours",
+    "abandoned": "Abandonnée",
+    "winner": "Vainqueur",
+    "finalScores": "Scores finaux",
+    "roundDetail": "Détail par round",
+    "round": "Round"
+  },
   "statistics": {
     "completedGames": "Parties finies",
     "flip7": "Flip7 réalisés",

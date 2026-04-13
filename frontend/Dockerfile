@@ -26,6 +26,9 @@ COPY --from=build /app/dist/flip7-frontend ./dist/flip7-frontend
 COPY --from=build /app/package.json /app/package-lock.json ./
 RUN npm install --omit=dev --legacy-peer-deps
 
+# Fix ownership — COPY runs as root, app user needs read access
+RUN chown -R app:app /app
+
 USER app
 
 EXPOSE 4000

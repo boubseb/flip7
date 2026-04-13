@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 import { UserService } from '../../services/user/user.service';
 import { StatisticsService } from '../../services/statistics/statistics.service';
 import { PlayerStatistics } from '../../models/statistics/player-statistics.model';
@@ -12,11 +13,12 @@ import { PlayerStatistics } from '../../models/statistics/player-statistics.mode
   templateUrl: './statistics.component.html',
   styleUrl: './statistics.component.scss'
 })
-export class StatisticsComponent implements OnInit {
+export class StatisticsComponent implements OnInit, OnDestroy {
   statistics: PlayerStatistics | null = null;
   loading: boolean = true;
   error: string | null = null;
   currentUserId: string | null = null;
+  private gameEndedSub: Subscription | null = null;
 
   constructor(
     private statisticsService: StatisticsService,
@@ -24,9 +26,8 @@ export class StatisticsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Récupérer l'ID de l'utilisateur via UserService
     this.userService.getUserProfile().subscribe({
-      next: (profile) => {
+      next: (profile: any) => {
         if (profile && profile.id) {
           this.currentUserId = profile.id;
           this.loadStatistics();
@@ -35,33 +36,39 @@ export class StatisticsComponent implements OnInit {
           this.loading = false;
         }
       },
-      error: (err) => {
+      error: () => {
         this.error = 'Utilisateur non connecté';
         this.loading = false;
       }
     });
+
+    // Se recharger automatiquement quand une partie se termine
+    this.gameEndedSub = this.statisticsService.gameEnded$.subscribe(() => {
+      if (this.currentUserId) {
+        this.loadStatistics();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.gameEndedSub?.unsubscribe();
   }
 
   loadStatistics(): void {
     if (!this.currentUserId) return;
-
     this.loading = true;
     this.error = null;
-
     this.statisticsService.getPlayerStatistics(this.currentUserId).subscribe({
-      next: (stats) => {
+      next: (stats: any) => {
         this.statistics = stats;
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Erreur lors du chargement des statistiques:', err);
+      error: () => {
         this.error = 'Impossible de charger les statistiques';
         this.loading = false;
       }
     });
   }
-
-
 
   formatNumber(num: number): string {
     return num.toFixed(2);

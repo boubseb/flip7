@@ -113,6 +113,6 @@ main {
   top: var(--header-height, $headerHeight);   /* espace égal à la hauteur du header */
   left: 0;
   right: 0;
-  bottom: 0; /* prend toute la hauteur jusqu'en bas */
+  bottom: $footerHeight; /* laisse la place au footer fixe */
   overflow: hidden;
 }

@@ -22,6 +22,7 @@ public class StatisticsService {
 
         // Récupérer toutes les parties du joueur
         List<GameHistory> playerGames = gameHistoryRepository.findByPlayerIdsContaining(userId);
+        System.out.println("📊 getPlayerStatistics: userId=" + userId + " → " + playerGames.size() + " partie(s) trouvée(s)");
         stats.setTotalGames(playerGames.size());
 
         // Statistiques du joueur

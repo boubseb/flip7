@@ -38,6 +38,10 @@
                 <span class="menu-icon">📊</span>
                 <span>{{ 'profile.stats' | translate }}</span>
               </button>
+              <button class="menu-item" (click)="openHistory()">
+                <span class="menu-icon">📜</span>
+                <span>{{ 'history.menuItem' | translate }}</span>
+              </button>
               <button class="menu-item logout" (click)="onLogout()">
                 <span class="menu-icon">🚪</span>
                 <span>{{ 'header.logout' | translate }}</span>
@@ -52,17 +56,26 @@
 
 @if(isRules){
 <div class="rules-container">
+  <button class="overlay-close-btn" (click)="toggleIsRules()" title="Fermer">✕</button>
   <app-rules></app-rules>
 </div>
 }
 @if(isProfil){
 <div class="profil-page-container">
+  <button class="overlay-close-btn" (click)="toggleIsProfil()" title="Fermer">✕</button>
   <app-profil></app-profil>
 </div>
 }
 @if(isStatistics){
 <div class="statistics-container">
+  <button class="overlay-close-btn" (click)="toggleIsStatistics()" title="Fermer">✕</button>
   <app-statistics></app-statistics>
+</div>
+}
+@if(isHistory){
+<div class="history-overlay-container">
+  <button class="overlay-close-btn" (click)="toggleIsHistory()" title="Fermer">✕</button>
+  <app-game-history></app-game-history>
 </div>
 }
 

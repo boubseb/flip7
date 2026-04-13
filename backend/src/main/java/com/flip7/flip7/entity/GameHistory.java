@@ -89,14 +89,15 @@ public class GameHistory {
     private void deserializeJsonFields() {
         try {
             this.rounds = objectMapper.readValue(
-                roundsJson != null ? roundsJson : "[]", 
+                roundsJson != null ? roundsJson : "[]",
                 new TypeReference<List<RoundHistory>>() {}
             );
             this.finalScores = objectMapper.readValue(
-                finalScoresJson != null ? finalScoresJson : "[]", 
+                finalScoresJson != null ? finalScoresJson : "[]",
                 new TypeReference<List<PlayerScore>>() {}
             );
         } catch (JsonProcessingException e) {
+            System.err.println("❌ GameHistory @PostLoad deserialization error (id=" + id + "): " + e.getMessage());
             this.rounds = new ArrayList<>();
             this.finalScores = new ArrayList<>();
         }

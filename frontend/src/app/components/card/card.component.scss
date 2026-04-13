@@ -12,6 +12,7 @@
   cursor: default;
   transition: all 0.3s ease;
   position: relative;
+  overflow: hidden;
   
   &::before {
     content: '';
@@ -20,7 +21,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    border-radius: 8px;
     border: 3px solid rgba(255, 255, 255, 0.3);
     pointer-events: none;
   }

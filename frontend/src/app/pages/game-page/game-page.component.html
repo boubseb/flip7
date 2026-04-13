@@ -43,13 +43,6 @@
               [currentPlayerId]="currentPlayerId">
             </app-players-board>
             
-            <!-- Success message (alerte "Au tour de") - en bas du board -->
-            @if (successMessage) {
-              <div class="success-banner footer-alert">
-                <span>{{ successMessage }}</span>
-                <button (click)="clearSuccess()">✕</button>
-              </div>
-            }
           </div>
         } @else {
           <div class="loading-game">
@@ -100,9 +93,7 @@
           </button>
       
           @if(gameState?.statisticsEnabled) {
-            <span class="survival-probability">
-              🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: (getSurvivalProbability() | number:'1.0-1') } }}
-            </span>
+            <span class="survival-probability">🛡️ {{ getSurvivalProbability() | number:'1.0-1' }}%</span>
           }
           <button 
             class="btn btn-stop"

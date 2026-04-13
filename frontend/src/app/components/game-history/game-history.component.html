@@ -1,0 +1,138 @@
+<div class="history-header">
+  <h1>{{ 'history.title' | translate }}</h1>
+  <button class="refresh-btn" (click)="loadHistory()" [disabled]="loading" title="{{ 'history.refresh' | translate }}">
+    <span [class.spinning]="loading">🔄</span>
+  </button>
+</div>
+
+<div class="history-container">
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>{{ 'history.loading' | translate }}</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (!loading && error) {
+    <div class="error-container">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error | translate }}</p>
+      <button class="retry-button" (click)="loadHistory()">{{ 'history.retry' | translate }}</button>
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (!loading && !error && games.length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">🎴</span>
+      <p>{{ 'history.noGames' | translate }}</p>
+    </div>
+  }
+
+  <!-- Game list -->
+  @if (!loading && !error) {
+    @for (game of games; track game.id) {
+      <div class="game-card" [class.expanded]="isExpanded(game.id)" [class.won]="didIWin(game)" [class.in-progress]="game.status === GameHistoryStatus.IN_PROGRESS">
+
+        <!-- Game card header (always visible) -->
+        <div class="game-card-header" (click)="toggleGame(game.id)">
+          <div class="game-card-left">
+            <div class="game-date">{{ formatDate(game.startedAt) }}</div>
+            <div class="game-meta">
+              <span class="meta-item">👥 {{ game.playerIds?.length ?? 0 }}</span>
+              <span class="meta-item">🔄 {{ game.totalRounds }} {{ 'history.rounds' | translate }}</span>
+            </div>
+          </div>
+
+          <div class="game-card-center">
+            @if (didIWin(game)) {
+              <span class="result-badge win">🏆 {{ 'history.won' | translate }}</span>
+            } @else if (game.status === GameHistoryStatus.COMPLETED) {
+              <span class="result-badge lose">{{ 'history.lost' | translate }}</span>
+            } @else if (game.status === GameHistoryStatus.IN_PROGRESS) {
+              <span class="result-badge in-progress">⏳ {{ 'history.inProgress' | translate }}</span>
+            } @else {
+              <span class="result-badge abandoned">{{ 'history.abandoned' | translate }}</span>
+            }
+          </div>
+
+          <div class="game-card-right">
+            @if (game.status === GameHistoryStatus.COMPLETED) {
+              <div class="winner-line">
+                <span class="winner-label">{{ 'history.winner' | translate }}</span>
+                <span class="winner-name" [class.me]="didIWin(game)">{{ getWinnerName(game) }}</span>
+              </div>
+            }
+            <span class="expand-icon">{{ isExpanded(game.id) ? '▲' : '▼' }}</span>
+          </div>
+        </div>
+
+        <!-- Expanded detail -->
+        @if (isExpanded(game.id)) {
+          <div class="game-detail">
+
+            <!-- Final scores -->
+            @if (game.finalScores && game.finalScores.length > 0) {
+              <div class="detail-section">
+                <div class="detail-section-title">{{ 'history.finalScores' | translate }}</div>
+                <div class="final-scores-list">
+                  @for (score of game.finalScores; track score.playerId) {
+                    <div class="score-row" [class.me]="isMe(score.playerId)" [class.winner]="score.playerId === game.winnerId">
+                      @if (score.playerId === game.winnerId) {
+                        <span class="crown">🏆</span>
+                      }
+                      <span class="score-name">{{ score.username }}</span>
+                      <span class="score-pts">{{ score.totalScore }} pts</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Rounds -->
+            @if (game.rounds && game.rounds.length > 0) {
+              <div class="detail-section">
+                <div class="detail-section-title">{{ 'history.roundDetail' | translate }}</div>
+                <div class="rounds-table-wrap">
+                  <table class="rounds-table">
+                    <thead>
+                      <tr>
+                        <th class="th-round">{{ 'history.round' | translate }}</th>
+                        @for (playerId of game.playerIds; track playerId) {
+                          <th [class.th-me]="isMe(playerId)">{{ getPlayerName(playerId, game) }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (round of game.rounds; track round.roundNumber) {
+                        <tr>
+                          <td class="td-round">R{{ round.roundNumber }}</td>
+                          @for (playerId of game.playerIds; track playerId) {
+                            <td class="td-score" [class.td-me]="isMe(playerId)">
+                              <span class="round-score" [class]="'status-' + getRoundStatus(round, playerId)">
+                                {{ getRoundScore(round, playerId) ?? '—' }}
+                                @if (getRoundStatus(round, playerId) === 'flip7') { <span class="tag">🎯</span> }
+                                @if (getRoundStatus(round, playerId) === 'eliminated') { <span class="tag">💀</span> }
+                                @if (isRoundWinner(round, playerId)) { <span class="tag">⭐</span> }
+                              </span>
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+
+          </div>
+        }
+
+      </div>
+    }
+  }
+
+</div>

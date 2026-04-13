@@ -53,12 +53,12 @@ export class WebSocketService {
       return;
     }
 
-    // Create WebSocket connection using SockJS
-    // Utilise l'URL de l'API depuis l'environment
-    const socket = new SockJS(`${environment.apiUrl}/ws`);
-    
+    // Create WebSocket connection using SockJS.
+    // IMPORTANT: webSocketFactory must return a NEW SockJS instance on each call.
+    // Reusing the same closed socket breaks silent reconnection (STOMP calls this
+    // factory again on every reconnect attempt).
     this.stompClient = new Client({
-      webSocketFactory: () => socket as any,
+      webSocketFactory: () => new SockJS(`${environment.apiUrl}/ws`) as any,
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { StatisticsService } from '../../services/statistics/statistics.service';
+import { UserService } from '../../services/user/user.service';
 import { PlayerStatistics } from '../../models/statistics/player-statistics.model';
 
 @Component({
@@ -19,20 +20,26 @@ export class StatisticsPageComponent implements OnInit {
 
   constructor(
     private statisticsService: StatisticsService,
+    private userService: UserService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    // Récupérer l'ID de l'utilisateur depuis le localStorage (clé 'access_token')
-    this.currentUserId = localStorage.getItem('access_token');
-    
-    if (!this.currentUserId) {
-      this.error = 'Utilisateur non connecté';
-      this.loading = false;
-      return;
-    }
-
-    this.loadStatistics();
+    this.userService.getUserProfile().subscribe({
+      next: (profile) => {
+        if (profile && profile.id) {
+          this.currentUserId = profile.id;
+          this.loadStatistics();
+        } else {
+          this.error = 'Utilisateur non connecté';
+          this.loading = false;
+        }
+      },
+      error: () => {
+        this.error = 'Utilisateur non connecté';
+        this.loading = false;
+      }
+    });
   }
 
   loadStatistics(): void {

@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { RoomService } from '../../services/room/room.service';
 import { WebSocketService } from '../../services/websocket/websocket.service';
 import { GameService } from '../../services/game/game.service';
+import { StatisticsService } from '../../services/statistics/statistics.service';
 import { Room, RoomStatus } from '../../models/room/room.model';
 import { Subscription } from 'rxjs';
 import { PlayersBoardComponent } from '../../components/players-board/players-board.component';
@@ -43,11 +44,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
     if (handValues.length === 0) {
       return null;
     }
-    // Si déjà un doublon, proba = 100
+    // Si déjà un doublon, proba d'élimination = 100%
     const valueCounts: { [value: number]: number } = {};
     for (const v of handValues) valueCounts[v] = (valueCounts[v] || 0) + 1;
     if (Object.values(valueCounts).some(count => count >= 2)) {
-      return 100;
+      return 0; // 0% de survie
     }
     // Deck initial : 1x0, 1x1, 2x2, ..., 12x12
     const initialDeck: { [value: number]: number } = {};
@@ -62,21 +63,31 @@ export class GamePageComponent implements OnInit, OnDestroy {
         usedCount[card.value] = (usedCount[card.value] || 0) + 1;
       }
     });
-    // Calcul de la proba d'élimination :
-    // Pour chaque valeur unique de la main, on regarde combien il en reste dans le deck
-    // Le dénominateur est le nombre total de cartes restantes à piocher (NUMBER + spéciales/bonus)
-    const totalRemaining = typeof this.gameState.remainingCards === 'number' ? this.gameState.remainingCards : 0;
+    // Nombre de cartes dangereuses restantes dans le deck (celles qui formeraient un doublon)
+    let dangerousCards = 0;
+    for (const v of new Set(handValues)) {
+      const value = Number(v);
+      dangerousCards += Math.max(0, initialDeck[value] - (usedCount[value] || 0));
+    }
+    let totalRemaining = typeof this.gameState.remainingCards === 'number' ? this.gameState.remainingCards : 0;
     if (totalRemaining === 0) {
       return null;
     }
-    let eliminationNumerator = 0;
-    for (const v of new Set(handValues)) {
-      const value = Number(v);
-      const remaining = Math.max(0, initialDeck[value] - (usedCount[value] || 0));
-      eliminationNumerator += remaining;
+    // Nombre de tirages forcés (1 par défaut, 3 si +3 en cours)
+    const pendingDrawThree = (this.gameState.pendingSpecialCards ?? []).find(
+      (card: any) => card.specialType === 'DRAW_THREE' && card.targetPlayerId === this.currentUserId
+    );
+    const forcedDraws = pendingDrawThree ? (pendingDrawThree.remainingForcedDraws ?? 1) : 1;
+
+    // P(survie) = produit sur chaque tirage de (1 - dangereuses_restantes / total_restant)
+    // On suppose le pire cas : une carte non-dangereuse piochée ne réduit pas dangerousCards
+    let survivalProb = 1;
+    for (let i = 0; i < forcedDraws; i++) {
+      if (totalRemaining <= 0) break;
+      survivalProb *= (1 - dangerousCards / totalRemaining);
+      totalRemaining--;
     }
-    const prob = eliminationNumerator / totalRemaining;
-    return Math.min((1-prob) * 100, 100);
+    return Math.min(survivalProb * 100, 100);
   }
 
   /**
@@ -88,7 +99,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     if (!me || !Array.isArray(me.hand)) return false;
     // Les cartes spéciales ont cardType === 'SPECIAL' et specialType === 'LIFE'
     return me.hand.some((card: any) =>
-      card.cardType === 'SPECIAL' && card.specialType === 'LIFE' && !card.cancelled
+      card.cardType === 'SPECIAL' && card.specialType === 'LIFE' && !card.used
     );
   }
 
@@ -98,8 +109,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
    */
   getSurvivalProbability(): number {
     if (this.hasLifeCard()) return 100;
-    const prob = this.calculateEliminationProbability();
-    return prob !== null ? prob : 100;
+    const survival = this.calculateEliminationProbability();
+    return survival !== null ? survival : 100;
   }
   // Room ID from URL
   roomId: string = '';
@@ -151,6 +162,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
     private roomService: RoomService,
     private wsService: WebSocketService,
     private gameService: GameService,
+    private statisticsService: StatisticsService,
     private router: Router,
     private route: ActivatedRoute,
     private translate: TranslateService,
@@ -284,6 +296,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
       this.wsService.gameOver$.subscribe((data: any) => {
         console.log('🏁 Game over event received:', data);
         this.prepareGameOverData(data);
+        // Notifier le composant statistiques pour qu'il se recharge
+        this.statisticsService.notifyGameEnded();
       })
     );
 
@@ -344,10 +358,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
           this.isMyTurn = this.currentPlayerId === this.currentUserId;
           console.log('🎯 Current player:', this.currentPlayerId, '- My turn:', this.isMyTurn);
           
-          // Afficher une alerte quand le tour change et que ce n'est pas notre tour (pendant un round actif)
-          if (response.gameState === 'PLAYING' && previousPlayerId && previousPlayerId !== this.currentPlayerId && !this.isMyTurn) {
-            this.showSuccess(this.translate.instant('game.status.your_turn', { player: currentPlayer.username }), 1000);
-          }
+          // (no turn-change notification)
         }
 
         // Détecter l'état WAITING_NEXT_ROUND
@@ -893,7 +904,21 @@ export class GamePageComponent implements OnInit, OnDestroy {
           this.showFlip7CelebrationPopup();
         }
         
-        // L'état sera mis à jour via WebSocket
+        // L'état sera mis à jour via WebSocket.
+        // Fallback : si le WebSocket est silencieux (coupure mobile), on re-fetch via HTTP.
+        if (!this.wsService.isConnected()) {
+          this.gameService.getGameState(this.roomId).subscribe({
+            next: (state) => {
+              this.gameState = state;
+              if (state.players && state.currentPlayerIndex >= 0) {
+                const cp = state.players[state.currentPlayerIndex];
+                this.currentPlayerId = cp.userId;
+                this.isMyTurn = this.currentPlayerId === this.currentUserId;
+              }
+            },
+            error: () => {}
+          });
+        }
       },
       error: (error) => {
         console.error('❌ Error drawing card:', error);
@@ -922,7 +947,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.gameService.stopDrawing(this.roomId).subscribe({
       next: () => {
         console.log('✋ Stopped drawing');
-        // L'état sera mis à jour via WebSocket
+        if (!this.wsService.isConnected()) {
+          this.gameService.getGameState(this.roomId).subscribe({
+            next: (state) => {
+              this.gameState = state;
+              if (state.players && state.currentPlayerIndex >= 0) {
+                const cp = state.players[state.currentPlayerIndex];
+                this.currentPlayerId = cp.userId;
+                this.isMyTurn = this.currentPlayerId === this.currentUserId;
+              }
+            },
+            error: () => {}
+          });
+        }
       },
       error: (error) => {
         console.error('❌ Error stopping:', error);
@@ -1000,6 +1037,19 @@ export class GamePageComponent implements OnInit, OnDestroy {
       next: (result) => {
         console.log('✅ Stop card assigned successfully:', result);
         this.closeStopCardModal();
+        if (!this.wsService.isConnected()) {
+          this.gameService.getGameState(this.roomId).subscribe({
+            next: (state) => {
+              this.gameState = state;
+              if (state.players && state.currentPlayerIndex >= 0) {
+                const cp = state.players[state.currentPlayerIndex];
+                this.currentPlayerId = cp.userId;
+                this.isMyTurn = this.currentPlayerId === this.currentUserId;
+              }
+            },
+            error: () => {}
+          });
+        }
       },
       error: (error) => {
         console.error('❌ Error assigning Stop card:', error);

@@ -387,6 +387,24 @@
       "deleteAccount": "Error deleting account"
     }
   },
+  "history": {
+    "menuItem": "History",
+    "title": "Game History",
+    "refresh": "Refresh",
+    "loading": "Loading history...",
+    "retry": "Retry",
+    "noGames": "No games played yet.",
+    "errorLoading": "Unable to load history.",
+    "rounds": "rounds",
+    "won": "Won",
+    "lost": "Defeat",
+    "inProgress": "In progress",
+    "abandoned": "Abandoned",
+    "winner": "Winner",
+    "finalScores": "Final scores",
+    "roundDetail": "Round by round",
+    "round": "Round"
+  },
   "statistics": {
     "completedGames": "Games completed",
     "flip7": "Flip7 achieved",

@@ -223,7 +223,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     this.roomService.createRoom(request).subscribe({
       next: (room) => {
         console.log('✅ Room created:', room);
-        this.showSuccessMessage('room.success.roomCreated', 3000, { roomId: room.id });
         
         // Sauvegarder dans localStorage pour reconnexion
         localStorage.setItem('currentRoomId', room.id);
@@ -280,7 +279,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     this.roomService.joinRoom(request).subscribe({
       next: (room) => {
         console.log('✅ Joined room:', room.id);
-        this.showSuccessMessage('room.success.roomJoined');
         
         // Sauvegarder dans localStorage pour reconnexion
         localStorage.setItem('currentRoomId', room.id);

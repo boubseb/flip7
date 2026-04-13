@@ -945,10 +945,19 @@ public class Game {
         
         // Tous les joueurs ont reçu leur carte initiale (ou sont stoppés/éliminés)
         gameState = GameState.PLAYING;
-        
+
         // Restaurer le joueur de départ initial du round
         currentPlayerIndex = initialPlayerIndexForRound;
-        
+
+        // Si le joueur de départ ne peut pas jouer (FORCED_STOP reçu pendant la distribution),
+        // passer au prochain joueur PLAYING. Sans ce check, la partie se bloque quand le joueur
+        // désigné pour commencer a reçu une carte Stop assignée par un autre joueur.
+        GamePlayer startingPlayer = getCurrentPlayer();
+        if (startingPlayer != null && startingPlayer.getStatus() != PlayerStatus.PLAYING) {
+            System.out.println("⚠️ Starting player " + startingPlayer.getUsername() + " is " + startingPlayer.getStatus() + " - advancing to next PLAYING player");
+            nextPlayer();
+        }
+
         System.out.println("✅ Initial distribution complete! Round " + roundNumber + " started! Current player: " + getCurrentPlayer().getUsername());
         return false; // Distribution terminée
     }

@@ -69,28 +69,46 @@ public class GameService {
     @PostConstruct
     public void restoreGamesFromDatabase() {
         System.out.println("🔄 Restauration des parties en cours depuis la base de données...");
-        
+
         try {
             List<GameSnapshot> snapshots = gameSnapshotRepository.findByGameStatusIn(
                 Arrays.asList("PLAYING", "WAITING_NEXT_ROUND", "DISTRIBUTING")
             );
-            
+
             System.out.println("📊 Snapshots trouvés: " + snapshots.size());
-            
+
             for (GameSnapshot snapshot : snapshots) {
                 try {
                     System.out.println("🔄 Tentative de restauration pour room: " + snapshot.getRoomId());
                     Game game = objectMapper.readValue(snapshot.getGameStateJson(), Game.class);
                     activeGames.put(snapshot.getRoomId(), game);
-                    System.out.println("✅ Partie restaurée pour room: " + snapshot.getRoomId() + 
+                    System.out.println("✅ Partie restaurée pour room: " + snapshot.getRoomId() +
                                      " (round " + snapshot.getCurrentRound() + ")");
+
+                    // Restaurer aussi le gameHistoryId pour que les stats continuent à être sauvegardées
+                    List<GameHistory> histories = gameHistoryRepository.findByRoomId(snapshot.getRoomId());
+                    GameHistory activeHistory = histories.stream()
+                        .filter(h -> h.getStatus() == GameHistory.GameStatus.IN_PROGRESS)
+                        .findFirst()
+                        .orElse(null);
+                    if (activeHistory != null) {
+                        gameHistoryIds.put(snapshot.getRoomId(), activeHistory.getId());
+                        System.out.println("✅ GameHistory ID restauré pour room: " + snapshot.getRoomId() + " → " + activeHistory.getId());
+                    } else {
+                        // Pas d'historique IN_PROGRESS : en créer un nouveau
+                        GameHistory newHistory = new GameHistory(snapshot.getRoomId(), game.getPlayers().stream()
+                            .map(p -> p.getUserId()).collect(java.util.stream.Collectors.toList()));
+                        newHistory = gameHistoryRepository.save(newHistory);
+                        gameHistoryIds.put(snapshot.getRoomId(), newHistory.getId());
+                        System.out.println("✅ Nouveau GameHistory créé pour room restaurée: " + snapshot.getRoomId());
+                    }
                 } catch (Exception e) {
-                    System.err.println("❌ Erreur lors de la restauration de la partie " + 
+                    System.err.println("❌ Erreur lors de la restauration de la partie " +
                                      snapshot.getRoomId() + ": " + e.getMessage());
-                    e.printStackTrace(); // Afficher la stack trace complète
+                    e.printStackTrace();
                 }
             }
-            
+
             System.out.println("✅ " + activeGames.size() + " partie(s) restaurée(s)");
         } catch (Exception e) {
             System.err.println("❌ Erreur lors de la restauration des parties: " + e.getMessage());
@@ -855,16 +873,21 @@ public class GameService {
      */
     private void saveRoundStart(String roomId, Game game) {
         String historyId = gameHistoryIds.get(roomId);
-        if (historyId == null) return;
-        
+        if (historyId == null) {
+            System.err.println("⚠️ saveRoundStart: historyId null pour room " + roomId + " (gameHistoryIds vide ?)");
+            return;
+        }
+
         GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
-        if (history == null) return;
-        
-        // Créer un nouveau round dans l'historique
+        if (history == null) {
+            System.err.println("⚠️ saveRoundStart: GameHistory introuvable pour id=" + historyId);
+            return;
+        }
+
         GameHistory.RoundHistory roundHistory = new GameHistory.RoundHistory(game.getRoundNumber());
         history.addRound(roundHistory);
-        
         gameHistoryRepository.save(history);
+        System.out.println("📝 saveRoundStart: round " + game.getRoundNumber() + " ajouté (historyId=" + historyId + ", total rounds=" + history.getRounds().size() + ")");
     }
     
     /**
@@ -872,14 +895,23 @@ public class GameService {
      */
     private void saveRoundEnd(String roomId, Game game) {
         String historyId = gameHistoryIds.get(roomId);
-        if (historyId == null) return;
-        
+        if (historyId == null) {
+            System.err.println("⚠️ saveRoundEnd: historyId null pour room " + roomId + " — données du round perdues !");
+            return;
+        }
+
         GameHistory history = gameHistoryRepository.findById(historyId).orElse(null);
-        if (history == null) return;
-        
-        // Récupérer le round actuel
+        if (history == null) {
+            System.err.println("⚠️ saveRoundEnd: GameHistory introuvable pour id=" + historyId);
+            return;
+        }
+
         int currentRoundIndex = game.getRoundNumber() - 1;
-        if (currentRoundIndex < 0 || currentRoundIndex >= history.getRounds().size()) return;
+        System.out.println("📊 saveRoundEnd: round=" + game.getRoundNumber() + " index=" + currentRoundIndex + " history.rounds.size=" + history.getRounds().size());
+        if (currentRoundIndex < 0 || currentRoundIndex >= history.getRounds().size()) {
+            System.err.println("⚠️ saveRoundEnd: index " + currentRoundIndex + " hors bornes (size=" + history.getRounds().size() + ") — saveRoundStart n'a pas été appelé ?");
+            return;
+        }
         
         GameHistory.RoundHistory roundHistory = history.getRounds().get(currentRoundIndex);
         roundHistory.setEndedAt(LocalDateTime.now());
@@ -945,10 +977,11 @@ public class GameService {
         }
         
         roundHistory.setRoundWinnerId(roundWinnerId);
-        
+
         gameHistoryRepository.save(history);
+        System.out.println("✅ saveRoundEnd: round " + game.getRoundNumber() + " sauvegardé pour room " + roomId + " (historyId=" + historyId + ")");
     }
-    
+
     /**
      * Sauvegarde la fin de la partie
      */

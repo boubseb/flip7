@@ -7,12 +7,6 @@
     </div>
   }
 
-  @if (successMessage) {
-    <div class="message-banner success">
-      <span>✅ {{ successMessage }}</span>
-      <button (click)="clearMessages()">✕</button>
-    </div>
-  }
 
   <!-- CREATE VIEW (create room form) -->
   @if (currentView === 'create') {
@@ -76,6 +70,7 @@
       <div class="join-content">
         <app-room-browser
           [availableRooms]="availableRooms"
+          [currentUserId]="currentUserId"
           (onJoinById)="handleJoinById($event)"
           (onRefreshRooms)="loadAvailableRooms()">
         </app-room-browser>

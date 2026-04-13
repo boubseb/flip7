@@ -1,147 +1,89 @@
 <div class="room-browser">
-  <!-- Tabs Navigation -->
-  <div class="tabs-navigation">
-    <button 
-      class="tab-btn"
-      [class.active]="activeTab === 'browse'"
-      (click)="switchTab('browse')">
-      📋 {{ 'room.browseTabs.browse' | translate }}
-    </button>
-      <button 
-      class="tab-btn"
-      [class.active]="activeTab === 'byId'"
-      (click)="switchTab('byId')">
-      🔑 {{ 'room.browseTabs.joinById' | translate }}
+
+  <!-- Section : Rooms ouvertes -->
+  <div class="rooms-section">
+    <div class="section-header">
+      <span class="section-title">🟢 {{ 'room.browseTab.title' | translate }}</span>
+      <button class="btn-refresh" (click)="refreshRooms()" [title]="'room.browseTab.refresh' | translate">🔄</button>
+    </div>
+
+    @if (openRooms.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">😴</span>
+        <span>{{ 'room.browseTab.noRooms' | translate }}</span>
+      </div>
+    } @else {
+      <div class="rooms-list">
+        @for (room of openRooms; track room.id) {
+          <div
+            class="room-card"
+            [class.selected]="selectedRoomId === room.id"
+            (click)="selectRoom(room.id)">
+            <div class="room-card-left">
+              <span class="room-id">{{ room.id | slice:0:8 }}…</span>
+              <span class="room-players">👥 {{ room.currentPlayers }} / {{ room.maxPlayers }}</span>
+            </div>
+            <div class="room-card-right">
+              <span class="room-score">🎯 {{ room.targetScore ?? 200 }} pts</span>
+              <span class="badge waiting">{{ 'room.status.waiting' | translate }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Section : Mes rooms (déjà dedans) -->
+  @if (myRooms.length > 0) {
+    <div class="rooms-section">
+      <div class="section-header">
+        <span class="section-title">👤 Mes parties</span>
+      </div>
+      <div class="rooms-list">
+        @for (room of myRooms; track room.id) {
+          <div
+            class="room-card my-room"
+            [class.selected]="selectedRoomId === room.id"
+            (click)="selectRoom(room.id)">
+            <div class="room-card-left">
+              <span class="room-id">{{ room.id | slice:0:8 }}…</span>
+              <span class="room-players">👥 {{ room.currentPlayers }} / {{ room.maxPlayers }}</span>
+            </div>
+            <div class="room-card-right">
+              <span class="room-score">🎯 {{ room.targetScore ?? 200 }} pts</span>
+              <span class="badge" [class]="room.status.toLowerCase()">{{ room.status }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Formulaire rejoindre -->
+  <div class="join-form">
+    <div class="form-row">
+      <div class="input-wrap">
+        <input
+          type="text"
+          [(ngModel)]="joinRoomId"
+          [placeholder]="'room.joinByIdTab.roomIdPlaceholder' | translate"
+          [readonly]="!!selectedRoomId">
+        @if (joinRoomId) {
+          <button class="btn-clear" (click)="clearRoomId()">✕</button>
+        }
+      </div>
+      <input
+        type="password"
+        [(ngModel)]="joinRoomPassword"
+        [placeholder]="'room.joinByIdTab.passwordPlaceholder' | translate"
+        (keyup.enter)="joinById()">
+    </div>
+    <button
+      class="btn btn-join"
+      (click)="joinById()"
+      [disabled]="!joinRoomId || !joinRoomPassword">
+      ➡️ {{ 'room.joinByIdTab.joinButton' | translate }}
     </button>
   </div>
 
-  <!-- Tab Content -->
-  <div class="tab-content">
-    
-    <!-- JOIN BY ID TAB -->
-    @if (activeTab === 'byId') {
-      <div class="tab-panel">
-        <div class="card">
-          <h2>🔑 {{ 'room.joinByIdTab.title' | translate }}</h2>
-          <div class="form-group">
-            <label>{{ 'room.joinByIdTab.roomIdLabel' | translate }}</label>
-            <div class="input-with-clear">
-              <input 
-                type="text" 
-                [(ngModel)]="joinRoomId" 
-                [placeholder]="'room.joinByIdTab.roomIdPlaceholder' | translate"
-                [readonly]="joinRoomId.length > 0">
-              @if (joinRoomId.length > 0) {
-                <button 
-                  class="btn-clear-input" 
-                  (click)="clearRoomId()">
-                  ✕
-                </button>
-              }
-            </div>
-          </div>
-          <div class="form-group">
-            <label>{{ 'room.joinByIdTab.passwordLabel' | translate }}</label>
-            <input 
-              type="password" 
-              [(ngModel)]="joinRoomPassword" 
-              [placeholder]="'room.joinByIdTab.passwordPlaceholder' | translate"
-              (keyup.enter)="joinById()">
-          </div>
-          <button 
-            class="btn btn-success btn-large" 
-            (click)="joinById()"
-            [disabled]="!joinRoomId || !joinRoomPassword">
-            ➡️ {{ 'room.joinByIdTab.joinButton' | translate }}
-          </button>
-        </div>
-      </div>
-    }
-
-    <!-- BROWSE ROOMS TAB -->
-    @if (activeTab === 'browse') {
-      <div class="tab-panel">
-        <div class="card">
-          <!-- Search and Refresh Header -->
-          <div class="browse-header">
-            <h2>📋 {{ 'room.browseTab.title' | translate }}</h2>
-            <button class="btn-refresh" (click)="refreshRooms()" [title]="'room.browseTab.refresh' | translate">
-              🔄
-            </button>
-          </div>
-
-          <!-- Search Bar -->
-          <div class="search-bar">
-            <div class="input-with-clear">
-              <input 
-                type="text" 
-                [(ngModel)]="searchQuery" 
-                [placeholder]="'room.browseTab.searchPlaceholder' | translate"
-                class="search-input">
-              @if (searchQuery.length > 0) {
-                <button 
-                  class="btn-clear-input" 
-                  (click)="clearSearch()">
-                  ✕
-                </button>
-              }
-            </div>
-          </div>
-
-          <!-- Rooms List -->
-          <div class="rooms-list-container">
-            @if (filteredRooms.length > 0) {
-              <div class="rooms-list">
-                @for (room of filteredRooms; track room.id) {
-                  <div 
-                    class="room-item"
-                    (click)="selectRoom(room.id)"
-                    [title]="'room.browseTab.clickToJoin' | translate">
-                    
-                    <div class="room-icon">🎮</div>
-                    <div class="room-details">
-                      <div class="room-id-line">
-                        <span class="room-id-label">{{ 'room.browseTab.roomIdLabel' | translate }}:</span>
-                        <span class="room-id">{{ room.id.substring(0, 8) }}...</span>
-                      </div>
-                      <div class="room-meta">
-                        <span class="room-players">
-                          👥 {{ room.currentPlayers }}/{{ room.maxPlayers }}
-                        </span>
-                        <span class="room-status" [class]="room.status.toLowerCase()">
-                          {{ room.status }}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div class="room-arrow">
-                      ➜
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-
-            <!-- No Results -->
-            @if (filteredRooms.length === 0 && availableRooms.length > 0) {
-              <div class="no-rooms">
-                <p class="emoji">🔍</p>
-                <p class="text">{{ 'room.browseTab.noResults' | translate:{ query: searchQuery } }}</p>
-              </div>
-            }
-
-            <!-- Empty State -->
-            @if (availableRooms.length === 0) {
-              <div class="no-rooms">
-                <p class="emoji">😴</p>
-                <p class="text">{{ 'room.browseTab.noRooms' | translate }}</p>
-                <p class="subtext">{{ 'room.browseTab.noRoomsSubtext' | translate }}</p>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-    }
-    
-  </div>
 </div>
