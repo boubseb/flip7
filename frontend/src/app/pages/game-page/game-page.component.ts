@@ -86,8 +86,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
     if (!this.gameState?.players || !this.currentUserId) return false;
     const me = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
     if (!me || !Array.isArray(me.hand)) return false;
-    // On ne compte que les cartes vie non utilisées (cancelled !== true)
-    return me.hand.some((card: any) => card.cardType === 'LIFE' && !card.cancelled);
+    // Les cartes spéciales ont cardType === 'SPECIAL' et specialType === 'LIFE'
+    return me.hand.some((card: any) =>
+      card.cardType === 'SPECIAL' && card.specialType === 'LIFE' && !card.cancelled
+    );
+  }
+
+  /**
+   * Retourne la probabilité de survie en pourcentage (0-100), en tenant compte
+   * de la carte vie. Toujours un nombre (jamais null) pour l'affichage.
+   */
+  getSurvivalProbability(): number {
+    if (this.hasLifeCard()) return 100;
+    const prob = this.calculateEliminationProbability();
+    return prob !== null ? prob : 100;
   }
   // Room ID from URL
   roomId: string = '';
@@ -200,16 +212,30 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.wsConnected = connected;
         
         if (connected && !wasConnected) {
-          console.log('✅ WebSocket connected for the first time');
-          // Subscribe to room when connected (only if not already subscribed)
+          console.log('✅ WebSocket connected / reconnected');
+          // The onConnect handler clears the subscriptions map, so we always
+          // need to re-subscribe (handles both first connection and reconnection).
           if (this.roomId) {
-            console.log('📡 Subscribing to room after connection:', this.roomId);
+            console.log('📡 Subscribing to room after (re)connection:', this.roomId);
             this.wsService.subscribeToRoom(this.roomId);
+            // Re-fetch game state to recover any updates missed during disconnection
+            if (this.gameState) {
+              console.log('🔄 Re-fetching game state after reconnection...');
+              this.gameService.getGameState(this.roomId).subscribe({
+                next: (state) => {
+                  console.log('✅ Game state refreshed after reconnection');
+                  this.gameState = state;
+                  if (state.players && state.currentPlayerIndex >= 0) {
+                    const cp = state.players[state.currentPlayerIndex];
+                    this.currentPlayerId = cp.userId;
+                    this.isMyTurn = this.currentPlayerId === this.currentUserId;
+                  }
+                },
+                error: (err) => console.warn('⚠️ Could not re-fetch game state:', err)
+              });
+            }
           }
-        } else if (connected && wasConnected) {
-          console.log('🔄 WebSocket reconnected (already was connected)');
-          // Ne pas re-souscrire, c'est déjà fait
-        } else {
+        } else if (!connected) {
           console.warn('⚠️ WebSocket disconnected');
         }
       })
@@ -265,23 +291,26 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.wsService.gameRestarted$.subscribe(data => {
         console.log('🔄 Game restarted event received:', data);
-        // Fermer le popup
         this.showGameOverPopup = false;
-        // Rediriger tout le monde vers la salle d'attente (waiting room)
-        setTimeout(() => {
-          // Recharge la room pour avoir le statut à jour
-          this.roomService.getRoom(this.roomId).subscribe({
-            next: (room) => {
-              // Navigue vers la waiting room avec statut à jour
+
+        // Pour les non-admins : rejoindre automatiquement la room remise à zéro
+        // puis naviguer vers la salle d'attente.
+        if (!this.isAdmin) {
+          this.roomService.rejoinAfterRestart(this.roomId).subscribe({
+            next: () => {
+              console.log('✅ Rejoint la room après restart');
               this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
             },
             error: () => {
-              // Navigue quand même si erreur
+              // Si le rejoin échoue, naviguer quand même
               this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
             }
           });
-        }, 500);
-        console.log('🚪 Redirection de tous les joueurs vers la salle d\'attente après restart');
+        } else {
+          // L'admin a déjà navigué via la réponse REST, cette branche ne devrait pas
+          // arriver mais en sécurité on navigue quand même
+          this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
+        }
       })
     );
     
@@ -435,7 +464,17 @@ export class GamePageComponent implements OnInit, OnDestroy {
         }
         
         console.log('✅ Game in progress, displaying game view');
-        
+
+        // If the WS is already connected (e.g. the connection resolved before this
+        // HTTP response came back), ensure the room subscriptions are registered now.
+        // Without this guard a page-refresh where WS connects before loadRoom()
+        // completes would skip subscribeToRoom because connectionStatus$ fires with
+        // this.roomId not yet confirmed as a valid in-game room.
+        if (this.wsService.isConnected()) {
+          console.log('📡 WS already connected — ensuring room subscriptions are active');
+          this.wsService.subscribeToRoom(this.roomId);
+        }
+
         // Si le jeu est déjà en cours, récupérer l'état actuel pour reconnexion (une seule fois)
         if (!this.gameState) {
           console.log('📡 Fetching current game state for reconnection...');
@@ -781,8 +820,21 @@ export class GamePageComponent implements OnInit, OnDestroy {
       };
     }
 
-    // Ce n'est pas le tour du joueur - retourner null pour ne PAS afficher de message
-    // (l'alerte "Au tour de..." s'affichera en haut de l'écran)
+    // Ce n'est pas le tour du joueur pendant une phase de jeu active :
+    // afficher un message inline plutôt que les boutons désactivés.
+    if (!this.isMyTurn && myPlayer.status === 'PLAYING' && this.gameState?.gameState === 'PLAYING') {
+      const currentPlayerIndex = this.gameState.currentPlayerIndex;
+      const currentPlayer = (currentPlayerIndex >= 0)
+        ? this.gameState.players[currentPlayerIndex]
+        : null;
+      return {
+        icon: '⏳',
+        message: this.translate.instant('game.status.waiting_for_player', {
+          player: currentPlayer?.username || '...'
+        })
+      };
+    }
+
     return null;
   }
 

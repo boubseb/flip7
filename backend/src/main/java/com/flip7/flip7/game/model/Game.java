@@ -883,7 +883,7 @@ public class Game {
         for (int i = 0; i < players.size(); i++) {
             GamePlayer player = players.get(i);
             
-            // Skip les joueurs éliminés, stoppés, ou qui ont déjà une carte
+            // Skip les joueurs éliminés, stoppés, ou qui ont déjà reçu leur carte initiale
             if (player.getStatus() == PlayerStatus.ELIMINATED) {
                 continue;
             }
@@ -891,14 +891,20 @@ public class Game {
                 System.out.println("   ⏭️  Skipping " + player.getUsername() + " - already stopped (no initial card)");
                 continue;
             }
+            // receivedInitialCard couvre le cas où le joueur a reçu une carte Stop
+            // et l'a donnée à quelqu'un (main vide mais carte déjà distribuée)
+            if (player.isReceivedInitialCard()) {
+                continue;
+            }
             if (!player.getHand().isEmpty()) {
                 continue;
             }
-            
+
             // Ce joueur a besoin d'une carte
             Card card = deck.draw();
             player.addCard(card);
             player.setStatus(PlayerStatus.PLAYING);
+            player.setReceivedInitialCard(true); // Marquer avant toute pause potentielle
                 
             System.out.println("   - " + player.getUsername() + " received: " + card.getDisplayName() + " (hand size: " + player.getHand().size() + ", roundScore: " + player.getRoundScore() + ")");
             

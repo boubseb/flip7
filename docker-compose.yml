@@ -1,54 +1,72 @@
+version: "3.9"
+
 services:
-  # ── PostgreSQL ──────────────────────────────────────────────
   db:
     image: postgres:16-alpine
+    container_name: flip7_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: flip7
-      POSTGRES_USER: flip7_admin
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-Testflip7!}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
     volumes:
       - /storage/flip7/postgres:/var/lib/postgresql/data
     networks:
-      - web
+      - app_internal
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flip7_admin -d flip7"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
 
-  # ── Spring Boot Backend ─────────────────────────────────────
   backend:
     build:
-      context: ./backend
+      context: /storage/flip7/backend
       dockerfile: Dockerfile
+    container_name: flip7_backend
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/flip7
-      SPRING_DATASOURCE_USERNAME: flip7_admin
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-Testflip7!}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?POSTGRES_DB is required}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?POSTGRES_USER is required}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       SPRING_PROFILES_ACTIVE: prod
-      JWT_SECRET: ${JWT_SECRET:-change-me_change-me_change-me_change-me_change-me}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
     networks:
+      - app_internal
       - web
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3200/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
-  # ── Angular SSR Frontend ────────────────────────────────────
   frontend:
     build:
-      context: ./frontend
+      context: /storage/flip7/frontend
       dockerfile: Dockerfile
+    container_name: flip7_frontend
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       PORT: 4000
       NODE_ENV: production
     networks:
       - web
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 networks:
+  app_internal:
+    internal: true
   web:
     external: true

@@ -104,15 +104,13 @@ public class UserController {
 //     }
 
     @PostMapping("/login")
-    public  Map<String, String> login(@RequestParam("username") String username,@RequestParam("password") String password) {
-
-        User userFromDB  =userService.findByPseudo(username);
-        if(userFromDB != null && userFromDB.getPassword().equals(password)){
+    public Map<String, String> login(@RequestParam("username") String username, @RequestParam("password") String password) {
+        User userFromDB = userService.checkCredentials(username, password);
+        if (userFromDB != null) {
             Map<String, String> response = new HashMap<>();
             response.put("access_token", userFromDB.getId());
             return response;
-        }
-        else{
+        } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
     }

@@ -23,8 +23,8 @@ export class StatisticsPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Récupérer l'ID de l'utilisateur depuis le localStorage
-    this.currentUserId = localStorage.getItem('userId');
+    // Récupérer l'ID de l'utilisateur depuis le localStorage (clé 'access_token')
+    this.currentUserId = localStorage.getItem('access_token');
     
     if (!this.currentUserId) {
       this.error = 'Utilisateur non connecté';

@@ -903,8 +903,15 @@ public class GameService {
             // PATCH: life cards obtained this round
             data.setLifeCardsObtained(player.getLifeCardsObtainedThisRound());
 
-            // PATCH: Stop card received only if stopped this round (not from previous rounds)
-            data.setReceivedStopCard(player.getStoppedByUsername() != null && player.getStatus() == PlayerStatus.STOPPED);
+            // Received a Stop card: only FORCED_STOP players were stopped by a card.
+            // STOPPED = voluntary stop; FORCED_STOP = Stop card received from another player.
+            data.setReceivedStopCard(player.getStatus() == PlayerStatus.FORCED_STOP);
+
+            // Eliminated by drawing a double (not during a +3 sequence)
+            data.setEliminatedByDouble(
+                player.getStatus() == PlayerStatus.ELIMINATED &&
+                player.getDrawThreeByUsername() == null
+            );
 
             // PATCH: +3 logic - only if drawThreeByUsername is set and player status is not WAITING
             boolean receivedDrawThree = player.getDrawThreeByUsername() != null && player.getStatus() != PlayerStatus.WAITING;
@@ -1268,10 +1275,14 @@ public class GameService {
         // Broadcast the updated room status to all clients (so room browser and join logic get the update)
         roomService.broadcastRoomUpdate(roomAfterSave != null ? roomAfterSave : room);
 
-        System.out.println("🔄 Partie redémarrée pour la room: " + roomId);
+        // Notifier tous les joueurs encore sur la page de jeu de revenir en salle d'attente
+        Map<String, Object> restartData = new HashMap<>();
+        restartData.put("message", "Game restarted");
+        restartData.put("roomStatus", "WAITING");
+        messagingTemplate.convertAndSend("/topic/rooms/" + roomId + "/game-restarted", restartData);
+        System.out.println("📡 Event game-restarted envoyé à /topic/rooms/" + roomId + "/game-restarted");
 
-        // (SUPPRIMÉ) Ne pas forcer les joueurs à retourner en salle d'attente après restart
-        // Les joueurs peuvent rester sur la page et cliquer sur "Nouvelle partie" quand ils le souhaitent
+        System.out.println("🔄 Partie redémarrée pour la room: " + roomId);
     }
     
     /**

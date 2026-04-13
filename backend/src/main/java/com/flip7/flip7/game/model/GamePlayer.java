@@ -27,6 +27,7 @@ public class GamePlayer {
     private int lifeCardsInHand;          // Nombre de cartes Vie disponibles
     private List<RoundData> rounds;        // Liste de tous les rounds (le dernier = actuel)
     private int remainingForcedDraws;      // Nombre de cartes restant à piocher (pour DrawThree interrompu)
+    private boolean receivedInitialCard;   // A déjà reçu sa carte de distribution initiale ce round
     
     // Contexte des actions spéciales
     private String stoppedByUserId;        // ID du joueur qui a donné la carte Stop (null si auto-stop)
@@ -249,12 +250,21 @@ public class GamePlayer {
         hasUsedLife = false;
         lifeCardsInHand = 0;
         lifeCardsObtainedThisRound = 0; // PATCH: reset at start of round
+        receivedInitialCard = false;
         // Réinitialiser le contexte des actions spéciales
         stoppedByUserId = null;
         stoppedByUsername = null;
         drawThreeByUserId = null;
         drawThreeByUsername = null;
         System.out.println("      ✅ RESET " + username + ": hand cleared, status=" + status);
+    }
+
+    public boolean isReceivedInitialCard() {
+        return receivedInitialCard;
+    }
+
+    public void setReceivedInitialCard(boolean receivedInitialCard) {
+        this.receivedInitialCard = receivedInitialCard;
     }
     // PATCH: expose life cards obtained this round
     public int getLifeCardsObtainedThisRound() {

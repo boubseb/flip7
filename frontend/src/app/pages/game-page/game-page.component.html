@@ -101,17 +101,7 @@
       
           @if(gameState?.statisticsEnabled) {
             <span class="survival-probability">
-              <ng-container *ngIf="hasLifeCard(); else noLife">
-                🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: 100 } }}
-              </ng-container>
-              <ng-template #noLife>
-                <ng-container *ngIf="calculateEliminationProbability() as proba; else alwaysSafe">
-                  🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: (proba | number:'1.0-1') } }}
-                </ng-container>
-                <ng-template #alwaysSafe>
-                  🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: 100 } }}
-                </ng-template>
-              </ng-template>
+              🛡️ {{ 'game.statsPopup.survivalChance' | translate: { value: (getSurvivalProbability() | number:'1.0-1') } }}
             </span>
           }
           <button 

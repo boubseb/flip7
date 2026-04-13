@@ -69,6 +69,10 @@ export class WebSocketService {
 
     this.stompClient.onConnect = (frame: any) => {
       console.log('WebSocket connected:', frame);
+      // Clear stale subscription handles — after a reconnect the STOMP session is
+      // brand-new and old StompSubscription objects are no longer valid.
+      // Clearing the map lets subscribeToRoom() re-register cleanly.
+      this.subscriptions.clear();
       this.connectionStatus.next(true);
     };
 

@@ -15,15 +15,17 @@ RUN ./mvnw package -DskipTests -B
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
+# Install wget for the docker-compose healthcheck (not present by default in the JRE image)
+RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/target/*.jar app.jar
 
-# Default Spring Boot port
+# Run as a non-root user
+RUN addgroup --system spring && adduser --system --ingroup spring spring
+USER spring:spring
+
 EXPOSE 3200
 
-# Use environment variables to override DB config at runtime
-ENV SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/flip7
-ENV SPRING_DATASOURCE_USERNAME=flip7_admin
-ENV SPRING_DATASOURCE_PASSWORD=Testflip7!
-ENV SPRING_PROFILES_ACTIVE=prod
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# -XX:MaxRAMPercentage=75.0 lets the JVM use up to 75% of container memory
+# All runtime config (DB URL, password, profile) is injected via docker-compose env vars
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]

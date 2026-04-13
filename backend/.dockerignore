@@ -1,7 +1,5 @@
-target/
-.mvn/wrapper/maven-wrapper.jar
-!.mvn/wrapper/maven-wrapper.properties
-*.md
 .git
 .gitignore
-node_modules
+target/
+*.md
+generate-ssl.sh
