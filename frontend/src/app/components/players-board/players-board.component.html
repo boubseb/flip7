@@ -46,48 +46,98 @@
   </div>
 
   @if (players.length > 0) {
-    <div class="players-list">
-      @for (playerId of sortedPlayers; track playerId; let i = $index) {
-        <div 
-          class="player-item"
-          [class.current-player]="playerId === currentPlayerId"
-          [class.current-user]="playerId === currentUserId"
-          [class.expanded]="isExpanded(playerId)">
-          
-          <!-- Player Header (Always visible) -->
-          <div class="player-header" (click)="togglePlayer(playerId)">
-            <div class="player-left">
-              <span class="expand-icon">{{ isExpanded(playerId) ? '▼' : '▶' }}</span>
-              <span class="player-number">#{{ i + 1 }}</span>
-              <span class="player-name">
-                {{ playerId === currentUserId ? ('game.you' | translate) : getPlayerPseudo(playerId) }}
-              </span>
-              @if (playerId === currentPlayerId) {
-                <span class="badge-turn">🎯</span>
-              }
-            </div>
-            <div class="player-right">
-              <span class="player-score-safe">{{ getPlayerSafetyScore(playerId) }} pts</span>
-              @if (isCurrentRound()) {
-                <span class="score-separator">|</span>
-                <span class="player-score-total">{{ getPlayerTotalScore(playerId) }} pts</span>
-              }
-            </div>
+    <!-- MODE ÉQUIPE : affichage groupé par équipe -->
+    @if (teamMode && getTeamIds().length > 0) {
+      @for (teamId of getTeamIds(); track teamId) {
+        <div class="team-section" [class]="'team-border-' + teamId">
+          <div class="team-header-bar">
+            <span class="team-name">{{ 'team.teamN' | translate: {n: teamId} }}</span>
+            <span class="team-score">{{ getTeamScore(teamId) }} / {{ getTeamTarget(teamId) }} pts</span>
           </div>
-
-          <!-- Player Content (Expandable) -->
-          @if (isExpanded(playerId)) {
-            <div class="player-content">
-              <app-revealed-cards 
-                [cards]="getRevealedCards(playerId)"
-                [score]="getPlayerRoundScore(playerId)"
-                [playerStatus]="getPlayerStatus(playerId)">
-              </app-revealed-cards>
-            </div>
-          }
+          <div class="players-list">
+            @for (playerId of getTeamPlayers(teamId); track playerId) {
+              <div
+                class="player-item"
+                [class.current-player]="playerId === currentPlayerId"
+                [class.current-user]="playerId === currentUserId"
+                [class.expanded]="isExpanded(playerId)">
+                <div class="player-header" (click)="togglePlayer(playerId)">
+                  <div class="player-left">
+                    <span class="expand-icon">{{ isExpanded(playerId) ? '▼' : '▶' }}</span>
+                    <span class="player-name">
+                      {{ playerId === currentUserId ? ('game.you' | translate) : getPlayerPseudo(playerId) }}
+                    </span>
+                    @if (playerId === currentPlayerId) {
+                      <span class="badge-turn">🎯</span>
+                    }
+                  </div>
+                  <div class="player-right">
+                    <span class="player-score-safe">{{ getPlayerSafetyScore(playerId) }} pts</span>
+                    @if (isCurrentRound()) {
+                      <span class="score-separator">|</span>
+                      <span class="player-score-total">{{ getPlayerTotalScore(playerId) }} pts</span>
+                    }
+                  </div>
+                </div>
+                @if (isExpanded(playerId)) {
+                  <div class="player-content">
+                    <app-revealed-cards
+                      [cards]="getRevealedCards(playerId)"
+                      [score]="getPlayerRoundScore(playerId)"
+                      [playerStatus]="getPlayerStatus(playerId)">
+                    </app-revealed-cards>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
       }
-    </div>
+    } @else {
+      <!-- MODE SOLO : affichage normal -->
+      <div class="players-list">
+        @for (playerId of sortedPlayers; track playerId; let i = $index) {
+          <div
+            class="player-item"
+            [class.current-player]="playerId === currentPlayerId"
+            [class.current-user]="playerId === currentUserId"
+            [class.expanded]="isExpanded(playerId)">
+
+            <!-- Player Header (Always visible) -->
+            <div class="player-header" (click)="togglePlayer(playerId)">
+              <div class="player-left">
+                <span class="expand-icon">{{ isExpanded(playerId) ? '▼' : '▶' }}</span>
+                <span class="player-number">#{{ i + 1 }}</span>
+                <span class="player-name">
+                  {{ playerId === currentUserId ? ('game.you' | translate) : getPlayerPseudo(playerId) }}
+                </span>
+                @if (playerId === currentPlayerId) {
+                  <span class="badge-turn">🎯</span>
+                }
+              </div>
+              <div class="player-right">
+                <span class="player-score-safe">{{ getPlayerSafetyScore(playerId) }} pts</span>
+                @if (isCurrentRound()) {
+                  <span class="score-separator">|</span>
+                  <span class="player-score-total">{{ getPlayerTotalScore(playerId) }} pts</span>
+                }
+              </div>
+            </div>
+
+            <!-- Player Content (Expandable) -->
+            @if (isExpanded(playerId)) {
+              <div class="player-content">
+                <app-revealed-cards
+                  [cards]="getRevealedCards(playerId)"
+                  [score]="getPlayerRoundScore(playerId)"
+                  [playerStatus]="getPlayerStatus(playerId)">
+                </app-revealed-cards>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
   }
 
   @if (players.length === 0) {

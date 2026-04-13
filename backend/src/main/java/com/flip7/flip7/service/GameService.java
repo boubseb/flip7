@@ -175,7 +175,9 @@ public class GameService {
         }
 
         int targetScore = room.getTargetScore() != null ? room.getTargetScore() : 200;
-        Game game = new Game(roomId, room.getPlayers(), playerNames, targetScore);
+        boolean teamMode = room.isTeamMode();
+        Map<String, Integer> teamAssignments = room.getTeamAssignments();
+        Game game = new Game(roomId, room.getPlayers(), playerNames, targetScore, teamMode, teamAssignments);
         activeGames.put(roomId, game);
         
         // Créer un nouvel historique de partie
@@ -359,6 +361,23 @@ public class GameService {
             handleRoundEnd(roomId, game);
         }
 
+        return result;
+    }
+
+    /**
+     * Assigner une carte Vie à un coéquipier (mode équipe uniquement)
+     */
+    public Game.ActionResult assignLifeCard(String roomId, String playerId, String cardId, String targetPlayerId) {
+        System.out.println("💚 assignLifeCard called - roomId: " + roomId + ", playerId: " + playerId + ", target: " + targetPlayerId);
+        Game game = activeGames.get(roomId);
+        if (game == null) {
+            return new Game.ActionResult(false, "Partie non trouvée");
+        }
+        Game.ActionResult result = game.assignLifeCard(playerId, cardId, targetPlayerId);
+        broadcastGameState(roomId, game);
+        if (game.isRoundOver()) {
+            handleRoundEnd(roomId, game);
+        }
         return result;
     }
 
@@ -599,7 +618,8 @@ public class GameService {
             playerDTO.setTotalScore(player.getTotalScore());
             playerDTO.setTheoreticalTotal(player.getTotalScore() + player.getRoundScore());
             playerDTO.setLifeCardsInHand(player.getLifeCardsInHand());
-            
+            playerDTO.setTeamId(player.getTeamId());
+
             // Ajouter les cartes de la main (révélées)
             java.util.List<java.util.Map<String, Object>> handCards = new java.util.ArrayList<>();
             System.out.println("      🃏 Player " + player.getUsername() + " has " + player.getHand().size() + " cards in hand");
@@ -694,7 +714,34 @@ public class GameService {
         }
         dto.setPendingSpecialCards(pendingCards);
         System.out.println("   📋 Total pending special cards in DTO: " + pendingCards.size());
-        
+
+        // Ajouter les infos équipe si mode équipe activé
+        dto.setTeamMode(game.isTeamMode());
+        dto.setWinningTeamId(game.getWinningTeamId());
+        if (game.isTeamMode()) {
+            java.util.Map<Integer, java.util.Map<String, Object>> teamsMap = new java.util.HashMap<>();
+            java.util.Map<Integer, Integer> teamScores = new java.util.HashMap<>();
+            java.util.Map<Integer, java.util.List<String>> teamPlayers = new java.util.HashMap<>();
+            java.util.Map<Integer, Long> teamSizes = new java.util.HashMap<>();
+            for (GamePlayer p : game.getPlayers()) {
+                int tid = p.getTeamId();
+                if (tid <= 0) continue;
+                teamScores.merge(tid, p.getTotalScore(), Integer::sum);
+                teamPlayers.computeIfAbsent(tid, k -> new java.util.ArrayList<>()).add(p.getUserId());
+                teamSizes.merge(tid, 1L, Long::sum);
+            }
+            for (Map.Entry<Integer, Integer> e : teamScores.entrySet()) {
+                int tid = e.getKey();
+                java.util.Map<String, Object> teamData = new java.util.HashMap<>();
+                teamData.put("teamId", tid);
+                teamData.put("totalScore", e.getValue());
+                teamData.put("targetScore", (long) game.getTargetScore() * teamSizes.getOrDefault(tid, 1L));
+                teamData.put("players", teamPlayers.getOrDefault(tid, java.util.Collections.emptyList()));
+                teamsMap.put(tid, teamData);
+            }
+            dto.setTeams(teamsMap);
+        }
+
         return dto;
     }
 
@@ -729,7 +776,7 @@ public class GameService {
             dto.setWinnerName(winner.getUsername());
             dto.setWinningScore(winner.getTotalScore());
         }
-        
+
         for (GamePlayer player : game.getPlayers()) {
             FinalPlayerScore score = new FinalPlayerScore();
             score.setUserId(player.getUserId());
@@ -737,7 +784,31 @@ public class GameService {
             score.setTotalScore(player.getTotalScore());
             dto.addFinalScore(score);
         }
-        
+
+        // Infos équipe
+        dto.setTeamMode(game.isTeamMode());
+        dto.setWinningTeamId(game.getWinningTeamId());
+        if (game.isTeamMode()) {
+            java.util.Map<Integer, java.util.Map<String, Object>> teamsMap = new java.util.HashMap<>();
+            java.util.Map<Integer, Integer> teamScores = new java.util.HashMap<>();
+            java.util.Map<Integer, java.util.List<String>> teamPlayers = new java.util.HashMap<>();
+            for (GamePlayer p : game.getPlayers()) {
+                int tid = p.getTeamId();
+                if (tid <= 0) continue;
+                teamScores.merge(tid, p.getTotalScore(), Integer::sum);
+                teamPlayers.computeIfAbsent(tid, k -> new java.util.ArrayList<>()).add(p.getUserId());
+            }
+            for (Map.Entry<Integer, Integer> e : teamScores.entrySet()) {
+                int tid = e.getKey();
+                java.util.Map<String, Object> teamData = new java.util.HashMap<>();
+                teamData.put("teamId", tid);
+                teamData.put("totalScore", e.getValue());
+                teamData.put("players", teamPlayers.getOrDefault(tid, java.util.Collections.emptyList()));
+                teamsMap.put(tid, teamData);
+            }
+            dto.setTeams(teamsMap);
+        }
+
         return dto;
     }
 
@@ -765,9 +836,19 @@ public class GameService {
         public java.util.List<PlayerDTO> getPlayers() { return players; }
         public void addPlayer(PlayerDTO player) { this.players.add(player); }
         public java.util.List<java.util.Map<String, Object>> getPendingSpecialCards() { return pendingSpecialCards; }
-        public void setPendingSpecialCards(java.util.List<java.util.Map<String, Object>> pendingSpecialCards) { 
-            this.pendingSpecialCards = pendingSpecialCards; 
+        public void setPendingSpecialCards(java.util.List<java.util.Map<String, Object>> pendingSpecialCards) {
+            this.pendingSpecialCards = pendingSpecialCards;
         }
+
+        private boolean teamMode = false;
+        private int winningTeamId = 0;
+        private java.util.Map<Integer, java.util.Map<String, Object>> teams = new java.util.HashMap<>();
+        public boolean isTeamMode() { return teamMode; }
+        public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+        public int getWinningTeamId() { return winningTeamId; }
+        public void setWinningTeamId(int winningTeamId) { this.winningTeamId = winningTeamId; }
+        public java.util.Map<Integer, java.util.Map<String, Object>> getTeams() { return teams; }
+        public void setTeams(java.util.Map<Integer, java.util.Map<String, Object>> teams) { this.teams = teams; }
     }
 
     public static class PlayerDTO {
@@ -779,6 +860,7 @@ public class GameService {
         private int totalScore;        // Score sécurisé (rounds précédents)
         private int theoreticalTotal;  // Score total théorique (totalScore + roundScore)
         private int lifeCardsInHand;
+        private int teamId = 0;
         private java.util.List<java.util.Map<String, Object>> hand = new java.util.ArrayList<>(); // Cartes révélées
         private java.util.List<RoundDTO> rounds = new java.util.ArrayList<>(); // Liste des rounds (le dernier = actuel)
 
@@ -799,6 +881,8 @@ public class GameService {
         public void setTheoreticalTotal(int theoreticalTotal) { this.theoreticalTotal = theoreticalTotal; }
         public int getLifeCardsInHand() { return lifeCardsInHand; }
         public void setLifeCardsInHand(int lifeCardsInHand) { this.lifeCardsInHand = lifeCardsInHand; }
+        public int getTeamId() { return teamId; }
+        public void setTeamId(int teamId) { this.teamId = teamId; }
         public java.util.List<java.util.Map<String, Object>> getHand() { return hand; }
         public void setHand(java.util.List<java.util.Map<String, Object>> hand) { this.hand = hand; }
         public java.util.List<RoundDTO> getRounds() { return rounds; }
@@ -851,6 +935,16 @@ public class GameService {
         public void addFinalScore(FinalPlayerScore score) { this.finalScores.add(score); }
     public boolean isWaitingForAdmin() { return waitingForAdmin; }
     public void setWaitingForAdmin(boolean waitingForAdmin) { this.waitingForAdmin = waitingForAdmin; }
+
+    private boolean teamMode = false;
+    private int winningTeamId = 0;
+    private java.util.Map<Integer, java.util.Map<String, Object>> teams = new java.util.HashMap<>();
+    public boolean isTeamMode() { return teamMode; }
+    public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+    public int getWinningTeamId() { return winningTeamId; }
+    public void setWinningTeamId(int winningTeamId) { this.winningTeamId = winningTeamId; }
+    public java.util.Map<Integer, java.util.Map<String, Object>> getTeams() { return teams; }
+    public void setTeams(java.util.Map<Integer, java.util.Map<String, Object>> teams) { this.teams = teams; }
     }
 
     public static class FinalPlayerScore {

@@ -148,6 +148,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
   showDrawThreeModal: boolean = false;
   drawThreeCardToAssign: any = null;
 
+  // Life Card Selection (team mode)
+  showLifeCardModal: boolean = false;
+  lifeCardToAssign: any = null;
+
   // Start Round Popup
   showStartRoundPopup: boolean = false;
 
@@ -155,6 +159,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
   showGameOverPopup: boolean = false;
   gameOverRankings: PlayerRanking[] = [];
   gameOverWinner: string = '';
+  gameOverTeamMode: boolean = false;
+  gameOverWinningTeamId: number = 0;
+  gameOverTeams: any = {};
+  gameOverPlayerNames: { [userId: string]: string } = {};
   
   private subscriptions: Subscription[] = [];
 
@@ -435,6 +443,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
             const card = { id: pendingDrawThreeCard.cardId, specialType: pendingDrawThreeCard.specialType };
             this.showDrawThreeCardSelection(card);
           }
+
+          // Chercher une carte LIFE en attente pour le joueur actuel (mode équipe uniquement)
+          if (this.gameState?.teamMode) {
+            const pendingLifeCard = response.pendingSpecialCards.find((pending: any) =>
+              pending.sourcePlayerId === this.currentUserId &&
+              !pending.targetPlayerId &&
+              pending.specialType === 'LIFE'
+            );
+            if (pendingLifeCard && !this.showLifeCardModal) {
+              console.log('❤️ Pending Life card detected in queue - showing teammate selection');
+              this.lifeCardToAssign = { id: pendingLifeCard.cardId, specialType: 'LIFE' };
+              this.showLifeCardModal = true;
+            }
+          }
         }
       })
     );
@@ -545,6 +567,20 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     console.log('➕3️⃣ Pending DrawThree card detected on reconnection');
                     const card = { id: pendingDrawThreeCard.cardId, specialType: pendingDrawThreeCard.specialType };
                     this.showDrawThreeCardSelection(card);
+                  }
+
+                  // Chercher une carte LIFE en attente (mode équipe uniquement)
+                  if (this.gameState?.teamMode) {
+                    const pendingLifeCard = gameState.pendingSpecialCards.find((pending: any) =>
+                      pending.sourcePlayerId === this.currentUserId &&
+                      !pending.targetPlayerId &&
+                      pending.specialType === 'LIFE'
+                    );
+                    if (pendingLifeCard && !this.showLifeCardModal) {
+                      console.log('❤️ Pending Life card detected on reconnection');
+                      this.lifeCardToAssign = { id: pendingLifeCard.cardId, specialType: 'LIFE' };
+                      this.showLifeCardModal = true;
+                    }
                   }
                 }
 
@@ -1148,6 +1184,42 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Retourne les coéquipiers éligibles à recevoir la carte Vie (mode équipe)
+   */
+  get eligibleLifeTargets(): any[] {
+    if (!this.lifeCardToAssign || !this.gameState?.players) return [];
+    const myPlayer = this.gameState.players.find((p: any) => p.userId === this.currentUserId);
+    if (!myPlayer) return [];
+    const myTeamId = myPlayer.teamId;
+    return this.gameState.players.filter((p: any) =>
+      p.teamId === myTeamId &&
+      p.userId !== this.currentUserId &&
+      (p.status === 'PLAYING' || p.status === 'STOPPED')
+    );
+  }
+
+  /**
+   * Assigne la carte Vie à un coéquipier (mode équipe)
+   */
+  assignLifeCardToTeammate(targetPlayerId: string): void {
+    if (!this.lifeCardToAssign?.id) {
+      this.showError('Erreur: ID de carte Vie manquant');
+      return;
+    }
+    this.gameService.assignLifeCard(this.roomId, this.lifeCardToAssign.id, targetPlayerId).subscribe({
+      next: (result) => {
+        console.log('✅ Life card assigned to teammate:', result);
+        this.showLifeCardModal = false;
+        this.lifeCardToAssign = null;
+      },
+      error: (error) => {
+        console.error('❌ Error assigning Life card:', error);
+        this.showError('Erreur lors du transfert de la carte Vie');
+      }
+    });
+  }
+
+  /**
    * Démarre le prochain round (appelé par le joueur actif)
    */
   startRound(): void {
@@ -1191,6 +1263,16 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
     // Le gagnant est le premier du classement
     this.gameOverWinner = sortedPlayers[0].username;
+
+    // Données team mode
+    this.gameOverTeamMode = gameState.teamMode || false;
+    this.gameOverWinningTeamId = gameState.winningTeamId || 0;
+    this.gameOverTeams = gameState.teams || {};
+    // Map userId → username from finalScores
+    this.gameOverPlayerNames = {};
+    gameState.finalScores?.forEach((p: any) => {
+      if (p.userId) this.gameOverPlayerNames[p.userId] = p.username;
+    });
 
     // Afficher la popup
     this.showGameOverPopup = true;

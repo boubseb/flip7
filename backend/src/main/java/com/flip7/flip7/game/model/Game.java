@@ -21,6 +21,9 @@ public class Game {
     private int targetScore = 200; // Score cible configurable (défaut: 200)
     private Deque<PendingSpecialCard> pendingSpecialCardsQueue = new ArrayDeque<>(); // Stack (LIFO) pour +3 imbriqués
     private String firstSourcePlayerId; // Joueur qui a pioché la 1ère carte spéciale de la chaîne
+    private boolean teamMode = false;
+    private Map<String, Integer> playerTeams = new HashMap<>(); // playerId → teamId
+    private int winningTeamId = 0; // équipe gagnante en mode équipe
 
     // Constructeur par défaut pour Jackson
     public Game() {
@@ -58,10 +61,35 @@ public class Game {
         }
     }
     
+    public Game(
+        String roomId,
+        List<String> playerIds,
+        Map<String, String> playerNames,
+        int targetScore,
+        boolean teamMode,
+        Map<String, Integer> playerTeams
+    ) {
+        this(roomId, playerIds, playerNames, targetScore);
+        this.teamMode = teamMode;
+        this.playerTeams = playerTeams != null ? new HashMap<>(playerTeams) : new HashMap<>();
+        for (GamePlayer p : players) {
+            p.setTeamId(this.playerTeams.getOrDefault(p.getUserId(), 0));
+        }
+    }
+
+    public boolean isTeamMode() { return teamMode; }
+    public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+
+    public Map<String, Integer> getPlayerTeams() { return playerTeams; }
+    public void setPlayerTeams(Map<String, Integer> playerTeams) { this.playerTeams = playerTeams != null ? playerTeams : new HashMap<>(); }
+
+    public int getWinningTeamId() { return winningTeamId; }
+    public void setWinningTeamId(int winningTeamId) { this.winningTeamId = winningTeamId; }
+
     public int getTargetScore() {
         return targetScore;
     }
-    
+
     public void setTargetScore(int targetScore) {
         this.targetScore = targetScore;
     }
@@ -194,6 +222,14 @@ public class Game {
                     "Carte +3 piochée ! Choisissez un joueur.";
                 
                 return new DrawResult(true, message, drawnCard, false, false, false, true);
+            }
+
+            // LIFE card en mode équipe → pending pour transfert à un coéquipier
+            if (type == SpecialType.LIFE && teamMode) {
+                PendingSpecialCard pendingLife = new PendingSpecialCard(specialCard, player.getUserId(), null, 0);
+                pendingSpecialCardsQueue.push(pendingLife);
+                System.out.println("   💚 Carte Vie piochée en mode équipe - assignation à un coéquipier requise");
+                return new DrawResult(true, "Carte Vie piochée ! Choisissez un coéquipier.", drawnCard, false, false, false, true);
             }
         }
 
@@ -819,6 +855,40 @@ public class Game {
      * En cas d'égalité, le gagnant est choisi aléatoirement parmi les ex-aequo
      */
     private void checkGameOver() {
+        // Mode équipe : vérifier le score agrégé par équipe
+        if (teamMode && !playerTeams.isEmpty()) {
+            Map<Integer, Integer> teamScores = new HashMap<>();
+            Map<Integer, Long> teamSizes = new HashMap<>();
+            for (GamePlayer p : players) {
+                int tid = p.getTeamId();
+                if (tid <= 0) continue;
+                teamScores.merge(tid, p.getTotalScore(), Integer::sum);
+                teamSizes.merge(tid, 1L, Long::sum);
+            }
+            List<Integer> qualified = teamScores.entrySet().stream()
+                .filter(e -> e.getValue() >= (long) targetScore * teamSizes.getOrDefault(e.getKey(), 1L))
+                .map(Map.Entry::getKey)
+                .collect(java.util.stream.Collectors.toList());
+            if (qualified.isEmpty()) return;
+
+            int bestTeam = qualified.stream()
+                .max(Comparator.comparingInt(teamScores::get))
+                .orElse(qualified.get(0));
+            winningTeamId = bestTeam;
+
+            // Représentant = joueur avec le plus haut score dans l'équipe gagnante
+            winnerId = players.stream()
+                .filter(p -> p.getTeamId() == bestTeam)
+                .max(Comparator.comparingInt(GamePlayer::getTotalScore))
+                .map(GamePlayer::getUserId)
+                .orElse(null);
+
+            gameState = GameState.GAME_OVER;
+            System.out.println("🏆 GAME OVER (team mode) - Équipe " + bestTeam + " gagne avec " + teamScores.get(bestTeam) + " points !");
+            return;
+        }
+
+        // Mode solo : logique existante
         // Trouver tous les joueurs qui ont atteint ou dépassé le score cible
         List<GamePlayer> qualifiedPlayers = players.stream()
             .filter(p -> p.getTotalScore() >= targetScore)
@@ -980,6 +1050,37 @@ public class Game {
             .filter(p -> p.getUserId().equals(playerId))
             .findFirst()
             .orElse(null);
+    }
+
+    /**
+     * Assigne une carte Vie à un coéquipier (mode équipe uniquement)
+     */
+    public ActionResult assignLifeCard(String playerId, String cardId, String targetPlayerId) {
+        GamePlayer source = getPlayerById(playerId);
+        GamePlayer target = getPlayerById(targetPlayerId);
+        if (source == null || target == null) return new ActionResult(false, "Joueur non trouvé");
+        if (source.getTeamId() != target.getTeamId() || source.getTeamId() == 0) {
+            return new ActionResult(false, "Ce joueur n'est pas dans votre équipe");
+        }
+        PendingSpecialCard pending = pendingSpecialCardsQueue.stream()
+            .filter(p -> p.getCard().getId().equals(cardId))
+            .findFirst()
+            .orElse(null);
+        if (pending == null) return new ActionResult(false, "Carte non trouvée dans la queue");
+        pendingSpecialCardsQueue.remove(pending);
+
+        Card card = source.getHand().stream()
+            .filter(c -> c.getId().equals(cardId))
+            .findFirst()
+            .orElse(null);
+        if (card != null) {
+            source.removeCard(card);
+            target.addCard(card);
+            System.out.println("💚 Carte Vie transférée de " + source.getUsername() + " à " + target.getUsername());
+        }
+
+        nextPlayer();
+        return new ActionResult(true, target.getUsername() + " a reçu la carte Vie !");
     }
 
     // Getters

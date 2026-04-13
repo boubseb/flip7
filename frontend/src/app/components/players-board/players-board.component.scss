@@ -148,6 +148,31 @@
         }
     }
 
+    // ─── Team sections ───
+    .team-section {
+        margin-bottom: 0.75rem;
+        border-radius: 10px;
+        overflow: hidden;
+
+        &.team-border-1 { border-left: 4px solid #3b82f6; }
+        &.team-border-2 { border-left: 4px solid #ef4444; }
+        &.team-border-3 { border-left: 4px solid #22c55e; }
+        &.team-border-4 { border-left: 4px solid #f59e0b; }
+
+        .team-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            background: var(--bg-secondary);
+            font-size: 0.8rem;
+            font-weight: 700;
+
+            .team-name { color: var(--text-primary); }
+            .team-score { color: #a78bfa; font-size: 0.75rem; }
+        }
+    }
+
     .players-list {
         display: flex;
         flex-direction: column;

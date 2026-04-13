@@ -17,6 +17,7 @@ import java.util.Set;
  */
 public class GamePlayer {
     private int lifeCardsObtainedThisRound = 0; // PATCH: track life cards obtained this round
+    private int teamId = 0; // 0 = no team (solo mode)
     private String userId;
     private String username;
     private List<Card> hand;              // Main du joueur
@@ -424,4 +425,7 @@ public class GamePlayer {
     
     public String getDrawThreeByUsername() { return drawThreeByUsername; }
     public void setDrawThreeByUsername(String drawThreeByUsername) { this.drawThreeByUsername = drawThreeByUsername; }
+
+    public int getTeamId() { return teamId; }
+    public void setTeamId(int teamId) { this.teamId = teamId; }
 }

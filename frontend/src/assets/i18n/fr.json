@@ -432,5 +432,18 @@
       "unavailable": "Non disponible",
       "close": "Fermer"
     }
+  },
+  "team": {
+    "mode": "Mode équipe",
+    "numTeams": "Nombre d'équipes",
+    "teamN": "Équipe {{n}}",
+    "joinTeam": "Rejoindre équipe {{n}}",
+    "selectTeam": "Choisir une équipe",
+    "myTeam": "Mon équipe ✓",
+    "teamScore": "Score équipe",
+    "teamTarget": "Objectif",
+    "teamWins": "L'équipe {{n}} gagne !",
+    "chooseTeammate": "Choisissez un coéquipier pour la carte Vie",
+    "lifeCardReceived": "{{name}} a reçu la carte Vie !"
   }
 }

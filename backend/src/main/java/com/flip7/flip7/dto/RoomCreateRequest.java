@@ -5,6 +5,8 @@ public class RoomCreateRequest {
     private Integer maxPlayers = 12;
     private boolean statisticsEnabled = false;
     private Integer targetScore = 200; // Score cible pour gagner (défaut: 200)
+    private boolean teamMode = false;
+    private Integer numTeams = 2;
     
     public Integer getTargetScore() {
         return targetScore;
@@ -35,4 +37,10 @@ public class RoomCreateRequest {
     public void setMaxPlayers(Integer maxPlayers) {
         this.maxPlayers = maxPlayers;
     }
+
+    public boolean isTeamMode() { return teamMode; }
+    public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+
+    public Integer getNumTeams() { return numTeams; }
+    public void setNumTeams(Integer numTeams) { this.numTeams = numTeams != null ? numTeams : 2; }
 }

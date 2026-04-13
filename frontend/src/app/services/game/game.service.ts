@@ -113,6 +113,17 @@ export class GameService {
   }
 
   /**
+   * Assigne une carte Vie à un coéquipier (mode équipe)
+   */
+  assignLifeCard(roomId: string, cardId: string, targetPlayerId: string): Observable<ActionResult> {
+    return this.http.post<ActionResult>(
+      `${this.apiUrl}/${roomId}/assign-life`,
+      { cardId, targetPlayerId },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
    * Démarre le prochain round
    */
   startNextRound(roomId: string): Observable<ActionResult> {

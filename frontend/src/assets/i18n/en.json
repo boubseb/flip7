@@ -431,5 +431,18 @@
       "unavailable": "Unavailable",
       "close": "Close"
     }
+  },
+  "team": {
+    "mode": "Team mode",
+    "numTeams": "Number of teams",
+    "teamN": "Team {{n}}",
+    "joinTeam": "Join team {{n}}",
+    "selectTeam": "Choose a team",
+    "myTeam": "My team ✓",
+    "teamScore": "Team score",
+    "teamTarget": "Target",
+    "teamWins": "Team {{n}} wins!",
+    "chooseTeammate": "Choose a teammate for the Life card",
+    "lifeCardReceived": "{{name}} received the Life card!"
   }
 }

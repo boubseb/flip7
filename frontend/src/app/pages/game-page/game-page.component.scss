@@ -1212,5 +1212,70 @@
   }
 }
 
+// Life Card Modal (team mode)
+.life-card-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+
+  .life-card-modal {
+    background: var(--card-bg);
+    border: 2px solid #ef4444;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+    animation: slideUp 0.25s ease;
+
+    .life-card-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 1.5rem;
+    }
+
+    .life-card-targets {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .btn-life-target {
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        border: none;
+        border-radius: 10px;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+      }
+
+      .no-targets {
+        color: var(--text-tertiary);
+        font-size: 0.9rem;
+        font-style: italic;
+      }
+    }
+  }
+}
+
 
 

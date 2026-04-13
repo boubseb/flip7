@@ -34,6 +34,8 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   createRoomMaxPlayers: number = 12;
   createRoomStatisticsEnabled: boolean = false;
   createRoomTargetScore: number = 200;
+  createRoomTeamMode: boolean = false;
+  createRoomNumTeams: number = 2;
   
   // Join room form
   joinRoomId: string = '';
@@ -217,7 +219,9 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       password: this.createRoomPassword,
       maxPlayers: this.createRoomMaxPlayers,
       statisticsEnabled: this.createRoomStatisticsEnabled,
-      targetScore: this.createRoomTargetScore
+      targetScore: this.createRoomTargetScore,
+      teamMode: this.createRoomTeamMode,
+      numTeams: this.createRoomTeamMode ? this.createRoomNumTeams : undefined
     };
     
     this.roomService.createRoom(request).subscribe({
@@ -523,5 +527,36 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     }
     const playerInfo = this.currentRoom.playerInfos.find(p => p.id === playerId);
     return playerInfo ? playerInfo.pseudo : playerId.substring(0, 8) + '...';
+  }
+
+  // ─── Team Mode Helpers ───
+
+  getTeamIds(): number[] {
+    if (!this.currentRoom?.numTeams) return [];
+    return Array.from({ length: this.currentRoom.numTeams }, (_, i) => i + 1);
+  }
+
+  getTeamPlayers(teamId: number): string[] {
+    if (!this.currentRoom?.teamAssignments) return [];
+    return Object.entries(this.currentRoom.teamAssignments)
+      .filter(([_, tid]) => tid === teamId)
+      .map(([pid]) => pid);
+  }
+
+  getMyTeam(): number {
+    return this.currentRoom?.teamAssignments?.[this.currentUserId] ?? 0;
+  }
+
+  joinTeam(teamId: number): void {
+    if (!this.currentRoom) return;
+    this.roomService.joinTeam(this.currentRoom.id, teamId).subscribe({
+      next: (room: Room) => {
+        this.currentRoom = room;
+        this.updateRoomState();
+      },
+      error: (err: any) => {
+        this.showErrorMessage(err.error?.message || 'room.errors.joinTeamError');
+      }
+    });
   }
 }

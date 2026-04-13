@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.flip7.flip7.dto.RoomCreateRequest;
@@ -45,7 +46,7 @@ public class RoomController {
             @RequestHeader("Authorization") String authHeader) {
         // Extract user ID from token (simplified - you should use proper token validation)
         String userId = extractUserIdFromAuth(authHeader);
-        Room room = roomService.createRoom(request.getPassword(), userId, request.getMaxPlayers(), request.isStatisticsEnabled(), request.getTargetScore());
+        Room room = roomService.createRoom(request.getPassword(), userId, request.getMaxPlayers(), request.isStatisticsEnabled(), request.getTargetScore(), request.isTeamMode(), request.getNumTeams());
         RoomResponse response = roomService.toRoomResponse(room);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -118,6 +119,16 @@ public class RoomController {
         return ResponseEntity.ok(roomService.toRoomResponse(room));
     }
     
+    @PostMapping("/{roomId}/join-team")
+    public ResponseEntity<RoomResponse> joinTeam(
+            @PathVariable String roomId,
+            @RequestParam int teamId,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = extractUserIdFromAuth(authHeader);
+        Room room = roomService.joinTeam(roomId, userId, teamId);
+        return ResponseEntity.ok(roomService.toRoomResponse(room));
+    }
+
     @DeleteMapping("/all")
     public ResponseEntity<Map<String, String>> deleteAllRooms() {
         int deletedCount = roomService.deleteAllRooms();

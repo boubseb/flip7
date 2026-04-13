@@ -1,13 +1,18 @@
 package com.flip7.flip7.dto;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.flip7.flip7.entity.Room.RoomStatus;
 
 public class RoomResponse {
     private boolean statisticsEnabled;
     private Integer targetScore = 200; // Score cible pour gagner
+    private boolean teamMode = false;
+    private Integer numTeams = 2;
+    private Map<String, Integer> teamAssignments = new HashMap<>();
     
     public boolean isStatisticsEnabled() {
         return statisticsEnabled;
@@ -126,8 +131,19 @@ public class RoomResponse {
     public List<PlayerInfo> getPlayerInfos() {
         return playerInfos;
     }
-    
+
     public void setPlayerInfos(List<PlayerInfo> playerInfos) {
         this.playerInfos = playerInfos;
+    }
+
+    public boolean isTeamMode() { return teamMode; }
+    public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+
+    public Integer getNumTeams() { return numTeams; }
+    public void setNumTeams(Integer numTeams) { this.numTeams = numTeams != null ? numTeams : 2; }
+
+    public Map<String, Integer> getTeamAssignments() { return teamAssignments; }
+    public void setTeamAssignments(Map<String, Integer> teamAssignments) {
+        this.teamAssignments = teamAssignments != null ? teamAssignments : new HashMap<>();
     }
 }

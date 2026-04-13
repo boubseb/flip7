@@ -51,6 +51,22 @@
             {{ 'room.statisticsOption' | translate }}
           </label>
         </div>
+        <div>
+          <label>
+            <input type="checkbox" [(ngModel)]="createRoomTeamMode">
+            {{ 'team.mode' | translate }}
+          </label>
+        </div>
+        @if (createRoomTeamMode) {
+          <div class="form-group">
+            <label>{{ 'team.numTeams' | translate }}</label>
+            <select [(ngModel)]="createRoomNumTeams">
+              <option [value]="2">2</option>
+              <option [value]="3">3</option>
+              <option [value]="4">4</option>
+            </select>
+          </div>
+        }
         <button class="btn btn-primary btn-large" (click)="createRoom()">
           🎯 {{ 'room.createRoom' | translate }}
         </button>
@@ -122,6 +138,35 @@
           }
         </div>
       </div>
+
+      <!-- Sélection d'équipe (mode équipe uniquement) -->
+      @if (currentRoom.teamMode) {
+        <div class="team-selection-section">
+          <h3>{{ 'team.selectTeam' | translate }}</h3>
+          <div class="teams-grid">
+            @for (teamId of getTeamIds(); track teamId) {
+              <div class="team-card" [class]="'team-color-' + teamId" [class.my-team]="getMyTeam() === teamId">
+                <div class="team-title">{{ 'team.teamN' | translate: {n: teamId} }}</div>
+                <div class="team-members-list">
+                  @for (playerId of getTeamPlayers(teamId); track playerId) {
+                    <span class="team-member">{{ getPlayerPseudo(playerId) }}</span>
+                  }
+                  @if (getTeamPlayers(teamId).length === 0) {
+                    <span class="team-empty">—</span>
+                  }
+                </div>
+                @if (getMyTeam() !== teamId) {
+                  <button class="btn-join-team" (click)="joinTeam(teamId)">
+                    {{ 'team.joinTeam' | translate: {n: teamId} }}
+                  </button>
+                } @else {
+                  <span class="my-team-badge">✓ {{ 'team.myTeam' | translate }}</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
 
       <!-- Bouton unique pour tous, texte et état selon admin ou non -->
       <button 

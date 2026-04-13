@@ -70,6 +70,10 @@ public class RoomService {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     
     public Room createRoom(String password, String adminId, Integer maxPlayers, boolean statisticsEnabled, Integer targetScore) {
+        return createRoom(password, adminId, maxPlayers, statisticsEnabled, targetScore, false, 2);
+    }
+
+    public Room createRoom(String password, String adminId, Integer maxPlayers, boolean statisticsEnabled, Integer targetScore, boolean teamMode, Integer numTeams) {
         Room room = new Room();
         room.setPassword(passwordEncoder.encode(password));
         room.setAdminId(adminId);
@@ -78,7 +82,29 @@ public class RoomService {
         room.setStatus(RoomStatus.WAITING);
         room.setStatisticsEnabled(statisticsEnabled);
         room.setTargetScore(targetScore != null ? targetScore : 200);
+        room.setTeamMode(teamMode);
+        room.setNumTeams(numTeams != null ? numTeams : 2);
         return roomRepository.save(room);
+    }
+
+    public Room joinTeam(String roomId, String userId, int teamId) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Room not found"));
+        if (!room.getPlayers().contains(userId)) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Pas dans la room");
+        }
+        if (!room.isTeamMode()) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Cette room n'est pas en mode équipe");
+        }
+        if (teamId < 1 || teamId > room.getNumTeams()) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Équipe invalide");
+        }
+        java.util.Map<String, Integer> assignments = room.getTeamAssignments();
+        assignments.put(userId, teamId);
+        room.setTeamAssignments(assignments);
+        room = roomRepository.save(room);
+        broadcastRoomUpdate(room);
+        return room;
     }
     
     public Room joinRoom(String roomId, String password, String playerId) {
@@ -248,6 +274,9 @@ public class RoomService {
         response.setPlayerInfos(playerInfos);
         response.setStatisticsEnabled(room.isStatisticsEnabled());
         response.setTargetScore(room.getTargetScore());
+        response.setTeamMode(room.isTeamMode());
+        response.setNumTeams(room.getNumTeams());
+        response.setTeamAssignments(room.getTeamAssignments());
         return response;
     }
     

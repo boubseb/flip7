@@ -146,6 +146,31 @@ public class GameController {
     }
 
     /**
+     * Assigner une carte Vie à un coéquipier (mode équipe)
+     */
+    @PostMapping("/{roomId}/assign-life")
+    public ResponseEntity<?> assignLifeCard(
+            @PathVariable String roomId,
+            @RequestHeader("Authorization") String token,
+            @RequestBody AssignLifeCardRequest request) {
+        try {
+            String userId = token.replace("Bearer ", "");
+            Game.ActionResult result = gameService.assignLifeCard(
+                roomId,
+                userId,
+                request.getCardId(),
+                request.getTargetPlayerId()
+            );
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", result.isSuccess());
+            response.put("message", result.getMessage());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Démarrer le prochain round (appelé par le joueur actif)
      */
     @PostMapping("/{roomId}/start-next-round")
@@ -266,6 +291,15 @@ public class GameController {
         private String cardId;
         private String targetPlayerId;
 
+        public String getCardId() { return cardId; }
+        public void setCardId(String cardId) { this.cardId = cardId; }
+        public String getTargetPlayerId() { return targetPlayerId; }
+        public void setTargetPlayerId(String targetPlayerId) { this.targetPlayerId = targetPlayerId; }
+    }
+
+    public static class AssignLifeCardRequest {
+        private String cardId;
+        private String targetPlayerId;
         public String getCardId() { return cardId; }
         public void setCardId(String cardId) { this.cardId = cardId; }
         public String getTargetPlayerId() { return targetPlayerId; }

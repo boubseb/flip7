@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { TeamInfo } from '../../models/game/game.model';
 
 export interface PlayerRanking {
   username: string;
@@ -19,7 +20,11 @@ export interface PlayerRanking {
 export class GameOverPopupComponent {
   @Input() rankings: PlayerRanking[] = [];
   @Input() winnerName: string = '';
-  @Input() isAdmin: boolean = false; // NOUVEAU : pour vérifier si l'utilisateur est admin
+  @Input() isAdmin: boolean = false;
+  @Input() teamMode: boolean = false;
+  @Input() winningTeamId: number = 0;
+  @Input() teams: { [teamId: number]: TeamInfo } = {};
+  @Input() playerNames: { [userId: string]: string } = {};
 
   @Output() playAgain = new EventEmitter<void>();
   @Output() leaveRoom = new EventEmitter<void>();
@@ -65,5 +70,12 @@ export class GameOverPopupComponent {
       case 3: return 'bronze';
       default: return '';
     }
+  }
+
+  getWinningTeamMembers(): string[] {
+    if (!this.winningTeamId || !this.teams[this.winningTeamId]) return [];
+    return this.teams[this.winningTeamId].players.map(
+      playerId => this.playerNames[playerId] || playerId
+    );
   }
 }

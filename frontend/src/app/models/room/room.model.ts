@@ -23,6 +23,9 @@ export interface Room {
   gameState?: any; // Game state (will be typed properly later)
   statisticsEnabled?: boolean;
   targetScore?: number; // Score cible pour gagner (défaut: 200)
+  teamMode?: boolean;
+  numTeams?: number;
+  teamAssignments?: { [playerId: string]: number }; // playerId → teamId (1-indexed)
 }
 
 export interface RoomCreateRequest {
@@ -30,6 +33,8 @@ export interface RoomCreateRequest {
   maxPlayers?: number;
   statisticsEnabled?: boolean;
   targetScore?: number; // Score cible pour gagner
+  teamMode?: boolean;
+  numTeams?: number;
 }
 
 export interface RoomJoinRequest {

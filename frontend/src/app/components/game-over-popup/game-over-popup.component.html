@@ -15,9 +15,20 @@
         <div class="banner-icon">🏆</div>
         <div class="banner-text">
           <h1>{{ 'GAME.GAME_OVER' | translate }}</h1>
-          <p class="winner-announcement">
-            {{ winnerName }} {{ 'GAME.HAS_WON' | translate }} !
-          </p>
+          @if (teamMode && winningTeamId > 0) {
+            <p class="winner-announcement">
+              {{ 'team.teamWins' | translate: {n: winningTeamId} }}
+            </p>
+            <div class="winning-team-members">
+              @for (name of getWinningTeamMembers(); track name) {
+                <span class="team-member-badge">{{ name }}</span>
+              }
+            </div>
+          } @else {
+            <p class="winner-announcement">
+              {{ winnerName }} {{ 'GAME.HAS_WON' | translate }} !
+            </p>
+          }
         </div>
       </div>
 

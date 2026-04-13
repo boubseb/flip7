@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { RevealedCardsComponent } from '../revealed-cards/revealed-cards.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { TeamInfo } from '../../models/game/game.model';
 
 @Component({
   selector: 'app-players-board',
@@ -16,6 +17,8 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   @Input() playerInfos: any[] = [];
   @Input() currentUserId: string = '';
   @Input() currentPlayerId: string = '';
+  @Input() teamMode: boolean = false;
+  @Input() teams: { [teamId: number]: TeamInfo } = {};
 
   expandedPlayers: Set<string> = new Set();
   selectedRound: number = 1;
@@ -309,6 +312,23 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   /**
    * Scroll automatiquement jusqu'au joueur actuel quand c'est son tour
    */
+  // ─── Team helpers ───
+  getTeamIds(): number[] {
+    return Object.keys(this.teams).map(Number).sort();
+  }
+
+  getTeamPlayers(teamId: number): string[] {
+    return this.teams[teamId]?.players ?? [];
+  }
+
+  getTeamScore(teamId: number): number {
+    return this.teams[teamId]?.totalScore ?? 0;
+  }
+
+  getTeamTarget(teamId: number): number {
+    return this.teams[teamId]?.targetScore ?? 0;
+  }
+
   scrollToCurrentPlayer(): void {
     if (!this.currentPlayerId) return;
 

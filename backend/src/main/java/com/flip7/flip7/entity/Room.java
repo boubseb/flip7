@@ -2,9 +2,14 @@
 
 package com.flip7.flip7.entity;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -71,7 +76,42 @@ public class Room {
     
     @Column(nullable = false)
     private Integer targetScore = 200; // Score cible pour gagner
-    
+
+    @Column(nullable = false)
+    private boolean teamMode = false;
+
+    @Column
+    private Integer numTeams = 2;
+
+    // JSON: Map<String, Integer> (playerId → teamId, 1-indexed)
+    @Column(name = "team_assignments", columnDefinition = "TEXT")
+    private String teamAssignmentsJson = "{}";
+
+    private static final ObjectMapper roomObjectMapper = new ObjectMapper();
+
+    public Map<String, Integer> getTeamAssignments() {
+        try {
+            if (teamAssignmentsJson == null || teamAssignmentsJson.isBlank()) return new HashMap<>();
+            return roomObjectMapper.readValue(teamAssignmentsJson, new TypeReference<Map<String, Integer>>() {});
+        } catch (Exception e) {
+            return new HashMap<>();
+        }
+    }
+
+    public void setTeamAssignments(Map<String, Integer> assignments) {
+        try {
+            this.teamAssignmentsJson = roomObjectMapper.writeValueAsString(assignments != null ? assignments : new HashMap<>());
+        } catch (Exception e) {
+            this.teamAssignmentsJson = "{}";
+        }
+    }
+
+    public boolean isTeamMode() { return teamMode; }
+    public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+
+    public Integer getNumTeams() { return numTeams; }
+    public void setNumTeams(Integer numTeams) { this.numTeams = numTeams != null ? numTeams : 2; }
+
     // Getters and Setters
     public boolean isStatisticsEnabled() {
         return statisticsEnabled;

@@ -48,8 +48,19 @@ export interface GamePlayer {
   totalScore: number;
   theoreticalTotal?: number;
   lifeCardsInHand?: number;
+  teamId?: number; // 0 = no team (solo mode)
   hand?: AnyCard[]; // Main actuelle
   rounds?: RoundData[]; // Historique des rounds
+}
+
+/**
+ * Infos d'une équipe (mode équipe)
+ */
+export interface TeamInfo {
+  teamId: number;
+  totalScore: number;
+  targetScore: number;
+  players: string[]; // userIds
 }
 
 /**
@@ -64,6 +75,9 @@ export interface GameStateResponse {
   players: GamePlayer[];
   pendingSpecialCards?: PendingSpecialCard[];
   statisticsEnabled?: boolean;
+  teamMode?: boolean;
+  winningTeamId?: number;
+  teams?: { [teamId: number]: TeamInfo };
 }
 
 /**
@@ -132,6 +146,9 @@ export interface GameOverData {
   winnerName: string;
   winningScore: number;
   finalScores: FinalPlayerScore[];
+  teamMode?: boolean;
+  winningTeamId?: number;
+  teams?: { [teamId: number]: { teamId: number; totalScore: number; players: string[] } };
 }
 
 export interface FinalPlayerScore {

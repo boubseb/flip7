@@ -100,4 +100,12 @@ export class RoomService {
       { headers: this.getHeaders() }
     ).pipe(map(room => this.enrichRoom(room)));
   }
+
+  joinTeam(roomId: string, teamId: number): Observable<Room> {
+    return this.http.post<any>(
+      `${this.apiUrl}/${roomId}/join-team?teamId=${teamId}`,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(map(room => this.enrichRoom(room)));
+  }
 }

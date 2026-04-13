@@ -35,12 +35,14 @@
         <!-- Players Board View (All players) -->
         @if (gameState && gameState.players && gameState.players.length > 0) {
           <div class="players-board-wrapper">
-            <app-players-board 
+            <app-players-board
               [gameState]="gameState"
               [players]="currentRoom.players"
               [playerInfos]="currentRoom.playerInfos || []"
               [currentUserId]="currentUserId"
-              [currentPlayerId]="currentPlayerId">
+              [currentPlayerId]="currentPlayerId"
+              [teamMode]="gameState?.teamMode || false"
+              [teams]="gameState?.teams || {}">
             </app-players-board>
             
           </div>
@@ -150,12 +152,36 @@
   </app-stats-popup>
 }
 
+<!-- Life Card Modal - Team Mode -->
+@if (showLifeCardModal && gameState?.teamMode) {
+  <div class="life-card-overlay" (click)="$event.stopPropagation()">
+    <div class="life-card-modal">
+      <div class="life-card-icon">❤️</div>
+      <h3>{{ 'team.chooseTeammate' | translate }}</h3>
+      <div class="life-card-targets">
+        @for (player of eligibleLifeTargets; track player.userId) {
+          <button class="btn btn-life-target" (click)="assignLifeCardToTeammate(player.userId)">
+            <span class="player-name">{{ player.username }}</span>
+          </button>
+        }
+        @if (eligibleLifeTargets.length === 0) {
+          <p class="no-targets">Aucun coéquipier disponible</p>
+        }
+      </div>
+    </div>
+  </div>
+}
+
 <!-- Game Over Popup -->
 @if (showGameOverPopup) {
   <app-game-over-popup
     [rankings]="gameOverRankings"
     [winnerName]="gameOverWinner"
     [isAdmin]="isAdmin"
+    [teamMode]="gameOverTeamMode"
+    [winningTeamId]="gameOverWinningTeamId"
+    [teams]="gameOverTeams"
+    [playerNames]="gameOverPlayerNames"
     (playAgain)="onPlayAgain()"
     (leaveRoom)="onLeaveRoom()">
   </app-game-over-popup>
