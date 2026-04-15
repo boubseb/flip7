@@ -174,7 +174,7 @@
   border-radius: 8px;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: 1rem; // ≥16px prevents iOS Safari auto-zoom on focus
   min-width: 180px;
   outline: none;
 
@@ -338,7 +338,7 @@
   border-radius: 8px;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 1rem; // ≥16px prevents iOS Safari auto-zoom on focus
   margin-bottom: 0.75rem;
   box-sizing: border-box;
   outline: none;

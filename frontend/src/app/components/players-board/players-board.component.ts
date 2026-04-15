@@ -259,6 +259,11 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
     return this.teams[teamId]?.targetScore ?? 0;
   }
 
+  getTeamTheoreticalScore(teamId: number): number {
+    return this.getTeamPlayers(teamId)
+      .reduce((sum, playerId) => sum + this.getPlayerTotalScore(playerId), 0);
+  }
+
   /**
    * Retourne les infos de cartes spéciales en attente impliquant ce joueur
    */

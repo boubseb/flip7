@@ -7,7 +7,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Entité représentant l'historique d'une partie de Flip7
@@ -41,7 +43,13 @@ public class GameHistory {
     
     @Column(name = "winner_id")
     private String winnerId;            // ID du gagnant (null si pas terminé)
-    
+
+    @Column(name = "team_mode")
+    private boolean teamMode = false;   // Partie en mode équipe
+
+    @Column(name = "winner_team_id")
+    private int winnerTeamId = 0;       // ID équipe gagnante (0 = mode solo)
+
     @Column(name = "total_rounds")
     private int totalRounds;            // Nombre de rounds joués
     
@@ -180,6 +188,12 @@ public class GameHistory {
         this.totalRounds = this.rounds.size();
     }
 
+    public boolean isTeamMode() { return teamMode; }
+    public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+
+    public int getWinnerTeamId() { return winnerTeamId; }
+    public void setWinnerTeamId(int winnerTeamId) { this.winnerTeamId = winnerTeamId; }
+
     public List<PlayerScore> getFinalScores() {
         return finalScores;
     }
@@ -197,9 +211,11 @@ public class GameHistory {
         private LocalDateTime endedAt;
         private List<PlayerRoundData> playerData;
         private String roundWinnerId;     // Joueur avec le meilleur score du round
+        private Map<Integer, Integer> teamScores; // teamId → score du round (mode équipe)
 
         public RoundHistory() {
             this.playerData = new ArrayList<>();
+            this.teamScores = new HashMap<>();
             this.startedAt = LocalDateTime.now();
         }
 
@@ -252,6 +268,9 @@ public class GameHistory {
         public void setRoundWinnerId(String roundWinnerId) {
             this.roundWinnerId = roundWinnerId;
         }
+
+        public Map<Integer, Integer> getTeamScores() { return teamScores; }
+        public void setTeamScores(Map<Integer, Integer> teamScores) { this.teamScores = teamScores; }
     }
 
     /**
@@ -272,6 +291,12 @@ public class GameHistory {
         private boolean receivedDrawThree;  // A reçu une carte +3
         private boolean completedDrawThree; // A réussi le +3 (sans élimination)
         private boolean eliminatedByDrawThree; // Éliminé par un double lors du +3
+        private int stopCardsDrawn;         // Nombre de cartes Stop piochées
+        private int drawThreeDrawn;         // Nombre de cartes +3 piochées
+        private int lifeCardsDrawn;         // Nombre de cartes Vie piochées (comptées en mode équipe)
+        private int selfAssignedSpecialCards; // Nombre de fois auto-attribution carte spéciale
+        private int drawThreeDealtSuccess;  // Nombre de +3 distribués qui ont réussi (perspective source)
+        private int teamId;                 // ID équipe du joueur (0 si mode solo)
 
         public PlayerRoundData() {
         }
@@ -393,6 +418,24 @@ public class GameHistory {
         public void setEliminatedByDrawThree(boolean eliminatedByDrawThree) {
             this.eliminatedByDrawThree = eliminatedByDrawThree;
         }
+
+        public int getStopCardsDrawn() { return stopCardsDrawn; }
+        public void setStopCardsDrawn(int stopCardsDrawn) { this.stopCardsDrawn = stopCardsDrawn; }
+
+        public int getDrawThreeDrawn() { return drawThreeDrawn; }
+        public void setDrawThreeDrawn(int drawThreeDrawn) { this.drawThreeDrawn = drawThreeDrawn; }
+
+        public int getLifeCardsDrawn() { return lifeCardsDrawn; }
+        public void setLifeCardsDrawn(int lifeCardsDrawn) { this.lifeCardsDrawn = lifeCardsDrawn; }
+
+        public int getSelfAssignedSpecialCards() { return selfAssignedSpecialCards; }
+        public void setSelfAssignedSpecialCards(int selfAssignedSpecialCards) { this.selfAssignedSpecialCards = selfAssignedSpecialCards; }
+
+        public int getDrawThreeDealtSuccess() { return drawThreeDealtSuccess; }
+        public void setDrawThreeDealtSuccess(int drawThreeDealtSuccess) { this.drawThreeDealtSuccess = drawThreeDealtSuccess; }
+
+        public int getTeamId() { return teamId; }
+        public void setTeamId(int teamId) { this.teamId = teamId; }
     }
 
     /**
@@ -404,6 +447,7 @@ public class GameHistory {
         private int totalScore;
         private int roundsWon;      // Nombre de rounds gagnés
         private int roundsPlayed;   // Nombre de rounds joués (non éliminé)
+        private int teamId;         // ID équipe (0 si mode solo)
 
         public PlayerScore() {
         }
@@ -454,6 +498,9 @@ public class GameHistory {
         public void setRoundsPlayed(int roundsPlayed) {
             this.roundsPlayed = roundsPlayed;
         }
+
+        public int getTeamId() { return teamId; }
+        public void setTeamId(int teamId) { this.teamId = teamId; }
     }
 
     /**

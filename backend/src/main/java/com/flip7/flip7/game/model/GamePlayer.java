@@ -16,7 +16,11 @@ import java.util.Set;
  * Représente un joueur dans le contexte du jeu
  */
 public class GamePlayer {
-    private int lifeCardsObtainedThisRound = 0; // PATCH: track life cards obtained this round
+    private int lifeCardsObtainedThisRound = 0;
+    private int stopCardsDrawnThisRound = 0;    // Cartes STOP piochées du deck par ce joueur
+    private int drawThreeDrawnThisRound = 0;    // Cartes +3 piochées du deck par ce joueur
+    private int lifeCardsDrawnThisRound = 0;    // Cartes Vie piochées du deck (source, mode équipe)
+    private int selfAssignedThisRound = 0;      // Fois où ce joueur s'est auto-attribué une carte spéciale
     private int teamId = 0; // 0 = no team (solo mode)
     private String userId;
     private String username;
@@ -250,7 +254,11 @@ public class GamePlayer {
         roundScore = 0;
         hasUsedLife = false;
         lifeCardsInHand = 0;
-        lifeCardsObtainedThisRound = 0; // PATCH: reset at start of round
+        lifeCardsObtainedThisRound = 0;
+        stopCardsDrawnThisRound = 0;
+        drawThreeDrawnThisRound = 0;
+        lifeCardsDrawnThisRound = 0;
+        selfAssignedThisRound = 0;
         receivedInitialCard = false;
         // Réinitialiser le contexte des actions spéciales
         stoppedByUserId = null;
@@ -267,10 +275,19 @@ public class GamePlayer {
     public void setReceivedInitialCard(boolean receivedInitialCard) {
         this.receivedInitialCard = receivedInitialCard;
     }
-    // PATCH: expose life cards obtained this round
-    public int getLifeCardsObtainedThisRound() {
-        return lifeCardsObtainedThisRound;
-    }
+    public int getLifeCardsObtainedThisRound() { return lifeCardsObtainedThisRound; }
+
+    public int getStopCardsDrawnThisRound() { return stopCardsDrawnThisRound; }
+    public void incrementStopCardsDrawn() { stopCardsDrawnThisRound++; }
+
+    public int getDrawThreeDrawnThisRound() { return drawThreeDrawnThisRound; }
+    public void incrementDrawThreeDrawn() { drawThreeDrawnThisRound++; }
+
+    public int getLifeCardsDrawnThisRound() { return lifeCardsDrawnThisRound; }
+    public void incrementLifeCardsDrawn() { lifeCardsDrawnThisRound++; }
+
+    public int getSelfAssignedThisRound() { return selfAssignedThisRound; }
+    public void incrementSelfAssigned() { selfAssignedThisRound++; }
 
     /**
      * Ajoute le score du round au score total

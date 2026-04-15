@@ -23,113 +23,191 @@
 @if (statistics && !loading && !error) {
   <div class="statistics-container">
 
-    <!-- Partie & Victoires -->
-    <div class="stats-section">
-      <p class="section-title">{{ 'profile.gamesPlayed' | translate }}</p>
-      <div class="stats-grid cols-4">
-        <div class="stat-item accent">
-          <span class="stat-icon">🎮</span>
-          <span class="stat-value">{{ statistics.totalGames }}</span>
-          <span class="stat-label">{{ 'profile.gamesPlayed' | translate }}</span>
-        </div>
-        <div class="stat-item success">
-          <span class="stat-icon">🏆</span>
-          <span class="stat-value">{{ statistics.victories }}</span>
-          <span class="stat-label">{{ 'profile.gamesWon' | translate }}</span>
-        </div>
-        <div class="stat-item gold">
-          <span class="stat-icon">🎯</span>
-          <span class="stat-value">{{ statistics.totalFlip7 }}</span>
-          <span class="stat-label">Flip 7</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">🔢</span>
-          <span class="stat-value">{{ statistics.totalRounds }}</span>
-          <span class="stat-label">{{ 'statistics.roundsPlayed' | translate }}</span>
-        </div>
-      </div>
+    <!-- Tabs Solo / Équipe -->
+    <div class="mode-tabs">
+      <button class="mode-tab" [class.active]="activeTab === 'indiv'" (click)="activeTab = 'indiv'">
+        🎮 {{ 'statistics.indivSection' | translate }}
+      </button>
+      <button class="mode-tab" [class.active]="activeTab === 'team'" (click)="activeTab = 'team'">
+        👥 {{ 'statistics.teamSection' | translate }}
+      </button>
     </div>
 
-    <!-- Scores -->
-    <div class="stats-section">
-      <p class="section-title">Scores</p>
-      <div class="stats-grid cols-4">
-        <div class="stat-item gold">
-          <span class="stat-icon">⭐</span>
-          <span class="stat-value">{{ statistics.maxScoreInOneRound }}</span>
-          <span class="stat-label">{{ 'statistics.maxScoreInOneRound' | translate }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">📊</span>
-          <span class="stat-value">{{ formatNumber(statistics.averagePointsPerRound) }}</span>
-          <span class="stat-label">Moy / round</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">📈</span>
-          <span class="stat-value">{{ formatNumber(statistics.averagePointsPerScoringRound) }}</span>
-          <span class="stat-label">Moy / round scoré</span>
-        </div>
-        <div class="stat-item danger">
-          <span class="stat-icon">💥</span>
-          <span class="stat-value">{{ statistics.roundsEliminatedByDouble }}</span>
-          <span class="stat-label">{{ 'statistics.eliminatedByDouble' | translate }}</span>
-        </div>
-      </div>
-    </div>
+    <!-- Stats perso (indiv ou team selon onglet actif) -->
+    @if (activeTab === 'indiv') {
+      <ng-container *ngTemplateOutlet="personalSection; context: { s: statistics.indiv }"></ng-container>
+    } @else {
+      <ng-container *ngTemplateOutlet="personalSection; context: { s: statistics.team, isTeam: true }"></ng-container>
+    }
 
-    <!-- Cartes spéciales -->
-    <div class="stats-section">
-      <p class="section-title">Cartes spéciales</p>
-      <div class="stats-grid">
-        <div class="stat-item danger">
-          <span class="stat-icon">🛑</span>
-          <span class="stat-value">{{ statistics.stopCardsReceived }}</span>
-          <span class="stat-label">{{ 'statistics.stopCardsReceived' | translate }}</span>
-        </div>
-        <div class="stat-item success">
-          <span class="stat-icon">💚</span>
-          <span class="stat-value">{{ statistics.lifeCardsObtained }}</span>
-          <span class="stat-label">{{ 'statistics.lifeCardsObtained' | translate }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">➕</span>
-          <span class="stat-value">{{ statistics.drawThreeReceived }}</span>
-          <span class="stat-label">+3 reçus</span>
-        </div>
-        <div class="stat-item success">
-          <span class="stat-icon">✨</span>
-          <span class="stat-value">{{ statistics.drawThreeCompleted }}</span>
-          <span class="stat-label">+3 réussis</span>
-        </div>
+    <!-- Stats globales côte à côte -->
+    <div class="global-row">
+      <div class="stats-section global half">
+        <p class="section-title">{{ 'statistics.globalIndivStats' | translate }}</p>
+        <ng-container *ngTemplateOutlet="globalSection; context: { g: statistics.globalIndiv }"></ng-container>
       </div>
-    </div>
-
-    <!-- Global -->
-    <div class="stats-section global">
-      <p class="section-title">{{ 'statistics.globalStats' | translate }}</p>
-      <div class="stats-grid cols-4">
-        <div class="stat-item">
-          <span class="stat-icon">🎮</span>
-          <span class="stat-value">{{ statistics.globalCompletedGames }}</span>
-          <span class="stat-label">Parties terminées</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">📊</span>
-          <span class="stat-value">{{ formatNumber(statistics.globalAverageRoundsPerGame) }}</span>
-          <span class="stat-label">Rounds / partie</span>
-        </div>
-        <div class="stat-item gold">
-          <span class="stat-icon">🎯</span>
-          <span class="stat-value">{{ statistics.globalTotalFlip7 }}</span>
-          <span class="stat-label">Flip 7 totaux</span>
-        </div>
-        <div class="stat-item gold">
-          <span class="stat-icon">🔥</span>
-          <span class="stat-value">{{ statistics.globalMaxScoreInOneRound }}</span>
-          <span class="stat-label">Record mondial</span>
-        </div>
+      <div class="stats-section global half">
+        <p class="section-title">{{ 'statistics.globalTeamStats' | translate }}</p>
+        <ng-container *ngTemplateOutlet="globalSection; context: { g: statistics.globalTeam }"></ng-container>
       </div>
     </div>
 
   </div>
 }
+
+<!-- ── Template : stats personnelles ───────────────────────────────── -->
+<ng-template #personalSection let-s="s" let-isTeam="isTeam">
+
+  <!-- Parties & Victoires -->
+  <div class="stats-section">
+    <p class="section-title">{{ 'profile.gamesPlayed' | translate }}</p>
+    <div class="stats-grid cols-4">
+      <div class="stat-item accent">
+        <span class="stat-icon">🎮</span>
+        <span class="stat-value">{{ s.completedGames }}</span>
+        <span class="stat-label">{{ 'statistics.completedGames' | translate }}</span>
+      </div>
+      <div class="stat-item success">
+        <span class="stat-icon">🏆</span>
+        <span class="stat-value">{{ s.victories }}</span>
+        <span class="stat-label">{{ 'statistics.victories' | translate }}</span>
+      </div>
+      <div class="stat-item gold">
+        <span class="stat-icon">🎯</span>
+        <span class="stat-value">{{ s.totalFlip7 }}</span>
+        <span class="stat-label">Flip 7</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🔢</span>
+        <span class="stat-value">{{ s.totalRounds }}</span>
+        <span class="stat-label">{{ 'statistics.roundsPlayed' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scores -->
+  <div class="stats-section">
+    <p class="section-title">Scores</p>
+    <div class="stats-grid cols-4">
+      <div class="stat-item gold">
+        <span class="stat-icon">⭐</span>
+        <span class="stat-value">{{ s.maxScoreInOneRound }}</span>
+        <span class="stat-label">{{ 'statistics.maxScoreInOneRound' | translate }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📊</span>
+        <span class="stat-value">{{ formatNumber(s.averagePointsPerRound) }}</span>
+        <span class="stat-label">{{ 'statistics.averagePointsPerRound' | translate }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📈</span>
+        <span class="stat-value">{{ formatNumber(s.averagePointsPerScoringRound) }}</span>
+        <span class="stat-label">{{ 'statistics.averagePointsPerScoringRound' | translate }}</span>
+      </div>
+      <div class="stat-item danger">
+        <span class="stat-icon">💥</span>
+        <span class="stat-value">{{ s.roundsEliminatedByDouble }}</span>
+        <span class="stat-label">{{ 'statistics.eliminatedByDouble' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cartes Stop -->
+  <div class="stats-section">
+    <p class="section-title">🛑 Stop</p>
+    <div class="stats-grid cols-3">
+      <div class="stat-item danger">
+        <span class="stat-icon">🃏</span>
+        <span class="stat-value">{{ s.stopCardsDrawn }}</span>
+        <span class="stat-label">{{ 'statistics.stopCardsDrawn' | translate }}</span>
+      </div>
+      <div class="stat-item danger">
+        <span class="stat-icon">🛑</span>
+        <span class="stat-value">{{ s.stopCardsReceived }}</span>
+        <span class="stat-label">{{ 'statistics.stopCardsReceived' | translate }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🎭</span>
+        <span class="stat-value">{{ s.selfAssignedSpecialCards }}</span>
+        <span class="stat-label">{{ 'statistics.selfAssignedSpecialCards' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cartes Vie -->
+  <div class="stats-section">
+    <p class="section-title">💚 Vie</p>
+    <div class="stats-grid" [class.cols-2]="!isTeam" [class.cols-3]="isTeam">
+      <div class="stat-item success">
+        <span class="stat-icon">💚</span>
+        <span class="stat-value">{{ s.lifeCardsObtained }}</span>
+        <span class="stat-label">{{ 'statistics.lifeCardsObtained' | translate }}</span>
+      </div>
+      @if (isTeam) {
+        <div class="stat-item success">
+          <span class="stat-icon">🫳</span>
+          <span class="stat-value">{{ s.lifeCardsDrawn }}</span>
+          <span class="stat-label">{{ 'statistics.lifeCardsDrawn' | translate }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Cartes +3 -->
+  <div class="stats-section">
+    <p class="section-title">➕ +3</p>
+    <div class="stats-grid cols-3">
+      <div class="stat-item">
+        <span class="stat-icon">🃏</span>
+        <span class="stat-value">{{ s.drawThreeDrawn }}</span>
+        <span class="stat-label">{{ 'statistics.drawThreeDrawn' | translate }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📨</span>
+        <span class="stat-value">{{ s.drawThreeReceived }}</span>
+        <span class="stat-label">{{ 'statistics.drawThreeReceived' | translate }}</span>
+      </div>
+      <div class="stat-item success">
+        <span class="stat-icon">✅</span>
+        <span class="stat-value">{{ s.drawThreeCompleted }}</span>
+        <span class="stat-label">{{ 'statistics.drawThreeCompleted' | translate }}</span>
+      </div>
+      <div class="stat-item success">
+        <span class="stat-icon">🎯</span>
+        <span class="stat-value">{{ s.drawThreeDealtSuccess }}</span>
+        <span class="stat-label">{{ 'statistics.drawThreeDealtSuccess' | translate }}</span>
+      </div>
+      <div class="stat-item danger">
+        <span class="stat-icon">💀</span>
+        <span class="stat-value">{{ s.drawThreeWithElimination }}</span>
+        <span class="stat-label">{{ 'statistics.drawThreeWithElimination' | translate }}</span>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- ── Template : stats globales ───────────────────────────────────── -->
+<ng-template #globalSection let-g="g">
+  <div class="stats-grid cols-2">
+    <div class="stat-item">
+      <span class="stat-icon">🎮</span>
+      <span class="stat-value">{{ g.completedGames }}</span>
+      <span class="stat-label">{{ 'statistics.globalCompletedGames' | translate }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">📊</span>
+      <span class="stat-value">{{ formatNumber(g.averageRoundsPerGame) }}</span>
+      <span class="stat-label">{{ 'statistics.globalAverageRoundsPerGame' | translate }}</span>
+    </div>
+    <div class="stat-item gold">
+      <span class="stat-icon">🎯</span>
+      <span class="stat-value">{{ g.totalFlip7 }}</span>
+      <span class="stat-label">{{ 'statistics.globalTotalFlip7' | translate }}</span>
+    </div>
+    <div class="stat-item gold">
+      <span class="stat-icon">🔥</span>
+      <span class="stat-value">{{ g.maxScoreInOneRound }}</span>
+      <span class="stat-label">{{ 'statistics.globalMaxScoreInOneRound' | translate }}</span>
+    </div>
+  </div>
+</ng-template>

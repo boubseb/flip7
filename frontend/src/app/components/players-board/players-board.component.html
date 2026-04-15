@@ -52,6 +52,9 @@
     </button>
   </div>
 
+  <!-- ── Zone scrollable : boards équipe / liste joueurs / historique ── -->
+  <div class="boards-scroll">
+
   <!-- ── Historique des cartes spéciales ── -->
   @if (sortOrder === 'history') {
     <div class="event-log">
@@ -82,7 +85,14 @@
         <div class="team-section" [class]="'team-border-' + teamId">
           <div class="team-header-bar">
             <span class="team-name">{{ 'team.team' | translate }} {{ teamId }}</span>
-            <span class="team-score">{{ getTeamScore(teamId) }} / {{ getTeamTarget(teamId) }} pts</span>
+            <div class="team-scores">
+              <span class="team-score-safe">{{ getTeamScore(teamId) }} pts</span>
+              @if (isCurrentRound()) {
+                <span class="team-score-sep">|</span>
+                <span class="team-score-theo">{{ getTeamTheoreticalScore(teamId) }} pts</span>
+              }
+              <span class="team-score-target">/ {{ getTeamTarget(teamId) }}</span>
+            </div>
           </div>
           <div class="players-list">
             @for (playerId of getTeamPlayers(teamId); track playerId) {
@@ -181,4 +191,6 @@
       <p>{{ 'game.noPlayers' | translate }}</p>
     </div>
   }
+
+  </div><!-- /boards-scroll -->
 </div>

@@ -25,6 +25,7 @@ public class Game {
     private Map<String, Integer> playerTeams = new HashMap<>(); // playerId → teamId
     private int winningTeamId = 0; // équipe gagnante en mode équipe
     private List<Map<String, Object>> eventLog = new ArrayList<>(); // Historique des cartes spéciales
+    private boolean persistentDeck = false; // Deck persistant entre rounds (pas de reset entre rounds)
 
     // Constructeur par défaut pour Jackson
     public Game() {
@@ -77,6 +78,22 @@ public class Game {
             p.setTeamId(this.playerTeams.getOrDefault(p.getUserId(), 0));
         }
     }
+
+    public Game(
+        String roomId,
+        List<String> playerIds,
+        Map<String, String> playerNames,
+        int targetScore,
+        boolean teamMode,
+        Map<String, Integer> playerTeams,
+        boolean persistentDeck
+    ) {
+        this(roomId, playerIds, playerNames, targetScore, teamMode, playerTeams);
+        this.persistentDeck = persistentDeck;
+    }
+
+    public boolean isPersistentDeck() { return persistentDeck; }
+    public void setPersistentDeck(boolean persistentDeck) { this.persistentDeck = persistentDeck; }
 
     public boolean isTeamMode() { return teamMode; }
     public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
@@ -143,12 +160,18 @@ public class Game {
         System.out.println("🧹 Resetting all players for new round...");
         for (GamePlayer player : players) {
             System.out.println("   - Resetting " + player.getUsername() + " (current hand: " + player.getHand().size() + " cards)");
+            if (persistentDeck && roundNumber > 1) {
+                // En mode deck persistant, les cartes des mains vont à la défausse avant d'être vidées
+                deck.discardAll(player.getHand());
+            }
             player.resetForNewRound();
             System.out.println("     ✅ " + player.getUsername() + " reset complete (hand: " + player.getHand().size() + " cards, status: " + player.getStatus() + ")");
         }
 
-        // Réinitialiser et mélanger le deck
-        deck.reset();
+        // Réinitialiser le deck sauf en mode persistant (le deck continue sans remélange complet)
+        if (!persistentDeck || roundNumber == 1) {
+            deck.reset();
+        }
 
         // Phase de distribution initiale : chaque joueur reçoit 1 carte
         // Si une carte spéciale est piochée, la distribution s'interrompt pour la traiter
@@ -219,7 +242,9 @@ public class Game {
             
             if (type == SpecialType.STOP || type == SpecialType.DRAW_THREE) {
                 System.out.println("   ⚠️ Carte spéciale détectée: " + type);
-                
+                if (type == SpecialType.STOP) player.incrementStopCardsDrawn();
+                else player.incrementDrawThreeDrawn();
+
                 // Créer PendingSpecialCard avec remaining=0
                 PendingSpecialCard pendingCard = new PendingSpecialCard(
                     specialCard,
@@ -249,6 +274,7 @@ public class Game {
                     .filter(p -> !p.getUserId().equals(player.getUserId()))
                     .count();
                 if (activeTeammates > 0) {
+                    player.incrementLifeCardsDrawn(); // source = celui qui a pioché
                     PendingSpecialCard pendingLife = new PendingSpecialCard(specialCard, player.getUserId(), null, 0);
                     pendingSpecialCardsQueue.push(pendingLife);
                     System.out.println("   💚 Carte Vie piochée en mode équipe - assignation à un coéquipier requise");
@@ -379,7 +405,8 @@ public class Game {
         }
 
         System.out.println("   ➡️ Assignation STOP: " + player.getUsername() + " → " + targetPlayer.getUsername());
-        
+        if (player.getUserId().equals(targetPlayerId)) player.incrementSelfAssigned();
+
         // ÉTAPE 1: Retirer la carte de la queue
         int remaining = pendingCard.getRemainingForcedDraws();
         pendingSpecialCardsQueue.remove(pendingCard);
@@ -519,7 +546,8 @@ public class Game {
         }
 
         System.out.println("   ➡️ Assignation: " + player.getUsername() + " → " + targetPlayer.getUsername());
-        
+        if (player.getUserId().equals(targetPlayerId)) player.incrementSelfAssigned();
+
         // ÉTAPE 1: Sauvegarder firstSourcePlayerId si c'est la première carte de la chaîne
         if (firstSourcePlayerId == null) {
             firstSourcePlayerId = pendingCard.getSourcePlayerId();
@@ -1108,6 +1136,7 @@ public class Game {
             target.addCard(card);
             System.out.println("💚 Carte Vie transférée de " + source.getUsername() + " à " + target.getUsername());
         }
+        if (source.getUserId().equals(targetPlayerId)) source.incrementSelfAssigned();
         logCardEvent("LIFE", source.getUserId(), source.getUsername(), target.getUserId(), target.getUsername());
 
         // Si la LIFE card venait d'une pioche forcée (+3), reprendre la pioche

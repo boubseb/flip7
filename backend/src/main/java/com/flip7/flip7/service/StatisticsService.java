@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StatisticsService {
@@ -15,166 +16,150 @@ public class StatisticsService {
     private GameHistoryRepository gameHistoryRepository;
 
     /**
-     * Calcule les statistiques d'un joueur
+     * Calcule les statistiques d'un joueur, séparées en indiv / équipe.
      */
     public PlayerStatistics getPlayerStatistics(String userId) {
         PlayerStatistics stats = new PlayerStatistics();
 
-        // Récupérer toutes les parties du joueur
         List<GameHistory> playerGames = gameHistoryRepository.findByPlayerIdsContaining(userId);
-        System.out.println("📊 getPlayerStatistics: userId=" + userId + " → " + playerGames.size() + " partie(s) trouvée(s)");
-        stats.setTotalGames(playerGames.size());
+        System.out.println("📊 getPlayerStatistics: userId=" + userId + " → " + playerGames.size() + " partie(s)");
 
-        // Statistiques du joueur
-        int completedGames = 0;
-        int victories = 0;
-        int totalFlip7 = 0;
-        int totalRounds = 0;
-        int roundsEliminatedByDouble = 0;
-        int maxScoreInOneRound = 0;
-        int totalPoints = 0;
-        int scoringRounds = 0; // Rounds avec score > 0
-        int stopCardsReceived = 0;
-        int lifeCardsObtained = 0;
-        int drawThreeReceived = 0;
-        int drawThreeCompleted = 0;
-        int drawThreeWithElimination = 0;
+        List<GameHistory> indivGames = playerGames.stream().filter(g -> !g.isTeamMode()).collect(Collectors.toList());
+        List<GameHistory> teamGames  = playerGames.stream().filter(GameHistory::isTeamMode).collect(Collectors.toList());
 
-        for (GameHistory game : playerGames) {
-            if (game.getStatus() == GameHistory.GameStatus.COMPLETED) {
-                completedGames++;
-                
-                // Vérifier si le joueur a gagné
-                if (userId.equals(game.getWinnerId())) {
-                    victories++;
-                }
-            }
+        stats.setIndiv(computePersonalStats(indivGames, userId));
+        stats.setTeam(computePersonalStats(teamGames, userId));
 
-            // Parcourir les rounds pour les statistiques détaillées
-            for (GameHistory.RoundHistory round : game.getRounds()) {
-                GameHistory.PlayerRoundData playerData = round.getPlayerData().stream()
-                        .filter(p -> p.getPlayerId().equals(userId))
-                        .findFirst()
-                        .orElse(null);
-
-                if (playerData != null) {
-                    totalRounds++;
-
-                    // Score du round
-                    int roundScore = playerData.getRoundScore();
-                    totalPoints += roundScore;
-                    if (roundScore > 0) {
-                        scoringRounds++;
-                    }
-                    if (roundScore > maxScoreInOneRound) {
-                        maxScoreInOneRound = roundScore;
-                    }
-
-                    // Flip7
-                    if (playerData.isHasSevenDifferent()) {
-                        totalFlip7++;
-                    }
-
-                    // Éliminations par double (hors +3)
-                    if (playerData.isEliminatedByDouble() && !playerData.isEliminatedByDrawThree()) {
-                        roundsEliminatedByDouble++;
-                    }
-
-                    // Cartes Stop
-                    if (playerData.isReceivedStopCard()) {
-                        stopCardsReceived++;
-                    }
-
-                    // Cartes Vie
-                    lifeCardsObtained += playerData.getLifeCardsObtained();
-
-                    // Cartes +3
-                    if (playerData.isReceivedDrawThree()) {
-                        drawThreeReceived++;
-                        
-                        if (playerData.isCompletedDrawThree()) {
-                            drawThreeCompleted++;
-                        }
-                        
-                        if (playerData.isEliminatedByDrawThree()) {
-                            drawThreeWithElimination++;
-                        }
-                    }
-                }
-            }
-        }
-
-        stats.setCompletedGames(completedGames);
-        stats.setVictories(victories);
-        stats.setTotalFlip7(totalFlip7);
-        stats.setTotalRounds(totalRounds);
-        stats.setRoundsEliminatedByDouble(roundsEliminatedByDouble);
-        stats.setMaxScoreInOneRound(maxScoreInOneRound);
-        stats.setStopCardsReceived(stopCardsReceived);
-        stats.setLifeCardsObtained(lifeCardsObtained);
-        stats.setDrawThreeReceived(drawThreeReceived);
-        stats.setDrawThreeCompleted(drawThreeCompleted);
-        stats.setDrawThreeWithElimination(drawThreeWithElimination);
-
-        // Moyennes
-        if (totalRounds > 0) {
-            stats.setAveragePointsPerRound((double) totalPoints / totalRounds);
-        }
-        if (scoringRounds > 0) {
-            stats.setAveragePointsPerScoringRound((double) totalPoints / scoringRounds);
-        }
-
-        // Statistiques globales
         calculateGlobalStatistics(stats);
 
         return stats;
     }
 
-    /**
-     * Calcule les statistiques globales (tous joueurs)
-     */
-    private void calculateGlobalStatistics(PlayerStatistics stats) {
-        // Récupérer toutes les parties terminées
-        List<GameHistory> completedGames = gameHistoryRepository.findByStatus(GameHistory.GameStatus.COMPLETED);
-        stats.setGlobalCompletedGames(completedGames.size());
+    // ── Personal stats ─────────────────────────────────────────────────────────
 
-        // Pour les Flip7 et scores max, on compte toutes les parties (y compris non terminées)
-        List<GameHistory> allGames = gameHistoryRepository.findAll();
+    private PlayerStatistics.IndivStats computePersonalStats(List<GameHistory> games, String userId) {
+        PlayerStatistics.IndivStats s = new PlayerStatistics.IndivStats();
 
-        if (allGames.isEmpty()) {
-            return;
-        }
+        int completedGames = 0, victories = 0;
+        int totalFlip7 = 0, totalRounds = 0;
+        int maxScore = 0, totalPoints = 0, scoringRounds = 0;
+        int roundsEliminatedByDouble = 0;
+        int stopCardsDrawn = 0, stopCardsReceived = 0;
+        int lifeCardsObtained = 0, lifeCardsDrawn = 0;
+        int drawThreeDrawn = 0, drawThreeReceived = 0;
+        int drawThreeCompleted = 0, drawThreeWithElim = 0, drawThreeDealtSuccess = 0;
+        int selfAssigned = 0;
 
-        int totalRounds = 0;
-        int totalFlip7 = 0;
-        int maxScoreInOneRound = 0;
-
-        for (GameHistory game : allGames) {
+        for (GameHistory game : games) {
             if (game.getStatus() == GameHistory.GameStatus.COMPLETED) {
-                totalRounds += game.getTotalRounds();
+                completedGames++;
+                if (userId.equals(game.getWinnerId())) victories++;
             }
 
-            // Parcourir les rounds pour trouver le max score et les Flip7
             for (GameHistory.RoundHistory round : game.getRounds()) {
-                for (GameHistory.PlayerRoundData playerData : round.getPlayerData()) {
-                    // Score maximum
-                    if (playerData.getRoundScore() > maxScoreInOneRound) {
-                        maxScoreInOneRound = playerData.getRoundScore();
-                    }
+                GameHistory.PlayerRoundData pd = round.getPlayerData().stream()
+                        .filter(p -> p.getPlayerId().equals(userId))
+                        .findFirst().orElse(null);
+                if (pd == null) continue;
 
-                    // Flip7
-                    if (playerData.isHasSevenDifferent()) {
-                        totalFlip7++;
+                totalRounds++;
+                int score = pd.getRoundScore();
+                totalPoints += score;
+                if (score > 0) scoringRounds++;
+                if (score > maxScore) maxScore = score;
+
+                if (pd.isHasSevenDifferent()) totalFlip7++;
+                if (pd.isEliminatedByDouble() && !pd.isEliminatedByDrawThree()) roundsEliminatedByDouble++;
+
+                stopCardsDrawn   += pd.getStopCardsDrawn();
+                if (pd.isReceivedStopCard()) stopCardsReceived++;
+
+                lifeCardsObtained += pd.getLifeCardsObtained();
+                lifeCardsDrawn    += pd.getLifeCardsDrawn();
+
+                drawThreeDrawn  += pd.getDrawThreeDrawn();
+                if (pd.isReceivedDrawThree()) {
+                    drawThreeReceived++;
+                    if (pd.isCompletedDrawThree()) drawThreeCompleted++;
+                    if (pd.isEliminatedByDrawThree()) drawThreeWithElim++;
+                }
+                drawThreeDealtSuccess += pd.getDrawThreeDealtSuccess();
+                selfAssigned          += pd.getSelfAssignedSpecialCards();
+            }
+        }
+
+        s.setCompletedGames(completedGames);
+        s.setVictories(victories);
+        s.setTotalFlip7(totalFlip7);
+        s.setTotalRounds(totalRounds);
+        s.setMaxScoreInOneRound(maxScore);
+        s.setRoundsEliminatedByDouble(roundsEliminatedByDouble);
+        s.setStopCardsDrawn(stopCardsDrawn);
+        s.setStopCardsReceived(stopCardsReceived);
+        s.setLifeCardsObtained(lifeCardsObtained);
+        s.setLifeCardsDrawn(lifeCardsDrawn);
+        s.setDrawThreeDrawn(drawThreeDrawn);
+        s.setDrawThreeReceived(drawThreeReceived);
+        s.setDrawThreeCompleted(drawThreeCompleted);
+        s.setDrawThreeWithElimination(drawThreeWithElim);
+        s.setDrawThreeDealtSuccess(drawThreeDealtSuccess);
+        s.setSelfAssignedSpecialCards(selfAssigned);
+
+        if (totalRounds > 0) s.setAveragePointsPerRound((double) totalPoints / totalRounds);
+        if (scoringRounds > 0) s.setAveragePointsPerScoringRound((double) totalPoints / scoringRounds);
+
+        return s;
+    }
+
+    // ── Global stats ──────────────────────────────────────────────────────────
+
+    private void calculateGlobalStatistics(PlayerStatistics stats) {
+        List<GameHistory> allGames = gameHistoryRepository.findAll();
+
+        int indivCompleted = 0, teamCompleted = 0;
+        int indivTotalRounds = 0, teamTotalRounds = 0;
+        int indivFlip7 = 0, teamFlip7 = 0;
+        int indivMaxScore = 0, teamMaxScore = 0;
+
+        for (GameHistory game : allGames) {
+            boolean isTeam = game.isTeamMode();
+            boolean completed = game.getStatus() == GameHistory.GameStatus.COMPLETED;
+
+            if (completed) {
+                if (isTeam) {
+                    teamCompleted++;
+                    teamTotalRounds += game.getTotalRounds();
+                } else {
+                    indivCompleted++;
+                    indivTotalRounds += game.getTotalRounds();
+                }
+            }
+
+            for (GameHistory.RoundHistory round : game.getRounds()) {
+                for (GameHistory.PlayerRoundData pd : round.getPlayerData()) {
+                    if (pd.isHasSevenDifferent()) {
+                        if (isTeam) teamFlip7++; else indivFlip7++;
+                    }
+                    int score = pd.getRoundScore();
+                    if (isTeam) {
+                        if (score > teamMaxScore) teamMaxScore = score;
+                    } else {
+                        if (score > indivMaxScore) indivMaxScore = score;
                     }
                 }
             }
         }
 
-        stats.setGlobalTotalFlip7(totalFlip7);
-        stats.setGlobalMaxScoreInOneRound(maxScoreInOneRound);
-        
-        if (completedGames.size() > 0) {
-            stats.setGlobalAverageRoundsPerGame((double) totalRounds / completedGames.size());
-        }
+        PlayerStatistics.GlobalStats gi = stats.getGlobalIndiv();
+        gi.setCompletedGames(indivCompleted);
+        gi.setTotalFlip7(indivFlip7);
+        gi.setMaxScoreInOneRound(indivMaxScore);
+        if (indivCompleted > 0) gi.setAverageRoundsPerGame((double) indivTotalRounds / indivCompleted);
+
+        PlayerStatistics.GlobalStats gt = stats.getGlobalTeam();
+        gt.setCompletedGames(teamCompleted);
+        gt.setTotalFlip7(teamFlip7);
+        gt.setMaxScoreInOneRound(teamMaxScore);
+        if (teamCompleted > 0) gt.setAverageRoundsPerGame((double) teamTotalRounds / teamCompleted);
     }
 }

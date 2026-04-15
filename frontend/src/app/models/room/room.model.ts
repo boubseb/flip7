@@ -26,15 +26,17 @@ export interface Room {
   teamMode?: boolean;
   numTeams?: number;
   teamAssignments?: { [playerId: string]: number }; // playerId → teamId (1-indexed)
+  persistentDeck?: boolean;
 }
 
 export interface RoomCreateRequest {
   password: string;
   maxPlayers?: number;
   statisticsEnabled?: boolean;
-  targetScore?: number; // Score cible pour gagner
+  targetScore?: number;
   teamMode?: boolean;
   numTeams?: number;
+  persistentDeck?: boolean;
 }
 
 export interface RoomJoinRequest {

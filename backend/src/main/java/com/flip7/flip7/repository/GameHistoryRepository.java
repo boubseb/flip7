@@ -42,4 +42,9 @@ public interface GameHistoryRepository extends JpaRepository<GameHistory, String
      * Trouve les parties en cours
      */
     List<GameHistory> findByStatus(GameHistory.GameStatus status);
+
+    /**
+     * Vérifie si une room a au moins une partie dans un statut donné
+     */
+    boolean existsByRoomIdAndStatus(String roomId, GameHistory.GameStatus status);
 }

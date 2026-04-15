@@ -166,11 +166,16 @@ public class AdminController {
             @RequestHeader("Authorization") String auth,
             @PathVariable String gameId) {
         requireAdmin(auth);
-        if (!gameHistoryRepository.existsById(gameId)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Historique non trouvé");
-        }
-        gameService.clearHistoryId(gameId); // clear in-memory ref before DB delete to avoid JPA merge re-insert
+        GameHistory entry = gameHistoryRepository.findById(gameId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Historique non trouvé"));
+        String roomId = entry.getRoomId();
+        // Clear in-memory ref before DB delete to prevent JPA merge re-insert on concurrent flush
+        gameService.clearHistoryId(gameId);
         gameHistoryRepository.deleteById(gameId);
+        // Purge snapshot so @PostConstruct won't recreate history on next server restart
+        if (!gameHistoryRepository.existsByRoomIdAndStatus(roomId, GameHistory.GameStatus.IN_PROGRESS)) {
+            gameService.purgeRoomGameState(roomId);
+        }
         return ResponseEntity.ok(Map.of("message", "Historique supprimé"));
     }
 
@@ -180,7 +185,8 @@ public class AdminController {
             @PathVariable String roomId) {
         requireAdmin(auth);
         List<GameHistory> entries = gameHistoryRepository.findByRoomId(roomId);
-        gameService.clearHistoryIdByRoom(roomId); // clear in-memory ref before DB delete
+        // Purge in-memory state + snapshot so @PostConstruct won't recreate history on restart
+        gameService.purgeRoomGameState(roomId);
         gameHistoryRepository.deleteAll(entries);
         return ResponseEntity.ok(Map.of("message", entries.size() + " entrée(s) supprimée(s)"));
     }

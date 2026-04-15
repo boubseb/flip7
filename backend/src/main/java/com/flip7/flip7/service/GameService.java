@@ -20,6 +20,7 @@ import com.flip7.flip7.event.GameStartEvent;
 import com.flip7.flip7.repository.GameHistoryRepository;
 import com.flip7.flip7.repository.GameSnapshotRepository;
 import jakarta.annotation.PostConstruct;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -177,7 +178,8 @@ public class GameService {
         int targetScore = room.getTargetScore() != null ? room.getTargetScore() : 200;
         boolean teamMode = room.isTeamMode();
         Map<String, Integer> teamAssignments = room.getTeamAssignments();
-        Game game = new Game(roomId, room.getPlayers(), playerNames, targetScore, teamMode, teamAssignments);
+        boolean persistentDeck = room.isPersistentDeck();
+        Game game = new Game(roomId, room.getPlayers(), playerNames, targetScore, teamMode, teamAssignments, persistentDeck);
         activeGames.put(roomId, game);
         
         // Créer un nouvel historique de partie
@@ -1085,16 +1087,46 @@ public class GameService {
                     data.setEliminatedByDrawThree(hasDouble);
                 }
             }
-            
+
+            // Nouvelles stats détaillées
+            data.setStopCardsDrawn(player.getStopCardsDrawnThisRound());
+            data.setDrawThreeDrawn(player.getDrawThreeDrawnThisRound());
+            data.setLifeCardsDrawn(player.getLifeCardsDrawnThisRound());
+            data.setSelfAssignedSpecialCards(player.getSelfAssignedThisRound());
+            data.setTeamId(player.getTeamId());
+
             roundHistory.addPlayerData(data);
-            
+
             // Déterminer le gagnant du round (meilleur score non éliminé)
             if (player.getStatus() != PlayerStatus.ELIMINATED && player.getRoundScore() > bestScore) {
                 bestScore = player.getRoundScore();
                 roundWinnerId = player.getUserId();
             }
         }
-        
+
+        // Post-processing drawThreeDealtSuccess (perspective source)
+        for (GamePlayer target : game.getPlayers()) {
+            if (target.getDrawThreeByUserId() != null && target.getStatus() != PlayerStatus.ELIMINATED) {
+                String sourceId = target.getDrawThreeByUserId();
+                roundHistory.getPlayerData().stream()
+                    .filter(d -> d.getPlayerId().equals(sourceId))
+                    .findFirst()
+                    .ifPresent(d -> d.setDrawThreeDealtSuccess(d.getDrawThreeDealtSuccess() + 1));
+            }
+        }
+
+        // Scores par équipe pour ce round (mode équipe)
+        if (game.isTeamMode()) {
+            Map<Integer, Integer> teamRoundScores = new HashMap<>();
+            for (GamePlayer player : game.getPlayers()) {
+                int tid = player.getTeamId();
+                if (tid > 0) {
+                    teamRoundScores.merge(tid, player.getRoundScore(), Integer::sum);
+                }
+            }
+            roundHistory.setTeamScores(teamRoundScores);
+        }
+
         roundHistory.setRoundWinnerId(roundWinnerId);
 
         history.serializeJsonFields(); // Force serialization before merge to avoid @PreUpdate stale-data overwrite
@@ -1115,13 +1147,17 @@ public class GameService {
         // Marquer la partie comme terminée
         history.setStatus(GameHistory.GameStatus.COMPLETED);
         history.setEndedAt(LocalDateTime.now());
-        
+
+        // Infos mode équipe
+        history.setTeamMode(game.isTeamMode());
+        history.setWinnerTeamId(game.getWinningTeamId());
+
         // Sauvegarder le gagnant
         GamePlayer winner = game.getWinner();
         if (winner != null) {
             history.setWinnerId(winner.getUserId());
         }
-        
+
         // Sauvegarder les scores finaux
         for (GamePlayer player : game.getPlayers()) {
             GameHistory.PlayerScore score = new GameHistory.PlayerScore(
@@ -1129,7 +1165,7 @@ public class GameService {
                 player.getUsername(),
                 player.getTotalScore()
             );
-            
+
             // Compter les rounds gagnés
             int roundsWon = 0;
             int roundsPlayed = 0;
@@ -1145,10 +1181,11 @@ public class GameService {
                     }
                 }
             }
-            
+
             score.setRoundsWon(roundsWon);
             score.setRoundsPlayed(roundsPlayed);
-            
+            score.setTeamId(player.getTeamId());
+
             history.getFinalScores().add(score);
         }
 
@@ -1167,10 +1204,17 @@ public class GameService {
     }
 
     /**
-     * Supprime la référence mémoire de l'historique pour toute une room.
+     * Supprime toute trace en mémoire et en base pour une room.
+     * Garantit que @PostConstruct ne recrée pas d'historique au prochain redémarrage.
      */
-    public void clearHistoryIdByRoom(String roomId) {
+    public void purgeRoomGameState(String roomId) {
+        activeGames.remove(roomId);
         gameHistoryIds.remove(roomId);
+        try {
+            gameSnapshotRepository.deleteById(roomId);
+        } catch (EmptyResultDataAccessException ignored) {
+            // Pas de snapshot pour cette room, rien à faire
+        }
     }
 
     /**

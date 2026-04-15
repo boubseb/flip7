@@ -145,6 +145,7 @@ export class HeaderComponent {
     this.isRules = false;
     this.isStatistics = false;
     this.isHistory = false;
+    this.isAdminOpen = false;
     this.isProfilMenuOpen = false;
   }
 

@@ -92,6 +92,9 @@ public class Room {
     @Column
     private Integer numTeams = 2;
 
+    @Column(nullable = false)
+    private boolean persistentDeck = false;
+
     // JSON: Map<String, Integer> (playerId → teamId, 1-indexed)
     @Column(name = "team_assignments", columnDefinition = "TEXT")
     private String teamAssignmentsJson = "{}";
@@ -120,6 +123,9 @@ public class Room {
 
     public Integer getNumTeams() { return numTeams; }
     public void setNumTeams(Integer numTeams) { this.numTeams = numTeams != null ? numTeams : 2; }
+
+    public boolean isPersistentDeck() { return persistentDeck; }
+    public void setPersistentDeck(boolean persistentDeck) { this.persistentDeck = persistentDeck; }
 
     // Getters and Setters
     public boolean isStatisticsEnabled() {

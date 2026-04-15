@@ -74,6 +74,10 @@ public class RoomService {
     }
 
     public Room createRoom(String password, String adminId, Integer maxPlayers, boolean statisticsEnabled, Integer targetScore, boolean teamMode, Integer numTeams) {
+        return createRoom(password, adminId, maxPlayers, statisticsEnabled, targetScore, teamMode, numTeams, false);
+    }
+
+    public Room createRoom(String password, String adminId, Integer maxPlayers, boolean statisticsEnabled, Integer targetScore, boolean teamMode, Integer numTeams, boolean persistentDeck) {
         Room room = new Room();
         room.setPassword(passwordEncoder.encode(password));
         room.setAdminId(adminId);
@@ -84,6 +88,7 @@ public class RoomService {
         room.setTargetScore(targetScore != null ? targetScore : 200);
         room.setTeamMode(teamMode);
         room.setNumTeams(numTeams != null ? numTeams : 2);
+        room.setPersistentDeck(persistentDeck);
         return roomRepository.save(room);
     }
 

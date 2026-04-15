@@ -35,6 +35,7 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   createRoomTargetScore: number = 200;
   createRoomTeamMode: boolean = false;
   createRoomNumTeams: number = 2;
+  createRoomPersistentDeck: boolean = false;
   
   // Join room form
   joinRoomId: string = '';
@@ -212,7 +213,8 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       statisticsEnabled: this.createRoomStatisticsEnabled,
       targetScore: this.createRoomTargetScore,
       teamMode: this.createRoomTeamMode,
-      numTeams: this.createRoomTeamMode ? this.createRoomNumTeams : undefined
+      numTeams: this.createRoomTeamMode ? this.createRoomNumTeams : undefined,
+      persistentDeck: this.createRoomPersistentDeck
     };
     
     this.roomService.createRoom(request).subscribe({

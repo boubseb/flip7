@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../services/user/user.service';
@@ -9,7 +9,7 @@ import { PlayerStatistics } from '../../models/statistics/player-statistics.mode
 @Component({
   selector: 'app-statistics',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, NgTemplateOutlet, TranslateModule],
   templateUrl: './statistics.component.html',
   styleUrl: './statistics.component.scss'
 })
@@ -18,6 +18,7 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   loading: boolean = true;
   error: string | null = null;
   currentUserId: string | null = null;
+  activeTab: 'indiv' | 'team' = 'indiv';
   private gameEndedSub: Subscription | null = null;
 
   constructor(

@@ -7,6 +7,7 @@ public class RoomCreateRequest {
     private Integer targetScore = 200; // Score cible pour gagner (défaut: 200)
     private boolean teamMode = false;
     private Integer numTeams = 2;
+    private boolean persistentDeck = false;
     
     public Integer getTargetScore() {
         return targetScore;
@@ -43,4 +44,7 @@ public class RoomCreateRequest {
 
     public Integer getNumTeams() { return numTeams; }
     public void setNumTeams(Integer numTeams) { this.numTeams = numTeams != null ? numTeams : 2; }
+
+    public boolean isPersistentDeck() { return persistentDeck; }
+    public void setPersistentDeck(boolean persistentDeck) { this.persistentDeck = persistentDeck; }
 }

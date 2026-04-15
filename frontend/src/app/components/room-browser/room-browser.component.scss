@@ -228,7 +228,7 @@
       padding: 0.65rem 0.875rem;
       border: 2px solid var(--border-color);
       border-radius: 8px;
-      font-size: 0.875rem;
+      font-size: 1rem; // ≥16px prevents iOS Safari auto-zoom on focus
       background: var(--bg-secondary);
       color: var(--text-primary);
       box-sizing: border-box;
