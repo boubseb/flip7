@@ -40,10 +40,12 @@ export class AuthenticationService {
   }
 
   getToken(): string | null {
+    if (typeof localStorage === 'undefined') return null;
     return localStorage.getItem('access_token');
   }
 
   getRole(): string {
+    if (typeof localStorage === 'undefined') return 'USER';
     return localStorage.getItem('user_role') ?? 'USER';
   }
 

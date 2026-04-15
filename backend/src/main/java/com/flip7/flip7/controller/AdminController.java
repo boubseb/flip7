@@ -5,6 +5,7 @@ import com.flip7.flip7.entity.GameHistory;
 import com.flip7.flip7.repository.GameHistoryRepository;
 import com.flip7.flip7.repository.RoomRepository;
 import com.flip7.flip7.repository.UserRepository;
+import com.flip7.flip7.service.GameService;
 import com.flip7.flip7.service.RoomService;
 import com.flip7.flip7.service.UserService;
 import com.flip7.flip7.entity.Room;
@@ -21,12 +22,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 @CrossOrigin(originPatterns = "*")
 public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private GameService gameService;
 
     @Autowired
     private RoomService roomService;
@@ -165,6 +169,7 @@ public class AdminController {
         if (!gameHistoryRepository.existsById(gameId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Historique non trouvé");
         }
+        gameService.clearHistoryId(gameId); // clear in-memory ref before DB delete to avoid JPA merge re-insert
         gameHistoryRepository.deleteById(gameId);
         return ResponseEntity.ok(Map.of("message", "Historique supprimé"));
     }
@@ -175,6 +180,7 @@ public class AdminController {
             @PathVariable String roomId) {
         requireAdmin(auth);
         List<GameHistory> entries = gameHistoryRepository.findByRoomId(roomId);
+        gameService.clearHistoryIdByRoom(roomId); // clear in-memory ref before DB delete
         gameHistoryRepository.deleteAll(entries);
         return ResponseEntity.ok(Map.of("message", entries.size() + " entrée(s) supprimée(s)"));
     }

@@ -7,6 +7,7 @@ import { AuthenticationService } from '../../services/authentication/authentific
 import { ProfilComponent } from '../profil/profil.component';
 import { StatisticsComponent } from '../statistics/statistics.component';
 import { GameHistoryComponent } from '../game-history/game-history.component';
+import { AdminPageComponent } from '../../pages/admin-page/admin-page.component';
 import { ThemeService, Theme } from '../../services/theme/theme.service';
 import { LanguageService, Language } from '../../services/language/language.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -20,6 +21,7 @@ import { TranslateModule } from '@ngx-translate/core';
     ProfilComponent,
     StatisticsComponent,
     GameHistoryComponent,
+    AdminPageComponent,
     RouterLink,
     TranslateModule
   ],
@@ -42,6 +44,7 @@ export class HeaderComponent {
   isRules: boolean = false;
   isStatistics: boolean = false;
   isHistory: boolean = false;
+  isAdminOpen: boolean = false;
 
   authenticationService = inject(AuthenticationService);
   themeService = inject(ThemeService);
@@ -151,7 +154,11 @@ export class HeaderComponent {
 
   goToAdmin(): void {
     this.isProfilMenuOpen = false;
-    this.router.navigate(['/admin']);
+    this.isAdminOpen = true;
+    this.isRules = false;
+    this.isProfil = false;
+    this.isStatistics = false;
+    this.isHistory = false;
   }
 
   onLogout(): void {
@@ -162,9 +169,11 @@ export class HeaderComponent {
     this.isStatistics = false;
     this.isHistory = false;
 
+    this.isAdminOpen = false;
+
     // Supprimer le token
     this.authenticationService.removeToken();
-    
+
     // Rediriger vers l'accueil
     this.router.navigateByUrl('/');
   }

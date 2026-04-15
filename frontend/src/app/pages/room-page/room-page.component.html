@@ -46,18 +46,20 @@
               step="50"
               placeholder="200">
           </div>
-          <div>
-            <label>
+          <label class="toggle-row">
+            <span class="toggle-label">{{ 'room.statisticsOption' | translate }}</span>
+            <div class="toggle-switch">
               <input type="checkbox" [(ngModel)]="createRoomStatisticsEnabled">
-              {{ 'room.statisticsOption' | translate }}
-            </label>
-          </div>
-          <div>
-            <label>
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
+          <label class="toggle-row">
+            <span class="toggle-label">{{ 'team.mode' | translate }}</span>
+            <div class="toggle-switch">
               <input type="checkbox" [(ngModel)]="createRoomTeamMode">
-              {{ 'team.mode' | translate }}
-            </label>
-          </div>
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
           @if (createRoomTeamMode) {
             <div class="form-group">
               <label>{{ 'team.numTeams' | translate }}</label>

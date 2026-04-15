@@ -287,7 +287,7 @@
                 padding: 0.75rem 1rem;
                 border: 2px solid var(--border-color);
                 border-radius: 8px;
-                font-size: 0.95rem;
+                font-size: 1rem; // ≥16px prevents iOS Safari auto-zoom on focus
                 font-weight: 500;
                 transition: border-color 0.2s;
                 background: var(--bg-secondary);
@@ -306,6 +306,71 @@
                 appearance: textfield;
                 &::-webkit-inner-spin-button,
                 &::-webkit-outer-spin-button { appearance: none; }
+            }
+        }
+
+        // ── Toggle switch ────────────────────────────────────────────────
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            user-select: none;
+
+            &:hover { border-color: #667eea; }
+
+            .toggle-label {
+                font-size: 0.95rem;
+                font-weight: 500;
+                color: var(--text-primary);
+            }
+
+            .toggle-switch {
+                position: relative;
+                width: 44px;
+                height: 26px;
+                flex-shrink: 0;
+
+                input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                    position: absolute;
+
+                    &:checked + .toggle-slider {
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        border-color: transparent;
+
+                        &::after { transform: translateX(18px); }
+                    }
+                }
+
+                .toggle-slider {
+                    position: absolute;
+                    inset: 0;
+                    background: var(--bg-tertiary);
+                    border: 2px solid var(--border-color);
+                    border-radius: 13px;
+                    transition: background 0.2s, border-color 0.2s;
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        width: 18px;
+                        height: 18px;
+                        background: #fff;
+                        border-radius: 50%;
+                        top: 2px;
+                        left: 2px;
+                        transition: transform 0.2s;
+                        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+                    }
+                }
             }
         }
 

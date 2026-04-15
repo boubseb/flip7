@@ -29,6 +29,7 @@
             <img class="avatar" src="assets/pictures/Connexion.png" alt="profil">
           </div>
           @if(isProfilMenuOpen) {
+            <div class="dropdown-backdrop" (click)="isProfilMenuOpen = false"></div>
             <div class="dropdown-menu">
               <button class="menu-item" (click)="openProfil()">
                 <span class="menu-icon">👤</span>
@@ -82,6 +83,12 @@
 <div class="history-overlay-container">
   <button class="overlay-close-btn" (click)="toggleIsHistory()" title="Fermer">✕</button>
   <app-game-history></app-game-history>
+</div>
+}
+@if(isAdminOpen){
+<div class="admin-overlay-container">
+  <button class="overlay-close-btn" (click)="isAdminOpen = false" title="Fermer">✕</button>
+  <app-admin-page [overlay]="true" (close)="isAdminOpen = false"></app-admin-page>
 </div>
 }
 

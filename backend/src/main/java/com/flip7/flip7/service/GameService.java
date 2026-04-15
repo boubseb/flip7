@@ -937,7 +937,8 @@ public class GameService {
         private String winnerName;
         private int winningScore;
         private java.util.List<FinalPlayerScore> finalScores = new java.util.ArrayList<>();
-    private boolean waitingForAdmin;
+        private boolean waitingForAdmin;
+        private java.util.List<java.util.Map<String, Object>> eventLog = new java.util.ArrayList<>();
 
         public String getWinnerId() { return winnerId; }
         public void setWinnerId(String winnerId) { this.winnerId = winnerId; }
@@ -947,8 +948,10 @@ public class GameService {
         public void setWinningScore(int winningScore) { this.winningScore = winningScore; }
         public java.util.List<FinalPlayerScore> getFinalScores() { return finalScores; }
         public void addFinalScore(FinalPlayerScore score) { this.finalScores.add(score); }
-    public boolean isWaitingForAdmin() { return waitingForAdmin; }
-    public void setWaitingForAdmin(boolean waitingForAdmin) { this.waitingForAdmin = waitingForAdmin; }
+        public boolean isWaitingForAdmin() { return waitingForAdmin; }
+        public void setWaitingForAdmin(boolean waitingForAdmin) { this.waitingForAdmin = waitingForAdmin; }
+        public java.util.List<java.util.Map<String, Object>> getEventLog() { return eventLog; }
+        public void setEventLog(java.util.List<java.util.Map<String, Object>> eventLog) { this.eventLog = eventLog; }
 
     private boolean teamMode = false;
     private int winningTeamId = 0;
@@ -1151,6 +1154,23 @@ public class GameService {
 
         history.serializeJsonFields(); // Force serialization before merge to avoid @PreUpdate stale-data overwrite
         gameHistoryRepository.save(history);
+    }
+
+    /**
+     * Supprime la référence mémoire vers un historique donné.
+     * À appeler depuis AdminController avant de supprimer l'entrée en base,
+     * afin d'éviter qu'un save() concurrent (saveRoundEnd, saveGameEnd…)
+     * ne ré-insère l'enregistrement via JPA merge().
+     */
+    public void clearHistoryId(String historyId) {
+        gameHistoryIds.entrySet().removeIf(e -> historyId.equals(e.getValue()));
+    }
+
+    /**
+     * Supprime la référence mémoire de l'historique pour toute une room.
+     */
+    public void clearHistoryIdByRoom(String roomId) {
+        gameHistoryIds.remove(roomId);
     }
 
     /**

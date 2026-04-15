@@ -11,18 +11,11 @@ export class AuthenticationGuard implements CanActivate {
               private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    if(typeof localStorage !== 'undefined'){
-      const token = this.authenticationSevice.getToken();
-    if (token) {
-      return true;
-    } else {
-      this.router.navigateByUrl('/');
-      return false;
-    }
-    }
-    else{
-      this.router.navigateByUrl('/');
-      return false}
-    
+    // SSR : localStorage absent → laisser passer, le guard client s'exécutera après hydratation
+    if (typeof localStorage === 'undefined') return true;
+    const token = this.authenticationSevice.getToken();
+    if (token) return true;
+    this.router.navigateByUrl('/');
+    return false;
   }
 }

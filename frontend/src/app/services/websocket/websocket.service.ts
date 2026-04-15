@@ -18,6 +18,7 @@ export class WebSocketService {
   private stompClient: Client | null = null;
   private connectionStatus = new BehaviorSubject<boolean>(false);
   private subscriptions: Map<string, StompSubscription> = new Map();
+  private visibilityListenerAdded = false;
 
   // Observables for room updates
   private roomUpdates = new Subject<Room>();
@@ -82,6 +83,17 @@ export class WebSocketService {
     };
 
     this.stompClient.activate();
+
+    // On mobile, the OS can suspend the WebSocket when the app is backgrounded.
+    // Force an immediate reconnect when the user returns to the tab/app.
+    if (!this.visibilityListenerAdded && typeof document !== 'undefined') {
+      this.visibilityListenerAdded = true;
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && !this.stompClient?.connected) {
+          this.stompClient?.activate();
+        }
+      });
+    }
   }
 
   disconnect(): void {

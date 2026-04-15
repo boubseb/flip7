@@ -40,7 +40,7 @@ export interface AdminStatsDTO {
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private http = inject(HttpClient);
-  private url = environment.apiUrl + '/admin';
+  private url = environment.apiUrl + '/api/admin';
 
   getStats(): Observable<AdminStatsDTO> {
     return this.http.get<AdminStatsDTO>(`${this.url}/stats`);

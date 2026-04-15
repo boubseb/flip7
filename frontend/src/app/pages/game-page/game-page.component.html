@@ -55,6 +55,7 @@
 
       <!-- Game Footer with Action Buttons -->
       <div class="game-footer">
+        <div class="footer-inner">
         <!-- Action en attente (modale réduite) : priorité absolue -->
         @if (selectorMinimized && hasPendingModal) {
           <button class="btn btn-pending-action" (click)="selectorMinimized = false">
@@ -116,8 +117,9 @@
           </button>
 
           <!-- Popup statistiques -->
-         
+
         }
+        </div><!-- /footer-inner -->
       </div>
     </div>
   } @else {

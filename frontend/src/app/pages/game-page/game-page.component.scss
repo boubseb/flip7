@@ -31,12 +31,11 @@
     flex-direction: column;
     height: 100%;
     width: 100%;
-    /* Desktop: footer auto-height ~4rem; Mobile: $footerHeight */
     padding-bottom: 4.5rem;
     box-sizing: border-box;
 
     @media (max-width: 768px) {
-      padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px));
+      padding-bottom: 3.6rem;
     }
 }
 
@@ -739,14 +738,20 @@
     right: 0;
     z-index: 100;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    /* Desktop : hauteur auto basée sur le contenu */
-    padding: 0.5rem 1.5rem;
-    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(135deg, #1f2937, #374151);
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
+    flex-direction: column;
+    background: rgba(10, 14, 28, 0.88);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 -2px 24px rgba(0, 0, 0, 0.45);
+
+
+    .footer-inner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.6rem 2rem;
 
     .btn {
       display: flex;
@@ -890,30 +895,29 @@
     // Mobile : PIOCHER et STOP
     @media (max-width: 768px) {
       gap: 0.5rem;
-      padding: 0.35rem 0.5rem;
-      padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+      padding: 0.4rem 0.6rem;
       align-items: center;
 
       .btn {
         flex: 1;
         min-width: 0;
-        height: 2.25rem;
-        padding: 0 0.5rem;
-        font-size: 0.8rem;
-        gap: 0.3rem;
-        border-radius: 8px;
+        height: 2.75rem;
+        padding: 0 0.6rem;
+        font-size: 0.9rem;
+        gap: 0.4rem;
+        border-radius: 10px;
 
         .icon {
-          font-size: 1rem;
+          font-size: 1.15rem;
         }
       }
 
       .btn-start-round {
         width: 100%;
-        height: 2.25rem;
-        font-size: 0.9rem;
+        height: 2.75rem;
+        font-size: 1rem;
         padding: 0 0.75rem;
-        border-radius: 8px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -921,9 +925,9 @@
 
       .btn-pending-action {
         width: 100%;
-        height: 2.25rem;
+        height: 2.75rem;
         padding: 0 0.75rem;
-        border-radius: 8px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -931,9 +935,9 @@
 
       .waiting-message {
         width: 100%;
-        height: 2.25rem;
-        font-size: 0.8rem;
-        padding: 0 0.5rem;
+        height: 2.75rem;
+        font-size: 0.85rem;
+        padding: 0 0.6rem;
         border-radius: 8px;
         gap: 0.3rem;
         display: flex;
@@ -1008,7 +1012,8 @@
         animation: waiting-pulse 2s infinite;
       }
     }
-  }
+    } // close .footer-inner
+  } // close .game-footer
 }
 
 @keyframes flip7-pulse {

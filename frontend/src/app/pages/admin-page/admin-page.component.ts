@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -22,6 +22,9 @@ type Tab = 'dashboard' | 'users' | 'rooms' | 'history';
   styleUrl: './admin-page.component.scss',
 })
 export class AdminPageComponent implements OnInit {
+  @Input() overlay = false;
+  @Output() close = new EventEmitter<void>();
+
   private adminService = inject(AdminService);
   private authService = inject(AuthenticationService);
   private router = inject(Router);
@@ -301,6 +304,10 @@ export class AdminPageComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/home']);
+    if (this.overlay) {
+      this.close.emit();
+    } else {
+      this.router.navigate(['/home']);
+    }
   }
 }
