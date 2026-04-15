@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FooterComponent } from '../../components/footer/footer.component';
 import { RoomService } from '../../services/room/room.service';
 import { WebSocketService } from '../../services/websocket/websocket.service';
 import { Room, RoomStatus, RoomCreateRequest, RoomJoinRequest } from '../../models/room/room.model';
@@ -12,7 +11,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-room-page',
-  imports: [CommonModule, FormsModule, RoomBrowserComponent, FooterComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, RoomBrowserComponent, TranslateModule],
   templateUrl: './room-page.component.html',
   styleUrl: './room-page.component.scss'
 })
@@ -105,7 +104,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         const savedPassword = localStorage.getItem('currentRoomPassword');
         
         if (savedRoomId && savedPassword) {
-          console.log('🔄 Tentative de reconnexion à la room:', savedRoomId);
           this.attemptReconnection(savedRoomId, savedPassword);
         } else {
           // Default to create if no mode specified
@@ -122,7 +120,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       this.wsService.connectionStatus$.subscribe(connected => {
         this.wsConnected = connected;
         if (connected && this.currentRoom) {
-          console.log('📡 Subscribing to room:', this.currentRoom.id);
           this.wsService.subscribeToRoom(this.currentRoom.id);
         }
       })
@@ -131,7 +128,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     // Subscribe to room updates
     this.subscriptions.push(
       this.wsService.roomUpdates$.subscribe(room => {
-        console.log('🔄 Room update received:', room);
         this.currentRoom = room;
         this.updateRoomState();
       })
@@ -140,7 +136,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     // Subscribe to game starts
     this.subscriptions.push(
       this.wsService.gameStarts$.subscribe(room => {
-        console.log('🎮 Game started, navigating to game page');
         this.router.navigate(['/game', room.id]);
       })
     );
@@ -163,7 +158,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         this.availableRooms = rooms;
       },
       error: (error) => {
-        console.error('Error loading rooms:', error);
         this.showErrorMessage('room.errors.loadingRooms');
       }
     });
@@ -172,11 +166,9 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   loadRoomById(roomId: string): void {
     this.roomService.getRoom(roomId).subscribe({
       next: (room) => {
-        console.log('✅ Room loaded:', room);
         
         // Check if user is part of the room
         if (!room.players.includes(this.currentUserId)) {
-          console.warn('❌ User not in room');
           this.showErrorMessage('room.errors.notInRoom');
           this.currentView = 'join';
           return;
@@ -192,7 +184,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ Error loading room:', error);
         this.showErrorMessage('room.errors.roomNotFound');
         this.currentView = 'join';
       }
@@ -226,7 +217,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     
     this.roomService.createRoom(request).subscribe({
       next: (room) => {
-        console.log('✅ Room created:', room);
         
         // Sauvegarder dans localStorage pour reconnexion
         localStorage.setItem('currentRoomId', room.id);
@@ -255,7 +245,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         this.createRoomMaxPlayers = 12;
       },
       error: (error) => {
-        console.error('❌ Error creating room:', error);
         this.showErrorMessage(error.error?.message || 'room.errors.createError');
       }
     });
@@ -282,7 +271,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     
     this.roomService.joinRoom(request).subscribe({
       next: (room) => {
-        console.log('✅ Joined room:', room.id);
         
         // Sauvegarder dans localStorage pour reconnexion
         localStorage.setItem('currentRoomId', room.id);
@@ -290,7 +278,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         
         // Si la partie a déjà commencé, rediriger vers la game page
         if (room.status === RoomStatus.IN_GAME) {
-          console.log('🎮 Partie en cours, redirection vers game...');
           this.currentRoom = room;
           this.router.navigate(['/game', room.id]);
         } else {
@@ -310,7 +297,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         this.joinRoomPassword = '';
       },
       error: (error) => {
-        console.error('Error joining room:', error);
         this.showErrorMessage(error.error?.message || 'room.errors.joinError');
       }
     });
@@ -322,7 +308,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   }
 
   attemptReconnection(roomId: string, password: string): void {
-    console.log('🔄 Reconnexion à la room:', roomId);
     
     const request: RoomJoinRequest = {
       roomId: roomId,
@@ -331,14 +316,12 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     
     this.roomService.joinRoom(request).subscribe({
       next: (room) => {
-        console.log('✅ Reconnexion réussie:', room.id);
         this.showSuccessMessage('room.success.reconnected');
         
         this.currentRoom = room;
         
         // Si la partie a déjà commencé, rediriger directement vers la game page
         if (room.status === RoomStatus.IN_GAME) {
-          console.log('🎮 Partie en cours, redirection vers game...');
           this.router.navigate(['/game', room.id]);
         } else {
           // Sinon, switch to waiting view
@@ -352,7 +335,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ Échec de reconnexion:', error);
         // Nettoyer le localStorage si la reconnexion échoue (room n'existe plus)
         localStorage.removeItem('currentRoomId');
         localStorage.removeItem('currentRoomPassword');
@@ -421,11 +403,9 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     
     this.roomService.startGame(this.currentRoom.id).subscribe({
       next: () => {
-        console.log('🎮 Game start request sent');
         // Navigation will happen via WebSocket gameStarts$ subscription
       },
       error: (error) => {
-        console.error('Error starting game:', error);
         this.showErrorMessage(error.error?.message || 'room.errors.startGameError');
       }
     });
@@ -439,16 +419,13 @@ export class RoomPageComponent implements OnInit, OnDestroy {
   refreshCurrentRoom(): void {
     if (!this.currentRoom) return;
     
-    console.log('🔄 Refreshing current room...');
     this.roomService.getRoom(this.currentRoom.id).subscribe({
       next: (room: Room) => {
-        console.log('✅ Room refreshed:', room);
         this.currentRoom = room;
         this.updateRoomState();
         this.showSuccessMessage('room.success.playersRefreshed', 2000);
       },
       error: (error: any) => {
-        console.error('❌ Error refreshing room:', error);
         this.showErrorMessage('room.errors.refreshError');
       }
     });
@@ -462,16 +439,13 @@ export class RoomPageComponent implements OnInit, OnDestroy {
       return;
     }
     
-    console.log('👢 Kicking player:', playerId);
     this.roomService.kickPlayer(this.currentRoom.id, playerId).subscribe({
       next: (room: Room) => {
-        console.log('✅ Player kicked:', playerId);
         this.currentRoom = room;
         this.updateRoomState();
         this.showSuccessMessage('room.success.playerKicked', 2000);
       },
       error: (error: any) => {
-        console.error('❌ Error kicking player:', error);
         this.showErrorMessage(error.error?.message || 'room.errors.kickPlayerError');
       }
     });
@@ -516,9 +490,6 @@ export class RoomPageComponent implements OnInit, OnDestroy {
     if (!this.currentRoom) return;
     
     this.isAdmin = this.currentRoom.adminId === this.currentUserId;
-    console.log('🔄 Room state updated:');
-    console.log('  - isAdmin:', this.isAdmin);
-    console.log('  - players:', this.currentRoom.players.length);
   }
 
   getPlayerPseudo(playerId: string): string {

@@ -15,48 +15,22 @@
       <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()" class="profil-form">
         <div class="form-row">
           <div class="form-group">
-            <label for="firstName">{{ 'profile.firstName' | translate }}</label>
-            <input 
-              type="text" 
-              id="firstName" 
-              formControlName="firstName"
-              [placeholder]="'profile.firstNamePlaceholder' | translate"
+            <label for="pseudo">{{ 'profile.username' | translate }}</label>
+            <input
+              type="text"
+              id="pseudo"
+              formControlName="pseudo"
+              [placeholder]="'profile.username' | translate"
             >
-            @if(profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
+            @if(profileForm.get('pseudo')?.invalid && profileForm.get('pseudo')?.touched) {
               <span class="error-text">{{ 'profile.firstNameError' | translate }}</span>
             }
           </div>
           <div class="form-group">
-            <label for="lastName">{{ 'profile.lastName' | translate }}</label>
-            <input 
-              type="text" 
-              id="lastName" 
-              formControlName="lastName"
-              [placeholder]="'profile.lastNamePlaceholder' | translate"
-            >
-            @if(profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
-              <span class="error-text">{{ 'profile.lastNameError' | translate }}</span>
-            }
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="birthDate">{{ 'profile.birthDate' | translate }}</label>
-            <input 
-              type="date" 
-              id="birthDate" 
-              formControlName="birthDate"
-            >
-            @if(profileForm.get('birthDate')?.invalid && profileForm.get('birthDate')?.touched) {
-              <span class="error-text">{{ 'profile.birthDateError' | translate }}</span>
-            }
-          </div>
-          <div class="form-group">
             <label for="email">{{ 'register.email' | translate }}</label>
-            <input 
-              type="email" 
-              id="email" 
+            <input
+              type="email"
+              id="email"
               formControlName="email"
               [placeholder]="'profile.emailPlaceholder' | translate"
             >
@@ -66,8 +40,8 @@
           </div>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn-primary"
           [disabled]="profileForm.invalid"
         >
@@ -80,12 +54,24 @@
     <section class="profil-section">
       <h2 class="section-title">{{ 'profile.changePassword' | translate }}</h2>
       <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="profil-form">
+        <div class="form-group">
+          <label for="currentPassword">{{ 'profile.currentPassword' | translate }}</label>
+          <input
+            type="password"
+            id="currentPassword"
+            formControlName="currentPassword"
+            placeholder="••••••••"
+          >
+          @if(passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched) {
+            <span class="error-text">{{ 'profile.currentPasswordError' | translate }}</span>
+          }
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label for="newPassword">{{ 'register.password' | translate }}</label>
-            <input 
-              type="password" 
-              id="newPassword" 
+            <input
+              type="password"
+              id="newPassword"
               formControlName="newPassword"
               placeholder="••••••••"
             >
@@ -95,9 +81,9 @@
           </div>
           <div class="form-group">
             <label for="confirmPassword">{{ 'register.confirmPassword' | translate }}</label>
-            <input 
-              type="password" 
-              id="confirmPassword" 
+            <input
+              type="password"
+              id="confirmPassword"
               formControlName="confirmPassword"
               placeholder="••••••••"
             >

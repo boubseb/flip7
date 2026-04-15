@@ -36,22 +36,52 @@
       <span class="btn-icon">🏆</span>
       <span class="btn-text">{{ 'game.currentRanking' | translate }}</span>
     </button>
-    <button 
+    <button
       class="sort-btn"
       [class.active]="sortOrder === 'theoretical'"
       (click)="setSortOrder('theoretical')">
       <span class="btn-icon">📊</span>
       <span class="btn-text">{{ 'game.theoreticalRanking' | translate }}</span>
     </button>
+    <button
+      class="sort-btn"
+      [class.active]="sortOrder === 'history'"
+      (click)="setSortOrder('history')">
+      <span class="btn-icon">📋</span>
+      <span class="btn-text">{{ 'game.eventLog' | translate }}</span>
+    </button>
   </div>
 
-  @if (players.length > 0) {
+  <!-- ── Historique des cartes spéciales ── -->
+  @if (sortOrder === 'history') {
+    <div class="event-log">
+      @if (getEventLog().length === 0) {
+        <div class="event-log-empty">{{ 'game.noEvents' | translate }}</div>
+      }
+      @for (event of getEventLog(); track $index) {
+        <div class="event-row">
+          <span class="event-icon">{{ getEventIcon(event.type) }}</span>
+          <span class="event-names">
+            <span class="event-source">{{ event.sourceName }}</span>
+            <span class="event-arrow">→</span>
+            <span class="event-target">{{ event.targetName }}</span>
+          </span>
+          <span class="event-meta">
+            <span class="event-round">R{{ event.round }}</span>
+            <span class="event-time">{{ formatEventTime(event.timestamp) }}</span>
+          </span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (players.length > 0 && sortOrder !== 'history') {
     <!-- MODE ÉQUIPE : affichage groupé par équipe -->
     @if (teamMode && getTeamIds().length > 0) {
       @for (teamId of getTeamIds(); track teamId) {
         <div class="team-section" [class]="'team-border-' + teamId">
           <div class="team-header-bar">
-            <span class="team-name">{{ 'team.teamN' | translate: {n: teamId} }}</span>
+            <span class="team-name">{{ 'team.team' | translate }} {{ teamId }}</span>
             <span class="team-score">{{ getTeamScore(teamId) }} / {{ getTeamTarget(teamId) }} pts</span>
           </div>
           <div class="players-list">
@@ -72,6 +102,9 @@
                     }
                   </div>
                   <div class="player-right">
+                    @for (info of getPendingCardInfo(playerId); track info.icon) {
+                      <span class="badge-pending" [title]="info.label">{{ info.icon }}{{ info.label }}</span>
+                    }
                     <span class="player-score-safe">{{ getPlayerSafetyScore(playerId) }} pts</span>
                     @if (isCurrentRound()) {
                       <span class="score-separator">|</span>
@@ -116,6 +149,9 @@
                 }
               </div>
               <div class="player-right">
+                @for (info of getPendingCardInfo(playerId); track info.icon) {
+                  <span class="badge-pending" [title]="info.label">{{ info.icon }}{{ info.label }}</span>
+                }
                 <span class="player-score-safe">{{ getPlayerSafetyScore(playerId) }} pts</span>
                 @if (isCurrentRound()) {
                   <span class="score-separator">|</span>

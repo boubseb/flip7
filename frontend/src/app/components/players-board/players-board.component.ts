@@ -23,9 +23,9 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   expandedPlayers: Set<string> = new Set();
   selectedRound: number = 1;
   maxRound: number = 1;
-  
+
   // Tri des joueurs
-  sortOrder: 'game' | 'current' | 'theoretical' = 'game';
+  sortOrder: 'game' | 'current' | 'theoretical' | 'history' = 'game';
   sortedPlayers: string[] = [];
 
   ngOnInit(): void {
@@ -40,7 +40,7 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
     if (changes['players'] && this.players) {
       this.players.forEach(playerId => this.expandedPlayers.add(playerId));
     }
-    
+
     // Réappliquer le tri si les données changent
     if (changes['gameState'] || changes['players']) {
       this.applySorting();
@@ -50,28 +50,7 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
     if (changes['currentPlayerId'] && this.currentPlayerId) {
       setTimeout(() => this.scrollToCurrentPlayer(), 100);
     }
-    
-    // Logs de débogage
-    if (changes['gameState']) {
-      console.log('\n🔄 ========== PLAYERS-BOARD ngOnChanges ==========');
-      console.log('📦 GameState complet:', this.gameState);
-      console.log('   - roundNumber:', this.gameState?.roundNumber);
-      console.log('   - players count:', this.gameState?.players?.length);
-      if (this.gameState?.players?.length > 0) {
-        console.log('\n👥 Tous les joueurs:');
-        this.gameState.players.forEach((player: any, index: number) => {
-          console.log(`   ${index + 1}. ${player.username} (${player.userId}):`, {
-            roundScore: player.roundScore,
-            totalScore: player.totalScore,
-            theoreticalTotal: player.theoreticalTotal,
-            status: player.status,
-            handSize: player.handSize
-          });
-        });
-      }
-      console.log('==================================================\n');
-    }
-    
+
     this.updateMaxRound();
     // Ajuster selectedRound si nécessaire
     if (this.selectedRound > this.maxRound) {
@@ -82,14 +61,7 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   updateMaxRound(): void {
     if (this.gameState && this.gameState.roundNumber) {
       this.maxRound = this.gameState.roundNumber;
-      this.selectedRound = this.maxRound; // Par défaut sur le round actuel
-      console.log(`📅 updateMaxRound: maxRound = ${this.maxRound}, selectedRound = ${this.selectedRound}`);
-      
-      // Log pour debug : afficher le nombre de rounds dans l'historique du premier joueur
-      if (this.gameState.players && this.gameState.players.length > 0) {
-        const firstPlayer = this.gameState.players[0];
-        console.log(`   Premier joueur a ${firstPlayer.rounds?.length || 0} rounds dans l'historique`);
-      }
+      this.selectedRound = this.maxRound;
     }
   }
 
@@ -137,40 +109,16 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
    * Si le round n'existe pas encore dans l'historique, retourne les données actuelles
    */
   private getPlayerRoundData(playerId: string): any {
-    if (!this.gameState || !this.gameState.players) {
-      console.log('⚠️ getPlayerRoundData: pas de gameState');
-      return null;
-    }
-    
-    const player = this.gameState.players.find((p: any) => p.userId === playerId);
-    if (!player) {
-      console.log('⚠️ getPlayerRoundData: joueur non trouvé', playerId);
-      return null;
-    }
+    if (!this.gameState || !this.gameState.players) return null;
 
-    console.log(`🔍 getPlayerRoundData pour ${player.username}:`);
-    console.log(`   - selectedRound: ${this.selectedRound}`);
-    console.log(`   - player.rounds length: ${player.rounds?.length || 0}`);
-    
+    const player = this.gameState.players.find((p: any) => p.userId === playerId);
+    if (!player) return null;
+
     // Si on regarde un round dans l'historique (pas le dernier)
     if (player.rounds && player.rounds.length > 0 && this.selectedRound <= player.rounds.length) {
-      const roundData = player.rounds[this.selectedRound - 1];
-      console.log(`   ✅ Retourne round historique ${this.selectedRound}:`, {
-        roundScore: roundData.roundScore,
-        totalScore: roundData.totalScore,
-        theoreticalTotal: roundData.theoreticalTotal,
-        cardsCount: roundData.hand?.length || 0
-      });
-      return roundData;
+      return player.rounds[this.selectedRound - 1];
     }
-    
-    // Sinon, retourner les données actuelles du joueur
-    console.log(`   ✅ Retourne données actuelles du joueur:`, {
-      roundScore: player.roundScore,
-      totalScore: player.totalScore,
-      theoreticalTotal: player.theoreticalTotal,
-      cardsCount: player.hand?.length || 0
-    });
+
     return player;
   }
 
@@ -179,12 +127,7 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
    */
   getPlayerSafetyScore(playerId: string): number {
     const roundData = this.getPlayerRoundData(playerId);
-    if (!roundData) {
-      console.log('⚠️ getPlayerSafetyScore: roundData manquant pour', playerId);
-      return 0;
-    }
-    console.log(`📊 getPlayerSafetyScore pour ${playerId} round ${this.selectedRound}:`, roundData.totalScore);
-    return roundData.totalScore || 0;
+    return roundData?.totalScore || 0;
   }
 
   /**
@@ -192,13 +135,7 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
    */
   getPlayerTotalScore(playerId: string): number {
     const roundData = this.getPlayerRoundData(playerId);
-    if (!roundData) {
-      console.log(`⚠️ getPlayerTotalScore: roundData manquant pour ${playerId}`);
-      return 0;
-    }
-    const theoreticalTotal = roundData.theoreticalTotal || 0;
-    console.log(`📊 getPlayerTotalScore pour ${playerId} round ${this.selectedRound}: theoreticalTotal = ${theoreticalTotal}`);
-    return theoreticalTotal;
+    return roundData?.theoreticalTotal || 0;
   }
 
   /**
@@ -206,22 +143,12 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
    */
   getPlayerRoundScore(playerId: string): number {
     const roundData = this.getPlayerRoundData(playerId);
-    if (!roundData) {
-      console.log('⚠️ getPlayerRoundScore: roundData manquant pour', playerId);
-      return 0;
-    }
-    console.log(`📊 getPlayerRoundScore pour ${playerId} round ${this.selectedRound}:`, roundData.roundScore);
-    return roundData.roundScore || 0;
+    return roundData?.roundScore || 0;
   }
 
   getRevealedCards(playerId: string): any[] {
     const roundData = this.getPlayerRoundData(playerId);
-    if (!roundData) {
-      console.log('⚠️ getRevealedCards: roundData manquant pour', playerId);
-      return [];
-    }
-    console.log(`🎴 getRevealedCards pour ${playerId} round ${this.selectedRound}:`, roundData.hand?.length || 0, 'cartes');
-    return roundData.hand || [];
+    return roundData?.hand || [];
   }
 
   /**
@@ -229,10 +156,7 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
    */
   getPlayerStatus(playerId: string): string {
     const roundData = this.getPlayerRoundData(playerId);
-    if (!roundData) {
-      return 'WAITING';
-    }
-    return roundData.status || 'PLAYING';
+    return roundData?.status || 'WAITING';
   }
 
   /**
@@ -267,9 +191,25 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
   /**
    * Change l'ordre de tri des joueurs
    */
-  setSortOrder(order: 'game' | 'current' | 'theoretical'): void {
+  setSortOrder(order: 'game' | 'current' | 'theoretical' | 'history'): void {
     this.sortOrder = order;
-    this.applySorting();
+    if (order !== 'history') this.applySorting();
+  }
+
+  getEventLog(): any[] {
+    return this.gameState?.eventLog ?? [];
+  }
+
+  getEventIcon(type: string): string {
+    if (type === 'STOP') return '🛑';
+    if (type === 'DRAW_THREE') return '➕3️⃣';
+    if (type === 'LIFE') return '❤️';
+    return '🎴';
+  }
+
+  formatEventTime(iso: string): string {
+    if (!iso) return '';
+    return new Date(iso).toLocaleTimeString('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
   /**
@@ -285,33 +225,23 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
 
     switch (this.sortOrder) {
       case 'game':
-        // Ordre de jeu : ordre original (index dans gameState.players)
         this.sortedPlayers = playersCopy;
         break;
 
       case 'current':
-        // Classement actuel : par score sécurisé (vert) décroissant
         this.sortedPlayers = playersCopy.sort((a, b) => {
-          const scoreA = this.getPlayerSafetyScore(a);
-          const scoreB = this.getPlayerSafetyScore(b);
-          return scoreB - scoreA; // Décroissant
+          return this.getPlayerSafetyScore(b) - this.getPlayerSafetyScore(a);
         });
         break;
 
       case 'theoretical':
-        // Classement théorique : par score théorique (bleu) décroissant
         this.sortedPlayers = playersCopy.sort((a, b) => {
-          const safetyA = this.getPlayerTotalScore(a);
-          const safetyB = this.getPlayerTotalScore(b);
-          return safetyB - safetyA; // Décroissant
+          return this.getPlayerTotalScore(b) - this.getPlayerTotalScore(a);
         });
         break;
     }
   }
 
-  /**
-   * Scroll automatiquement jusqu'au joueur actuel quand c'est son tour
-   */
   // ─── Team helpers ───
   getTeamIds(): number[] {
     return Object.keys(this.teams).map(Number).sort();
@@ -329,24 +259,43 @@ export class PlayersBoardComponent implements OnInit, OnChanges {
     return this.teams[teamId]?.targetScore ?? 0;
   }
 
+  /**
+   * Retourne les infos de cartes spéciales en attente impliquant ce joueur
+   */
+  getPendingCardInfo(playerId: string): { icon: string; label: string }[] {
+    const pending = this.gameState?.pendingSpecialCards;
+    if (!pending || pending.length === 0) return [];
+    const infos: { icon: string; label: string }[] = [];
+    for (const p of pending) {
+      if (p.targetPlayerId === playerId) {
+        if (p.specialType === 'STOP') {
+          infos.push({ icon: '🛑', label: '' });
+        } else if (p.specialType === 'DRAW_THREE') {
+          const rem = p.remainingForcedDraws ?? 3;
+          infos.push({ icon: '➕3', label: rem > 0 ? `${rem}` : '' });
+        } else if (p.specialType === 'LIFE') {
+          infos.push({ icon: '❤️', label: '' });
+        }
+      } else if (p.sourcePlayerId === playerId && !p.targetPlayerId && p.specialType === 'LIFE') {
+        infos.push({ icon: '❤️', label: '?' });
+      }
+    }
+    return infos;
+  }
+
   scrollToCurrentPlayer(): void {
     if (!this.currentPlayerId) return;
 
-    // Trouver l'élément HTML du joueur actuel
     const playerElements = document.querySelectorAll('.player-item');
     const currentPlayerIndex = this.sortedPlayers.indexOf(this.currentPlayerId);
-    
+
     if (currentPlayerIndex >= 0 && currentPlayerIndex < playerElements.length) {
       const playerElement = playerElements[currentPlayerIndex] as HTMLElement;
-      
-      // Scroller avec un comportement smooth
       playerElement.scrollIntoView({
         behavior: 'smooth',
-        block: 'nearest', // Scroll seulement si nécessaire
+        block: 'nearest',
         inline: 'nearest'
       });
-      
-      console.log(`🎯 Auto-scroll vers le joueur actuel: ${this.currentPlayerId} (index: ${currentPlayerIndex})`);
     }
   }
 }

@@ -24,8 +24,9 @@ export class UserService {
     return this.http.post<UserProfile>(`${this.url}/updateProfile`, profileData);
   }
 
-  changePassword(newPassword: string): Observable<{ message: string }> {
+  changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.url}/changePassword`, {
+      currentPassword,
       newPassword
     });
   }

@@ -54,7 +54,6 @@ export class StatisticsPageComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des statistiques:', err);
         this.error = 'Impossible de charger les statistiques';
         this.loading = false;
       }

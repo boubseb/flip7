@@ -45,12 +45,10 @@ export class FooterComponent implements OnInit, OnDestroy {
   }
 
   onHit(): void {
-    console.log('🎴 Footer: Hit clicked');
     this.onHitClick.emit();
   }
 
   onStop(): void {
-    console.log('✋ Footer: Stop clicked');
     this.onStopClick.emit();
   }
 }

@@ -5,7 +5,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { Router, RouterLink,  } from '@angular/router';
 import { Login } from '../../models/login/login.model';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
-import { FooterComponent } from '../../components/footer/footer.component';
 import { TranslateModule } from '@ngx-translate/core';
 
 
@@ -13,7 +12,7 @@ import { TranslateModule } from '@ngx-translate/core';
 @Component({
   selector: 'app-popup',
   standalone: true,
-  imports: [ MatButtonModule, FormsModule, RouterLink, FooterComponent, TranslateModule],
+  imports: [ MatButtonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss'
 })
@@ -27,19 +26,18 @@ export class LoginPageComponent {
 
 
 
-  onLogin(username:string,password:string):void {
-    this.authenticationService.login(username,password).subscribe(
+  onLogin(username: string, password: string): void {
+    this.authenticationService.login(username, password).subscribe(
       (response: any) => {
         if (response.access_token) {
           this.authenticationService.setToken(response.access_token);
-          this.router.navigateByUrl('/'); 
-        } else {
-          console.error('Login failed: No access token in response');
+          if (response.role) {
+            this.authenticationService.setRole(response.role);
+          }
+          this.router.navigateByUrl('/');
         }
       },
-      (error) => {
-        console.error('Login failed:', error);
-      },
+      () => {}
     );
   }
   }

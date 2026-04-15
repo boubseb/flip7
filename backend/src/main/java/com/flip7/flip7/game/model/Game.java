@@ -24,6 +24,7 @@ public class Game {
     private boolean teamMode = false;
     private Map<String, Integer> playerTeams = new HashMap<>(); // playerId → teamId
     private int winningTeamId = 0; // équipe gagnante en mode équipe
+    private List<Map<String, Object>> eventLog = new ArrayList<>(); // Historique des cartes spéciales
 
     // Constructeur par défaut pour Jackson
     public Game() {
@@ -85,6 +86,21 @@ public class Game {
 
     public int getWinningTeamId() { return winningTeamId; }
     public void setWinningTeamId(int winningTeamId) { this.winningTeamId = winningTeamId; }
+
+    public List<Map<String, Object>> getEventLog() { return eventLog; }
+    public void setEventLog(List<Map<String, Object>> eventLog) { this.eventLog = eventLog != null ? eventLog : new ArrayList<>(); }
+
+    public void logCardEvent(String type, String sourceId, String sourceName, String targetId, String targetName) {
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", type);
+        event.put("sourcePlayerId", sourceId);
+        event.put("sourceName", sourceName);
+        event.put("targetPlayerId", targetId);
+        event.put("targetName", targetName);
+        event.put("round", this.roundNumber);
+        event.put("timestamp", java.time.Instant.now().toString());
+        eventLog.add(event);
+    }
 
     public int getTargetScore() {
         return targetScore;
@@ -224,12 +240,22 @@ public class Game {
                 return new DrawResult(true, message, drawnCard, false, false, false, true);
             }
 
-            // LIFE card en mode équipe → pending pour transfert à un coéquipier
+            // LIFE card en mode équipe → pending pour transfert à un coéquipier (si au moins 1 actif)
             if (type == SpecialType.LIFE && teamMode) {
-                PendingSpecialCard pendingLife = new PendingSpecialCard(specialCard, player.getUserId(), null, 0);
-                pendingSpecialCardsQueue.push(pendingLife);
-                System.out.println("   💚 Carte Vie piochée en mode équipe - assignation à un coéquipier requise");
-                return new DrawResult(true, "Carte Vie piochée ! Choisissez un coéquipier.", drawnCard, false, false, false, true);
+                int myTeamId = playerTeams.getOrDefault(player.getUserId(), 0);
+                long activeTeammates = players.stream()
+                    .filter(p -> playerTeams.getOrDefault(p.getUserId(), 0) == myTeamId)
+                    .filter(p -> p.getStatus() == PlayerStatus.PLAYING || p.getStatus() == PlayerStatus.STOPPED)
+                    .filter(p -> !p.getUserId().equals(player.getUserId()))
+                    .count();
+                if (activeTeammates > 0) {
+                    PendingSpecialCard pendingLife = new PendingSpecialCard(specialCard, player.getUserId(), null, 0);
+                    pendingSpecialCardsQueue.push(pendingLife);
+                    System.out.println("   💚 Carte Vie piochée en mode équipe - assignation à un coéquipier requise");
+                    return new DrawResult(true, "Carte Vie piochée ! Choisissez un coéquipier.", drawnCard, false, false, false, true);
+                }
+                System.out.println("   💚 Carte Vie piochée en mode équipe - seul dans l'équipe, carte gardée");
+                // Fall through: carte déjà ajoutée à la main, nextPlayer() appelé en bas
             }
         }
 
@@ -384,6 +410,7 @@ public class Game {
             targetPlayer.setStoppedByUsername(null);
         }
         System.out.println("   🛑 " + targetPlayer.getUsername() + " est maintenant FORCED_STOP");
+        logCardEvent("STOP", player.getUserId(), player.getUsername(), targetPlayer.getUserId(), targetPlayer.getUsername());
         
         // ÉTAPE 4: Vérifier s'il y a une pioche suspendue à reprendre
         // MAIS si le joueur s'est assigné le Stop à lui-même, la pioche est ANNULÉE
@@ -522,7 +549,8 @@ public class Game {
         // ÉTAPE 4b: Enregistrer qui a donné le +3 (pour contexte en cas d'élimination)
         targetPlayer.setDrawThreeByUserId(player.getUserId());
         targetPlayer.setDrawThreeByUsername(player.getUsername());
-        
+        logCardEvent("DRAW_THREE", player.getUserId(), player.getUsername(), targetPlayer.getUserId(), targetPlayer.getUsername());
+
         // ÉTAPE 5: Faire piocher 3 cartes au joueur cible
         boolean completed = processForcedDraws(targetPlayer, 3);
         
@@ -1067,6 +1095,7 @@ public class Game {
             .findFirst()
             .orElse(null);
         if (pending == null) return new ActionResult(false, "Carte non trouvée dans la queue");
+        int remaining = pending.getRemainingForcedDraws();
         pendingSpecialCardsQueue.remove(pending);
 
         Card card = source.getHand().stream()
@@ -1077,6 +1106,20 @@ public class Game {
             source.removeCard(card);
             target.addCard(card);
             System.out.println("💚 Carte Vie transférée de " + source.getUsername() + " à " + target.getUsername());
+        }
+        logCardEvent("LIFE", source.getUserId(), source.getUsername(), target.getUserId(), target.getUsername());
+
+        // Si la LIFE card venait d'une pioche forcée (+3), reprendre la pioche
+        if (remaining > 0) {
+            System.out.println("   ♻️ Reprise pioche forcée après Vie: " + source.getUsername() + " (" + remaining + " cartes)");
+            source.setRemainingForcedDraws(0);
+            boolean completed = processForcedDraws(source, remaining);
+            if (!completed) {
+                return new ActionResult(true, target.getUsername() + " a reçu la carte Vie — carte spéciale en attente");
+            }
+            // Pioche terminée : laisser processNextPendingCard gérer la suite
+            processNextPendingCard();
+            return new ActionResult(true, target.getUsername() + " a reçu la carte Vie !");
         }
 
         nextPlayer();
@@ -1220,20 +1263,36 @@ public class Game {
                 if (type == SpecialType.STOP || type == SpecialType.DRAW_THREE) {
                     System.out.println("   ⚠️ CARTE SPÉCIALE détectée: " + type);
                     System.out.println("   ⏸️ SUSPENSION: " + remaining + " carte(s) restante(s) à piocher");
-                    
-                    // Créer PendingSpecialCard avec remaining
+
                     PendingSpecialCard pendingCard = new PendingSpecialCard(
-                        specialCard,
-                        player.getUserId(),
-                        null,
-                        remaining
-                    );
+                        specialCard, player.getUserId(), null, remaining);
                     pendingSpecialCardsQueue.add(pendingCard);
-                    
+
                     System.out.println("   📝 Ajout queue: " + type + " (source: " + player.getUsername() + ", remaining: " + remaining + ")");
                     System.out.println("   ⏸️ ARRÊT pioche - Le joueur doit assigner cette carte");
-                    
+
                     return false; // Pioche interrompue
+                }
+
+                // LIFE card en mode équipe pendant pioche forcée → assignment si coéquipiers actifs
+                if (type == SpecialType.LIFE && teamMode) {
+                    int myTeamId = playerTeams.getOrDefault(player.getUserId(), 0);
+                    long activeTeammates = players.stream()
+                        .filter(p -> playerTeams.getOrDefault(p.getUserId(), 0) == myTeamId)
+                        .filter(p -> p.getStatus() == PlayerStatus.PLAYING || p.getStatus() == PlayerStatus.STOPPED)
+                        .filter(p -> !p.getUserId().equals(player.getUserId()))
+                        .count();
+                    if (activeTeammates > 0) {
+                        specialCard.setPending(true);
+                        PendingSpecialCard pendingLife = new PendingSpecialCard(
+                            specialCard, player.getUserId(), null, remaining);
+                        pendingSpecialCardsQueue.add(pendingLife);
+                        player.setRemainingForcedDraws(remaining);
+                        System.out.println("   💚 Carte Vie pendant +3 en mode équipe - assignation requise (" + remaining + " restantes)");
+                        return false; // Pioche interrompue
+                    }
+                    // Seul dans l'équipe → carte gardée, pioche continue
+                    System.out.println("   💚 Carte Vie pendant +3 en mode équipe - seul, carte gardée");
                 }
             }
             

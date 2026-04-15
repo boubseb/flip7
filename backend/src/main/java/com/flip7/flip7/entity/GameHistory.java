@@ -75,8 +75,7 @@ public class GameHistory {
     }
     
     @PrePersist
-    @PreUpdate
-    private void serializeJsonFields() {
+    public void serializeJsonFields() {
         try {
             this.roundsJson = objectMapper.writeValueAsString(this.rounds);
             this.finalScoresJson = objectMapper.writeValueAsString(this.finalScores);

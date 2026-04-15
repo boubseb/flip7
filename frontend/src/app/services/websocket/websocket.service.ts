@@ -49,7 +49,6 @@ export class WebSocketService {
 
   connect(): void {
     if (this.stompClient?.connected) {
-      console.log('WebSocket already connected');
       return;
     }
 
@@ -63,12 +62,10 @@ export class WebSocketService {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       debug: (str: string) => {
-        console.log('STOMP: ' + str);
       }
     });
 
     this.stompClient.onConnect = (frame: any) => {
-      console.log('WebSocket connected:', frame);
       // Clear stale subscription handles — after a reconnect the STOMP session is
       // brand-new and old StompSubscription objects are no longer valid.
       // Clearing the map lets subscribeToRoom() re-register cleanly.
@@ -77,12 +74,10 @@ export class WebSocketService {
     };
 
     this.stompClient.onStompError = (frame: any) => {
-      console.error('STOMP error:', frame);
       this.connectionStatus.next(false);
     };
 
     this.stompClient.onWebSocketClose = (event: any) => {
-      console.log('WebSocket closed:', event);
       this.connectionStatus.next(false);
     };
 
@@ -100,24 +95,20 @@ export class WebSocketService {
       this.stompClient.deactivate();
       this.stompClient = null;
       this.connectionStatus.next(false);
-      console.log('WebSocket disconnected');
     }
   }
 
   subscribeToRoom(roomId: string): void {
     if (!this.stompClient?.connected) {
-      console.error('WebSocket not connected');
       return;
     }
 
     // Vérifier si on est déjà souscrit à cette room
     const roomSubKey = `room-${roomId}`;
     if (this.subscriptions.has(roomSubKey)) {
-      console.log('⚠️ Already subscribed to room:', roomId);
       return;
     }
 
-    console.log('📡 Creating new subscription for room:', roomId);
 
     // Subscribe to room updates
     const roomSub = this.stompClient.subscribe(
@@ -219,7 +210,6 @@ export class WebSocketService {
     );
     this.subscriptions.set(`restarted-${roomId}`, restartedSub);
 
-    console.log(`Subscribed to room: ${roomId}`);
   }
 
   unsubscribeFromRoom(roomId: string): void {
@@ -244,7 +234,6 @@ export class WebSocketService {
       }
     });
 
-    console.log(`Unsubscribed from room: ${roomId}`);
   }
 
   isConnected(): boolean {

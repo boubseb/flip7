@@ -503,11 +503,12 @@ public class GameService {
                     );
                     history.getFinalScores().add(score);
                 }
-                
+
+                history.serializeJsonFields(); // Force serialization before merge
                 gameHistoryRepository.save(history);
             }
         }
-        
+
         // Supprimer la partie active
         activeGames.remove(roomId);
         gameHistoryIds.remove(roomId);
@@ -619,6 +620,8 @@ public class GameService {
             playerDTO.setTheoreticalTotal(player.getTotalScore() + player.getRoundScore());
             playerDTO.setLifeCardsInHand(player.getLifeCardsInHand());
             playerDTO.setTeamId(player.getTeamId());
+            playerDTO.setStoppedByUsername(player.getStoppedByUsername());
+            playerDTO.setDrawThreeByUsername(player.getDrawThreeByUsername());
 
             // Ajouter les cartes de la main (révélées)
             java.util.List<java.util.Map<String, Object>> handCards = new java.util.ArrayList<>();
@@ -742,6 +745,7 @@ public class GameService {
             dto.setTeams(teamsMap);
         }
 
+        dto.setEventLog(game.getEventLog());
         return dto;
     }
 
@@ -809,6 +813,7 @@ public class GameService {
             dto.setTeams(teamsMap);
         }
 
+        dto.setEventLog(game.getEventLog());
         return dto;
     }
 
@@ -843,12 +848,15 @@ public class GameService {
         private boolean teamMode = false;
         private int winningTeamId = 0;
         private java.util.Map<Integer, java.util.Map<String, Object>> teams = new java.util.HashMap<>();
+        private java.util.List<java.util.Map<String, Object>> eventLog = new java.util.ArrayList<>();
         public boolean isTeamMode() { return teamMode; }
         public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
         public int getWinningTeamId() { return winningTeamId; }
         public void setWinningTeamId(int winningTeamId) { this.winningTeamId = winningTeamId; }
         public java.util.Map<Integer, java.util.Map<String, Object>> getTeams() { return teams; }
         public void setTeams(java.util.Map<Integer, java.util.Map<String, Object>> teams) { this.teams = teams; }
+        public java.util.List<java.util.Map<String, Object>> getEventLog() { return eventLog; }
+        public void setEventLog(java.util.List<java.util.Map<String, Object>> eventLog) { this.eventLog = eventLog; }
     }
 
     public static class PlayerDTO {
@@ -863,6 +871,8 @@ public class GameService {
         private int teamId = 0;
         private java.util.List<java.util.Map<String, Object>> hand = new java.util.ArrayList<>(); // Cartes révélées
         private java.util.List<RoundDTO> rounds = new java.util.ArrayList<>(); // Liste des rounds (le dernier = actuel)
+        private String stoppedByUsername;
+        private String drawThreeByUsername;
 
         // Getters et Setters
         public String getUserId() { return userId; }
@@ -883,6 +893,10 @@ public class GameService {
         public void setLifeCardsInHand(int lifeCardsInHand) { this.lifeCardsInHand = lifeCardsInHand; }
         public int getTeamId() { return teamId; }
         public void setTeamId(int teamId) { this.teamId = teamId; }
+        public String getStoppedByUsername() { return stoppedByUsername; }
+        public void setStoppedByUsername(String stoppedByUsername) { this.stoppedByUsername = stoppedByUsername; }
+        public String getDrawThreeByUsername() { return drawThreeByUsername; }
+        public void setDrawThreeByUsername(String drawThreeByUsername) { this.drawThreeByUsername = drawThreeByUsername; }
         public java.util.List<java.util.Map<String, Object>> getHand() { return hand; }
         public void setHand(java.util.List<java.util.Map<String, Object>> hand) { this.hand = hand; }
         public java.util.List<RoundDTO> getRounds() { return rounds; }
@@ -980,6 +994,7 @@ public class GameService {
 
         GameHistory.RoundHistory roundHistory = new GameHistory.RoundHistory(game.getRoundNumber());
         history.addRound(roundHistory);
+        history.serializeJsonFields(); // Force serialization before merge to avoid @PreUpdate stale-data overwrite
         gameHistoryRepository.save(history);
         System.out.println("📝 saveRoundStart: round " + game.getRoundNumber() + " ajouté (historyId=" + historyId + ", total rounds=" + history.getRounds().size() + ")");
     }
@@ -1000,14 +1015,21 @@ public class GameService {
             return;
         }
 
-        int currentRoundIndex = game.getRoundNumber() - 1;
-        System.out.println("📊 saveRoundEnd: round=" + game.getRoundNumber() + " index=" + currentRoundIndex + " history.rounds.size=" + history.getRounds().size());
-        if (currentRoundIndex < 0 || currentRoundIndex >= history.getRounds().size()) {
-            System.err.println("⚠️ saveRoundEnd: index " + currentRoundIndex + " hors bornes (size=" + history.getRounds().size() + ") — saveRoundStart n'a pas été appelé ?");
-            return;
+        final int roundNum = game.getRoundNumber();
+        System.out.println("📊 saveRoundEnd: round=" + roundNum + " history.rounds.size=" + history.getRounds().size());
+
+        // Chercher le round par son numéro (plus robuste qu'un index position)
+        GameHistory.RoundHistory roundHistory = history.getRounds().stream()
+            .filter(r -> r.getRoundNumber() == roundNum)
+            .findFirst()
+            .orElse(null);
+
+        if (roundHistory == null) {
+            // saveRoundStart n'a pas été appelé (reconnexion, serveur redémarré…) — on crée le round à la volée
+            System.err.println("⚠️ saveRoundEnd: round " + roundNum + " introuvable dans l'historique — création à la volée");
+            roundHistory = new GameHistory.RoundHistory(roundNum);
+            history.addRound(roundHistory);
         }
-        
-        GameHistory.RoundHistory roundHistory = history.getRounds().get(currentRoundIndex);
         roundHistory.setEndedAt(LocalDateTime.now());
         
         // Sauvegarder les données de chaque joueur
@@ -1022,7 +1044,7 @@ public class GameService {
             data.setRoundScore(player.getRoundScore());
             data.setEliminated(player.getStatus() == PlayerStatus.ELIMINATED);
             data.setStopped(player.getStatus() == PlayerStatus.STOPPED);
-            data.setHasSevenDifferent(player.hasSevenDifferentNumbers());
+            data.setHasSevenDifferent(player.hasFlip7());
             data.setUsedLife(player.hasUsedLife());
             data.setCardsDrawn(player.getHandSize());
 
@@ -1051,7 +1073,7 @@ public class GameService {
                 if (player.getStatus() == PlayerStatus.ELIMINATED) {
                     Map<Integer, Integer> numberCounts = new HashMap<>();
                     for (Card card : player.getHand()) {
-                        if (card instanceof NumberCard) {
+                        if (card instanceof NumberCard && !card.isCancelled()) {
                             int num = ((NumberCard) card).getValue();
                             numberCounts.put(num, numberCounts.getOrDefault(num, 0) + 1);
                         }
@@ -1072,6 +1094,7 @@ public class GameService {
         
         roundHistory.setRoundWinnerId(roundWinnerId);
 
+        history.serializeJsonFields(); // Force serialization before merge to avoid @PreUpdate stale-data overwrite
         gameHistoryRepository.save(history);
         System.out.println("✅ saveRoundEnd: round " + game.getRoundNumber() + " sauvegardé pour room " + roomId + " (historyId=" + historyId + ")");
     }
@@ -1125,10 +1148,11 @@ public class GameService {
             
             history.getFinalScores().add(score);
         }
-        
+
+        history.serializeJsonFields(); // Force serialization before merge to avoid @PreUpdate stale-data overwrite
         gameHistoryRepository.save(history);
     }
-    
+
     /**
      * Récupère l'historique des parties d'une room
      */

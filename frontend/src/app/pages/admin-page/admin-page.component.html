@@ -1,0 +1,262 @@
+<div class="admin-page">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <button class="back-btn" (click)="goBack()">← Retour</button>
+    <h1>⚙️ {{ 'admin.title' | translate }}</h1>
+  </div>
+
+  <!-- Feedback banners -->
+  @if(successMsg) {
+    <div class="banner banner-success">✓ {{ successMsg }}</div>
+  }
+  @if(errorMsg) {
+    <div class="banner banner-error">✗ {{ errorMsg }}</div>
+  }
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+      📊 {{ 'admin.dashboard' | translate }}
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="setTab('users')">
+      👥 {{ 'admin.users' | translate }}
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'rooms'" (click)="setTab('rooms')">
+      🚪 {{ 'admin.rooms' | translate }}
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="setTab('history')">
+      📜 {{ 'admin.history' | translate }}
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if(loading) {
+    <div class="loading-row"><div class="spinner"></div></div>
+  }
+
+  <!-- ── DASHBOARD ── -->
+  @if(activeTab === 'dashboard' && !loading && stats) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ stats.totalUsers }}</div>
+        <div class="stat-label">{{ 'admin.totalUsers' | translate }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🚪</div>
+        <div class="stat-value">{{ stats.totalRooms }}</div>
+        <div class="stat-label">{{ 'admin.totalRooms' | translate }}</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-icon">🎮</div>
+        <div class="stat-value">{{ stats.activeRooms }}</div>
+        <div class="stat-label">{{ 'admin.activeRooms' | translate }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📜</div>
+        <div class="stat-value">{{ stats.totalGames }}</div>
+        <div class="stat-label">{{ 'admin.totalGames' | translate }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value">{{ stats.gamesLast7Days }}</div>
+        <div class="stat-label">{{ 'admin.recentGames' | translate }}</div>
+      </div>
+    </div>
+  }
+
+  <!-- ── USERS ── -->
+  @if(activeTab === 'users' && !loading) {
+    <div class="section">
+      <div class="toolbar">
+        <input class="search-input" type="text" [(ngModel)]="userSearch"
+               (input)="applyUserFilter()"
+               placeholder="{{ 'admin.search' | translate }}">
+      </div>
+
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Pseudo</th>
+              <th>Email</th>
+              <th>{{ 'admin.role' | translate }}</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(user of filteredUsers; track user.id) {
+              <tr [class.self-row]="user.id === currentUserId">
+                <td class="pseudo-cell">{{ user.pseudo }}</td>
+                <td class="email-cell">{{ user.email }}</td>
+                <td>
+                  <span class="badge" [class]="getRoleBadgeClass(user.role)">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  @if(isSuperAdmin && user.id !== currentUserId) {
+                    <button class="btn-icon btn-role" (click)="openRoleModal(user)" title="{{ 'admin.changeRole' | translate }}">🔑</button>
+                  }
+                  <button class="btn-icon btn-pwd" (click)="openResetModal(user)" title="{{ 'admin.resetPassword' | translate }}">🔒</button>
+                  @if(isSuperAdmin && user.id !== currentUserId) {
+                    <button class="btn-icon btn-del" (click)="confirmDeleteUser(user)" title="{{ 'admin.deleteUser' | translate }}">🗑️</button>
+                  }
+                </td>
+              </tr>
+            }
+            @if(filteredUsers.length === 0) {
+              <tr><td colspan="4" class="no-data">{{ 'admin.noData' | translate }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ── ROOMS ── -->
+  @if(activeTab === 'rooms' && !loading) {
+    <div class="section">
+      <div class="toolbar">
+        <select class="filter-select" [(ngModel)]="roomStatusFilter" (change)="applyRoomFilter()">
+          <option value="">{{ 'admin.filterStatus' | translate }} (tous)</option>
+          <option value="WAITING">WAITING</option>
+          <option value="IN_GAME">IN_GAME</option>
+          <option value="FINISHED">FINISHED</option>
+        </select>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Statut</th>
+              <th>Joueurs</th>
+              <th>Dernière activité</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(room of filteredRooms; track room.id) {
+              <tr>
+                <td class="mono">{{ room.id }}</td>
+                <td>
+                  <span class="status-badge" [class]="getStatusClass(room.status)">{{ room.status }}</span>
+                </td>
+                <td>{{ room.playerCount }}</td>
+                <td class="date-cell">{{ formatDate(room.lastActivityAt) }}</td>
+                <td class="actions-cell">
+                  <button class="btn-icon btn-del" (click)="confirmDeleteRoom(room)" title="{{ 'admin.deleteRoom' | translate }}">🗑️</button>
+                </td>
+              </tr>
+            }
+            @if(filteredRooms.length === 0) {
+              <tr><td colspan="5" class="no-data">{{ 'admin.noData' | translate }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ── HISTORY ── -->
+  @if(activeTab === 'history' && !loading) {
+    <div class="section">
+      <div class="toolbar">
+        <input class="search-input" type="text" [(ngModel)]="historyRoomFilter"
+               (input)="applyHistoryFilter()"
+               placeholder="Filtrer par Room ID">
+        @if(historyRoomFilter) {
+          <button class="btn-danger-sm" (click)="confirmDeleteHistoryByRoom(historyRoomFilter)">
+            🗑️ Tout supprimer pour "{{ historyRoomFilter }}"
+          </button>
+        }
+      </div>
+
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Room</th>
+              <th>Statut</th>
+              <th>Rounds</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(entry of filteredHistory; track entry.id) {
+              <tr>
+                <td class="mono">{{ entry.roomId }}</td>
+                <td>
+                  <span class="status-badge" [class]="getStatusClass(entry.status)">{{ entry.status }}</span>
+                </td>
+                <td>{{ entry.totalRounds }}</td>
+                <td class="date-cell">{{ formatDate(entry.startedAt) }}</td>
+                <td class="actions-cell">
+                  <button class="btn-icon btn-del" (click)="confirmDeleteHistory(entry)" title="{{ 'admin.deleteHistory' | translate }}">🗑️</button>
+                </td>
+              </tr>
+            }
+            @if(filteredHistory.length === 0) {
+              <tr><td colspan="5" class="no-data">{{ 'admin.noData' | translate }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+</div>
+
+<!-- ── Confirm Modal ── -->
+@if(showConfirmModal) {
+  <div class="modal-backdrop" (click)="onCancelConfirm()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <p class="modal-msg">{{ confirmMessage }}</p>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="onCancelConfirm()">{{ 'admin.cancel' | translate }}</button>
+        <button class="btn-modal-confirm" (click)="onConfirm()">{{ 'admin.confirm' | translate }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Reset Password Modal ── -->
+@if(showResetModal) {
+  <div class="modal-backdrop" (click)="showResetModal = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3>🔒 Reset mot de passe — {{ resetTargetPseudo }}</h3>
+      <input class="modal-input" type="password" [(ngModel)]="newPassword"
+             placeholder="{{ 'admin.newPassword' | translate }}"
+             (keyup.enter)="confirmResetPassword()">
+      @if(resetError) {
+        <p class="modal-error">{{ resetError }}</p>
+      }
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showResetModal = false">{{ 'admin.cancel' | translate }}</button>
+        <button class="btn-modal-confirm" (click)="confirmResetPassword()">Confirmer</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Role Modal ── -->
+@if(showRoleModal) {
+  <div class="modal-backdrop" (click)="showRoleModal = false">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h3>🔑 Rôle — {{ roleTargetPseudo }}</h3>
+      <select class="modal-select" [(ngModel)]="selectedRole">
+        <option value="USER">{{ 'admin.roleUser' | translate }}</option>
+        <option value="ADMIN">{{ 'admin.roleAdmin' | translate }}</option>
+        <option value="SUPERADMIN">{{ 'admin.roleSuperAdmin' | translate }}</option>
+      </select>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" (click)="showRoleModal = false">{{ 'admin.cancel' | translate }}</button>
+        <button class="btn-modal-confirm" (click)="confirmRoleChange()">Confirmer</button>
+      </div>
+    </div>
+  </div>
+}

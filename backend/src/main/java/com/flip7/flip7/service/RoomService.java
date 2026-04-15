@@ -388,4 +388,25 @@ public class RoomService {
             }
         }
     }
+
+    // ─── Admin operations ─────────────────────────────────────────────────────
+
+    public List<com.flip7.flip7.dto.RoomAdminDTO> getAllRoomsForAdmin() {
+        return roomRepository.findAll().stream()
+            .map(r -> new com.flip7.flip7.dto.RoomAdminDTO(
+                r.getId(),
+                r.getAdminId(),
+                r.getStatus() != null ? r.getStatus().name() : "UNKNOWN",
+                r.getPlayers() != null ? r.getPlayers().size() : 0,
+                r.getCreatedAt(),
+                r.getLastActivityAt()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    public void adminDeleteRoom(String roomId) {
+        Room room = roomRepository.findById(roomId)
+            .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Room not found"));
+        roomRepository.delete(room);
+    }
 }

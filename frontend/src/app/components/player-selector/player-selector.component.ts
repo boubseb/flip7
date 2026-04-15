@@ -22,6 +22,7 @@ export class PlayerSelectorComponent implements OnChanges {
   
   @Output() onPlayerSelected = new EventEmitter<string>();
   @Output() onCancel = new EventEmitter<void>();
+  @Output() onMinimize = new EventEmitter<void>();
 
   // Pourcentage cubé pour +3
   getCubedProbability(prob: number | null): string {
@@ -59,16 +60,7 @@ export class PlayerSelectorComponent implements OnChanges {
     return Math.min((1 - prob) * 100, 100);
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['show'] && changes['show'].currentValue === true) {
-      console.log('🎯 Player Selector - Players:', this.players);
-      console.log('🎯 Player Selector - Card Type:', this.cardType);
-      console.log('🎯 Player Selector - Eligible count:', this.getEligiblePlayersCount());
-      this.players.forEach(p => {
-        console.log(`   - ${p.username}: status=${p.status}, eligible=${this.isPlayerEligible(p)}`);
-      });
-    }
-  }
+  ngOnChanges(_changes: SimpleChanges): void {}
 
   /**
    * Vérifie si un joueur est éligible
@@ -117,6 +109,13 @@ export class PlayerSelectorComponent implements OnChanges {
   }
 
   /**
+   * Réduit la modale (permet de voir le jeu)
+   */
+  minimize(): void {
+    this.onMinimize.emit();
+  }
+
+  /**
    * Retourne la clé de traduction du statut
    */
   getStatusKey(status: string): string {
@@ -132,8 +131,6 @@ export class PlayerSelectorComponent implements OnChanges {
       case PlayerStatus.WAITING:
         return 'game.status.waiting';
       default:
-        // Si le statut n'est pas reconnu, retourner la clé "playing" par défaut
-        console.warn('Unknown player status:', status);
         return 'game.status.playing';
     }
   }

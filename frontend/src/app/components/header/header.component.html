@@ -42,6 +42,12 @@
                 <span class="menu-icon">📜</span>
                 <span>{{ 'history.menuItem' | translate }}</span>
               </button>
+              @if(isAdmin()) {
+                <button class="menu-item" (click)="goToAdmin()">
+                  <span class="menu-icon">⚙️</span>
+                  <span>{{ 'admin.title' | translate }}</span>
+                </button>
+              }
               <button class="menu-item logout" (click)="onLogout()">
                 <span class="menu-icon">🚪</span>
                 <span>{{ 'header.logout' | translate }}</span>

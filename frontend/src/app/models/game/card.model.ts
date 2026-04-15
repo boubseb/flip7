@@ -89,37 +89,24 @@ export class CardHelper {
 
   static getCardColor(card: Card): string {
     const anyCard = card as any;
-    
-    console.log('🎨 CARTE REÇUE:', JSON.stringify(anyCard, null, 2));
-    
-    // Détection des opérateurs par "operator" (nom envoyé par le backend ligne 482 GameService.java)
+
     if (anyCard.operator) {
-      console.log('   ✅ OPERATOR détecté - ORANGE');
-      return '#f97316'; // Orange pour tous les opérateurs (+2, +4, +6, +8, +10, ×2)
+      return '#f97316';
     }
-    
-    // Détection des nombres par "value"
+
     if (anyCard.value !== undefined && !anyCard.specialType && !anyCard.operator) {
-      console.log('   ✅ NUMBER détecté - BLEU');
-      return '#3b82f6'; // Bleu pour les nombres
+      return '#3b82f6';
     }
-    
-    // Détection des cartes spéciales par specialType
+
     if (anyCard.specialType) {
-      console.log('   ✅ SPECIAL détecté:', anyCard.specialType);
       switch (anyCard.specialType) {
-        case 'STOP':
-          return '#ef4444'; // Rouge
-        case 'DRAW_THREE':
-          return '#f59e0b'; // Orange
-        case 'LIFE':
-          return '#dc2626'; // Rouge vif pour carte Vie
+        case 'STOP':     return '#ef4444';
+        case 'DRAW_THREE': return '#f59e0b';
+        case 'LIFE':     return '#dc2626';
       }
     }
-    
-    console.log('   ❌ AUCUN TYPE DÉTECTÉ - GRIS');
-    // Par défaut
-    return '#6b7280'; // Gris
+
+    return '#6b7280';
   }
 
   static getCardIcon(card: Card): string {

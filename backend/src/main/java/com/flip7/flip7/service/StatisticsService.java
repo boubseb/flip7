@@ -138,7 +138,10 @@ public class StatisticsService {
         List<GameHistory> completedGames = gameHistoryRepository.findByStatus(GameHistory.GameStatus.COMPLETED);
         stats.setGlobalCompletedGames(completedGames.size());
 
-        if (completedGames.isEmpty()) {
+        // Pour les Flip7 et scores max, on compte toutes les parties (y compris non terminées)
+        List<GameHistory> allGames = gameHistoryRepository.findAll();
+
+        if (allGames.isEmpty()) {
             return;
         }
 
@@ -146,8 +149,10 @@ public class StatisticsService {
         int totalFlip7 = 0;
         int maxScoreInOneRound = 0;
 
-        for (GameHistory game : completedGames) {
-            totalRounds += game.getTotalRounds();
+        for (GameHistory game : allGames) {
+            if (game.getStatus() == GameHistory.GameStatus.COMPLETED) {
+                totalRounds += game.getTotalRounds();
+            }
 
             // Parcourir les rounds pour trouver le max score et les Flip7
             for (GameHistory.RoundHistory round : game.getRounds()) {

@@ -18,55 +18,57 @@
       </div>
 
       <div class="form-container">
-        <div class="form-group">
-          <label>{{ 'room.roomPassword' | translate }}</label>
-          <input 
-            type="password" 
-            [(ngModel)]="createRoomPassword" 
-            [placeholder]="'room.enterPassword' | translate"
-            (keyup.enter)="createRoom()">
-        </div>
-        <div class="form-group">
-          <label>{{ 'room.maxPlayers' | translate }}</label>
-          <input 
-            type="number" 
-            [(ngModel)]="createRoomMaxPlayers" 
-            min="2" 
-            max="8"
-            placeholder="4">
-        </div>
-        <div class="form-group">
-          <label>{{ 'room.targetScore' | translate }}</label>
-          <input 
-            type="number" 
-            [(ngModel)]="createRoomTargetScore" 
-            min="50" 
-            max="500"
-            step="50"
-            placeholder="200">
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" [(ngModel)]="createRoomStatisticsEnabled">
-            {{ 'room.statisticsOption' | translate }}
-          </label>
-        </div>
-        <div>
-          <label>
-            <input type="checkbox" [(ngModel)]="createRoomTeamMode">
-            {{ 'team.mode' | translate }}
-          </label>
-        </div>
-        @if (createRoomTeamMode) {
+        <div class="form-fields-scroll">
           <div class="form-group">
-            <label>{{ 'team.numTeams' | translate }}</label>
-            <select [(ngModel)]="createRoomNumTeams">
-              <option [value]="2">2</option>
-              <option [value]="3">3</option>
-              <option [value]="4">4</option>
-            </select>
+            <label>{{ 'room.roomPassword' | translate }}</label>
+            <input
+              type="password"
+              [(ngModel)]="createRoomPassword"
+              [placeholder]="'room.enterPassword' | translate"
+              (keyup.enter)="createRoom()">
           </div>
-        }
+          <div class="form-group">
+            <label>{{ 'room.maxPlayers' | translate }}</label>
+            <input
+              type="number"
+              [(ngModel)]="createRoomMaxPlayers"
+              min="2"
+              max="8"
+              placeholder="4">
+          </div>
+          <div class="form-group">
+            <label>{{ 'room.targetScore' | translate }}</label>
+            <input
+              type="number"
+              [(ngModel)]="createRoomTargetScore"
+              min="50"
+              max="500"
+              step="50"
+              placeholder="200">
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" [(ngModel)]="createRoomStatisticsEnabled">
+              {{ 'room.statisticsOption' | translate }}
+            </label>
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" [(ngModel)]="createRoomTeamMode">
+              {{ 'team.mode' | translate }}
+            </label>
+          </div>
+          @if (createRoomTeamMode) {
+            <div class="form-group">
+              <label>{{ 'team.numTeams' | translate }}</label>
+              <select [(ngModel)]="createRoomNumTeams">
+                <option [value]="2">2</option>
+                <option [value]="3">3</option>
+                <option [value]="4">4</option>
+              </select>
+            </div>
+          }
+        </div>
         <button class="btn btn-primary btn-large" (click)="createRoom()">
           🎯 {{ 'room.createRoom' | translate }}
         </button>
@@ -146,7 +148,7 @@
           <div class="teams-grid">
             @for (teamId of getTeamIds(); track teamId) {
               <div class="team-card" [class]="'team-color-' + teamId" [class.my-team]="getMyTeam() === teamId">
-                <div class="team-title">{{ 'team.teamN' | translate: {n: teamId} }}</div>
+                <div class="team-title">{{ 'team.team' | translate }} {{ teamId }}</div>
                 <div class="team-members-list">
                   @for (playerId of getTeamPlayers(teamId); track playerId) {
                     <span class="team-member">{{ getPlayerPseudo(playerId) }}</span>
@@ -157,7 +159,7 @@
                 </div>
                 @if (getMyTeam() !== teamId) {
                   <button class="btn-join-team" (click)="joinTeam(teamId)">
-                    {{ 'team.joinTeam' | translate: {n: teamId} }}
+                    {{ 'team.joinTeam' | translate }} {{ teamId }}
                   </button>
                 } @else {
                   <span class="my-team-badge">✓ {{ 'team.myTeam' | translate }}</span>
@@ -186,4 +188,3 @@
     </div>
   }
 </div>
-<app-footer></app-footer>

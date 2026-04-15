@@ -8,7 +8,7 @@
   right: 0;
   background-color: #282828;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 1050; /* au-dessus des overlays (rules/profil/stats/history = 999-1001) */
   width: 100%;
   box-sizing: border-box;
 
@@ -130,9 +130,10 @@
       justify-content: right;
       align-items: center;
       gap: 0.5rem;
-      
+
       .profil-menu-wrapper {
         position: relative;
+        z-index: 10; /* contexte d'empilement local au sein du header */
       }
       
       .profil-image{
@@ -269,27 +270,21 @@
 }
 
 .rules-container {
-  position: absolute;
-  top: var(--header-height, $headerHeight);
-  /* espace égal à la hauteur du header */
-  bottom: var(--footer-height, $footerHeight);
-  /* espace égal à la hauteur du footer */
+  position: fixed;
+  top: $headerHeight;
+  bottom: 0;
   left: 0;
   right: 0;
   display: flex;
   z-index: 1001;
   background-color: rgb(155, 89, 89);
-
   overflow: auto;
-  height: calc(100vh - $headerHeight - $footerHeight);
-
 }
+
 .profil-page-container {
-  position: absolute;
-  top: var(--header-height, $headerHeight);
-  /* espace égal à la hauteur du header */
-  bottom: var(--footer-height, $footerHeight);
-  /* espace égal à la hauteur du footer */
+  position: fixed;
+  top: $headerHeight;
+  bottom: 0;
   left: 0;
   right: 0;
   width: 100%;
@@ -297,7 +292,6 @@
   z-index: 999;
   background-color: var(--bg-primary);
   overflow: auto;
-  height: calc(100vh - $headerHeight - $footerHeight);
 
   app-profil {
     width: 100%;
@@ -307,15 +301,15 @@
 
 .statistics-container,
 .history-overlay-container {
-  position: absolute;
-  top: var(--header-height, $headerHeight);
-  bottom: var(--footer-height, $footerHeight);
+  position: fixed;
+  top: $headerHeight;
+  bottom: 0;
   left: 0;
   right: 0;
   z-index: 1001;
   background-color: var(--bg-primary);
+  overflow-x: hidden;
   overflow-y: auto;
-  height: calc(100vh - $headerHeight - $footerHeight);
   display: flex;
   flex-direction: column;
   align-items: center;

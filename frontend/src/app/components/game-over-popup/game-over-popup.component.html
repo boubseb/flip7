@@ -17,7 +17,7 @@
           <h1>{{ 'GAME.GAME_OVER' | translate }}</h1>
           @if (teamMode && winningTeamId > 0) {
             <p class="winner-announcement">
-              {{ 'team.teamWins' | translate: {n: winningTeamId} }}
+              {{ 'team.team' | translate }} {{ winningTeamId }} {{ 'team.wins' | translate }}
             </p>
             <div class="winning-team-members">
               @for (name of getWinningTeamMembers(); track name) {

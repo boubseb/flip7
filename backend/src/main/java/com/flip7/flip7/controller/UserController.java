@@ -109,6 +109,7 @@ public class UserController {
         if (userFromDB != null) {
             Map<String, String> response = new HashMap<>();
             response.put("access_token", userFromDB.getId());
+            response.put("role", userFromDB.getRole());
             return response;
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
@@ -164,9 +165,18 @@ public class UserController {
         }
         
         String userUUID = BearerHeader.substring(BearerPrefix.length());
+        String currentPassword = passwordData.get("currentPassword");
         String newPassword = passwordData.get("newPassword");
-        
-        userService.changePassword(userUUID, newPassword);
+
+        if (currentPassword == null || currentPassword.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le mot de passe actuel est requis");
+        }
+
+        try {
+            userService.changePassword(userUUID, currentPassword, newPassword);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
         
         Map<String, String> response = new HashMap<>();
         response.put("message", "Password changed successfully");

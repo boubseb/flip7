@@ -4,6 +4,9 @@ import { LoginPageComponent } from './pages/login-page/login-page.component';
 import { RegisterPageComponent } from './pages/register-page/register-page.component';
 import { GamePageComponent } from './pages/game-page/game-page.component';
 import { RoomPageComponent } from './pages/room-page/room-page.component';
+import { AdminPageComponent } from './pages/admin-page/admin-page.component';
+import { AuthenticationGuard } from './guards/authentification.guard';
+import { AdminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -27,7 +30,13 @@ export const routes: Routes = [
     component: GamePageComponent,
   },
   {
+    path: 'admin',
+    component: AdminPageComponent,
+    canActivate: [AuthenticationGuard, AdminGuard],
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',
-  },];
+  },
+];

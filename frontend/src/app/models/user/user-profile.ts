@@ -5,4 +5,5 @@ export interface UserProfile {
     firstname: string;
     email: string;
     dateOfBirth: string;
+    role?: string; // 'USER' | 'ADMIN' | 'SUPERADMIN'
 }

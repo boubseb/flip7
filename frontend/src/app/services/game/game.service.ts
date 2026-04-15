@@ -42,7 +42,6 @@ export class GameService {
    */
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token') || '';
-    console.log('🔑 GameService token:', token ? 'Present' : 'Missing');
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -65,17 +64,11 @@ export class GameService {
    */
   drawCard(roomId: string): Observable<DrawResult> {
     const url = `${this.apiUrl}/${roomId}/draw`;
-    console.log('🌐 DrawCard HTTP Request:');
-    console.log('   URL:', url);
-    console.log('   Headers:', this.getHeaders());
     
     return this.http.post<DrawResult>(
       url,
       {},
       { headers: this.getHeaders() }
-    ).pipe(
-      tap(result => console.log('✅ DrawCard response:', result)),
-      tap(null, error => console.error('❌ DrawCard error:', error))
     );
   }
 

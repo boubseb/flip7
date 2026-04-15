@@ -134,7 +134,6 @@ export class HeaderComponent {
     if (currentUrl.includes('/game/')) {
       // Empêcher la navigation si on est sur la page game
       event.preventDefault();
-      console.log('Navigation désactivée sur la page game');
       return;
     }
     
@@ -144,6 +143,15 @@ export class HeaderComponent {
     this.isStatistics = false;
     this.isHistory = false;
     this.isProfilMenuOpen = false;
+  }
+
+  isAdmin(): boolean {
+    return this.authenticationService.isAdmin();
+  }
+
+  goToAdmin(): void {
+    this.isProfilMenuOpen = false;
+    this.router.navigate(['/admin']);
   }
 
   onLogout(): void {

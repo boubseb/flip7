@@ -17,9 +17,8 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
@@ -38,8 +37,18 @@ public class Room {
     }
     
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @PrePersist
+    private void generateId() {
+        if (this.id == null || this.id.isEmpty()) {
+            String chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            java.security.SecureRandom rng = new java.security.SecureRandom();
+            StringBuilder sb = new StringBuilder(6);
+            for (int i = 0; i < 6; i++) sb.append(chars.charAt(rng.nextInt(chars.length())));
+            this.id = sb.toString();
+        }
+    }
     
     @Column(nullable = false)
     private String password;

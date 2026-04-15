@@ -3,14 +3,13 @@ import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthenticationService } from '../../services/authentication/authentification.service';
-import { FooterComponent } from '../../components/footer/footer.component';
 import { TranslateModule } from '@ngx-translate/core';
 
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, FooterComponent, TranslateModule],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss'
 })

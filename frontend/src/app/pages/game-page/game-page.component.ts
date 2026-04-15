@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -20,7 +20,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   templateUrl: './game-page.component.html',
   styleUrl: './game-page.component.scss'
 })
-export class GamePageComponent implements OnInit, OnDestroy {
+export class GamePageComponent implements OnInit, AfterViewInit, OnDestroy {
   // Popup statistiques
   showStatsPopup: boolean = false;
 
@@ -37,14 +37,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
     if (!myPlayer || !myPlayer.hand) {
       return null;
     }
-    // Cartes numérotées dans la main du joueur
+    // Cartes numérotées dans la main du joueur (exclure les barrées : carte Vie utilisée barre le doublon)
     const handValues = myPlayer.hand
-      .filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number')
+      .filter((card: any) => card.cardType === 'NUMBER' && typeof card.value === 'number' && !card.cancelled)
       .map((card: any) => card.value);
     if (handValues.length === 0) {
       return null;
     }
-    // Si déjà un doublon, proba d'élimination = 100%
+    // Si déjà un doublon (ne devrait pas arriver sauf bug), proba = 0
     const valueCounts: { [value: number]: number } = {};
     for (const v of handValues) valueCounts[v] = (valueCounts[v] || 0) + 1;
     if (Object.values(valueCounts).some(count => count >= 2)) {
@@ -56,6 +56,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
       initialDeck[v] = (v === 0 || v === 1) ? 1 : v;
     }
     // Compte les cartes numérotées visibles dans toutes les mains
+    // Compte TOUTES les cartes NUMBER visibles (y compris les barrées) : elles sont
+    // retirées du deck même si elles ne créent plus de doublon actif.
     const allHands = this.gameState.players.flatMap((p: any) => Array.isArray(p.hand) ? p.hand : []);
     const usedCount: { [value: number]: number } = {};
     allHands.forEach((card: any) => {
@@ -152,6 +154,13 @@ export class GamePageComponent implements OnInit, OnDestroy {
   showLifeCardModal: boolean = false;
   lifeCardToAssign: any = null;
 
+  // Minimized card selector (user can minimize to see the board)
+  selectorMinimized: boolean = false;
+
+  get hasPendingModal(): boolean {
+    return this.showStopCardModal || this.showDrawThreeModal || this.showLifeCardModal;
+  }
+
   // Start Round Popup
   showStartRoundPopup: boolean = false;
 
@@ -195,7 +204,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.route.params.subscribe(params => {
         const newRoomId = params['roomId'];
-        console.log('🔄 Route params changed - roomId:', newRoomId, '- previous:', this.roomId);
         
         if (!newRoomId) {
           this.router.navigate(['/room']);
@@ -206,7 +214,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         if (newRoomId !== this.roomId) {
           // Désabonner de l'ancienne room si différente
           if (this.roomId && this.roomId !== newRoomId) {
-            console.log('🔄 Unsubscribing from old room:', this.roomId);
             this.wsService.unsubscribeFromRoom(this.roomId);
           }
           
@@ -214,10 +221,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
           this.gameState = null;
           this.currentRoom = null;
           
-          console.log('📡 Loading room data for:', this.roomId);
           this.loadRoom();
         } else {
-          console.log('⏭️ Same roomId, skipping reload');
         }
       })
     );
@@ -232,18 +237,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
         this.wsConnected = connected;
         
         if (connected && !wasConnected) {
-          console.log('✅ WebSocket connected / reconnected');
           // The onConnect handler clears the subscriptions map, so we always
           // need to re-subscribe (handles both first connection and reconnection).
           if (this.roomId) {
-            console.log('📡 Subscribing to room after (re)connection:', this.roomId);
             this.wsService.subscribeToRoom(this.roomId);
             // Re-fetch game state to recover any updates missed during disconnection
             if (this.gameState) {
-              console.log('🔄 Re-fetching game state after reconnection...');
               this.gameService.getGameState(this.roomId).subscribe({
                 next: (state) => {
-                  console.log('✅ Game state refreshed after reconnection');
                   this.gameState = state;
                   if (state.players && state.currentPlayerIndex >= 0) {
                     const cp = state.players[state.currentPlayerIndex];
@@ -251,12 +252,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
                     this.isMyTurn = this.currentPlayerId === this.currentUserId;
                   }
                 },
-                error: (err) => console.warn('⚠️ Could not re-fetch game state:', err)
+                error: () => {}
               });
             }
           }
         } else if (!connected) {
-          console.warn('⚠️ WebSocket disconnected');
         }
       })
     );
@@ -264,7 +264,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to room updates (uniquement pour les changements de room, pas de gameState)
     this.subscriptions.push(
       this.wsService.roomUpdates$.subscribe(room => {
-        console.log('🔄 Room update received (not game state)');
         this.currentRoom = room;
         // Ne pas appeler updateRoomState() ici car ça peut causer des refresh
       })
@@ -273,19 +272,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to game starts
     this.subscriptions.push(
       this.wsService.gameStarts$.subscribe(room => {
-        console.log('🎮 Game started event received:', room);
         this.currentRoom = room;
         
         // Récupérer immédiatement l'état du jeu pour avoir les cartes initiales
-        console.log('📡 Fetching initial game state...');
         this.gameService.getGameState(this.roomId).subscribe({
           next: (gameState) => {
-            console.log('✅ Initial game state received:', gameState);
-            console.log('🔎 statisticsEnabled:', gameState.statisticsEnabled);
             this.gameState = gameState;
             if (gameState.players && gameState.players.length > 0) {
               gameState.players.forEach((p: any) => {
-                console.log(`   - ${p.username}: ${p.hand?.length || 0} cards`);
               });
               if (gameState.currentPlayerIndex >= 0) {
                 const currentPlayer = gameState.players[gameState.currentPlayerIndex];
@@ -294,7 +288,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
               }
             }
           },
-          error: (err) => console.error('❌ Error fetching game state:', err)
+          error: () => {}
         });
       })
     );
@@ -302,7 +296,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to game over
     this.subscriptions.push(
       this.wsService.gameOver$.subscribe((data: any) => {
-        console.log('🏁 Game over event received:', data);
         this.prepareGameOverData(data);
         // Notifier le composant statistiques pour qu'il se recharge
         this.statisticsService.notifyGameEnded();
@@ -312,7 +305,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to game restarted
     this.subscriptions.push(
       this.wsService.gameRestarted$.subscribe(data => {
-        console.log('🔄 Game restarted event received:', data);
         this.showGameOverPopup = false;
 
         // Pour les non-admins : rejoindre automatiquement la room remise à zéro
@@ -320,7 +312,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         if (!this.isAdmin) {
           this.roomService.rejoinAfterRestart(this.roomId).subscribe({
             next: () => {
-              console.log('✅ Rejoint la room après restart');
               this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
             },
             error: () => {
@@ -339,7 +330,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to turn updates (on ignore, on utilisera gameStateUpdates$ à la place)
     this.subscriptions.push(
       this.wsService.turnUpdates$.subscribe(update => {
-        console.log('🔄 Turn update received (ignored, using gameStateUpdates$ instead)');
         // Ne rien faire, on attend le gameStateUpdate
       })
     );
@@ -347,12 +337,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Subscribe to game state updates
     this.subscriptions.push(
       this.wsService.gameStateUpdates$.subscribe(response => {
-        console.log('🎮 Game state update received:', response);
-        console.log('   - Game State:', response.gameState);
-        console.log('   - Players:', response.players);
         if (response.players && response.players.length > 0) {
           response.players.forEach((p: any) => {
-            console.log(`   - ${p.username}: ${p.hand?.length || 0} cards, score: ${p.roundScore}`);
           });
         }
         
@@ -364,7 +350,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
           const previousPlayerId = this.currentPlayerId;
           this.currentPlayerId = currentPlayer.userId;
           this.isMyTurn = this.currentPlayerId === this.currentUserId;
-          console.log('🎯 Current player:', this.currentPlayerId, '- My turn:', this.isMyTurn);
           
           // (no turn-change notification)
         }
@@ -373,9 +358,7 @@ export class GamePageComponent implements OnInit, OnDestroy {
         // On ne montre PLUS le popup, le bouton est directement dans le game footer
         if (response.gameState === 'WAITING_NEXT_ROUND') {
           if (this.isMyTurn) {
-            console.log('⏳ Waiting for next round - YOUR turn to start');
           } else {
-            console.log('⏳ Waiting for next round - waiting for', this.getCurrentPlayerUsername());
           }
           // Ne plus afficher le popup
           this.showStartRoundPopup = false;
@@ -385,34 +368,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
         // Détecter l'état GAME_OVER pour afficher le popup de fin de partie
         if (response.gameState === 'GAME_OVER') {
-          console.log('🏆 Game Over detected - preparing rankings');
           this.prepareGameOverData(response);
         }
 
-        // DEBUG: Afficher la réponse complète
-        console.log('📦 Full response received:', {
-          pendingSpecialCards: response.pendingSpecialCards,
-          currentUserId: this.currentUserId,
-          gameState: response.gameState
-        });
-
         // Détecter si le joueur actuel a des cartes spéciales en attente d'assignation
-        // Utiliser la queue pendingSpecialCards au lieu de chercher dans la main
         if (response.pendingSpecialCards && response.pendingSpecialCards.length > 0) {
-          console.log('🔍 Checking pending special cards queue:', response.pendingSpecialCards);
-          console.log('🔍 Current modals state - Stop:', this.showStopCardModal, 'DrawThree:', this.showDrawThreeModal);
-          console.log('🔍 Current user ID:', this.currentUserId);
-          
-          // DEBUG: Afficher chaque carte en attente
-          response.pendingSpecialCards.forEach((pending: any, index: number) => {
-            console.log(`   📋 Card ${index}:`, {
-              type: pending.specialType,
-              sourcePlayerId: pending.sourcePlayerId,
-              targetPlayerId: pending.targetPlayerId,
-              remainingForcedDraws: pending.remainingForcedDraws,
-              isForMe: pending.sourcePlayerId === this.currentUserId
-            });
-          });
           
           // Chercher une carte STOP en attente pour le joueur actuel
           const pendingStopCard = response.pendingSpecialCards.find((pending: any) => 
@@ -422,7 +382,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
           );
           
           if (pendingStopCard && !this.showStopCardModal) {
-            console.log('🛑 Pending Stop card detected in queue - showing player selection');
             // Créer un objet carte compatible avec showStopCardSelection
             const card = { id: pendingStopCard.cardId, specialType: pendingStopCard.specialType };
             this.showStopCardSelection(card);
@@ -435,10 +394,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
             pending.specialType === 'DRAW_THREE'
           );
           
-          console.log('🔍 Pending DrawThree card found in queue?', pendingDrawThreeCard);
           
           if (pendingDrawThreeCard && !this.showDrawThreeModal) {
-            console.log('➕3️⃣ Pending DrawThree card detected in queue - showing player selection');
             // Créer un objet carte compatible avec showDrawThreeCardSelection
             const card = { id: pendingDrawThreeCard.cardId, specialType: pendingDrawThreeCard.specialType };
             this.showDrawThreeCardSelection(card);
@@ -452,14 +409,22 @@ export class GamePageComponent implements OnInit, OnDestroy {
               pending.specialType === 'LIFE'
             );
             if (pendingLifeCard && !this.showLifeCardModal) {
-              console.log('❤️ Pending Life card detected in queue - showing teammate selection');
               this.lifeCardToAssign = { id: pendingLifeCard.cardId, specialType: 'LIFE' };
+              this.selectorMinimized = false;
               this.showLifeCardModal = true;
             }
           }
         }
       })
     );
+  }
+
+  ngAfterViewInit(): void {
+    // Force un recalcul du layout sur iOS Safari où le viewport peut être mal calculé au chargement
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 500);
+    }
   }
 
   ngOnDestroy(): void {
@@ -471,16 +436,11 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   loadRoom(): void {
-    console.log('🔍 Loading room:', this.roomId);
     this.roomService.getRoom(this.roomId).subscribe({
       next: (room) => {
-        console.log('✅ Room loaded:', room);
-        console.log('Current user:', this.currentUserId);
-        console.log('Players in room:', room.players);
         
         // Check if user is part of the room
         if (!room.players.includes(this.currentUserId)) {
-          console.warn('❌ User not in room');
           this.showError('game.errors.notInRoom');
           setTimeout(() => this.router.navigate(['/room']), 2000);
           return;
@@ -491,12 +451,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
         
         // Redirect to room-page if game not started yet
         if (room.status !== RoomStatus.IN_GAME && room.status !== RoomStatus.FINISHED) {
-          console.log('⚠️ Game not started yet, redirecting to room-page');
           this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
           return;
         }
         
-        console.log('✅ Game in progress, displaying game view');
 
         // If the WS is already connected (e.g. the connection resolved before this
         // HTTP response came back), ensure the room subscriptions are registered now.
@@ -504,47 +462,28 @@ export class GamePageComponent implements OnInit, OnDestroy {
         // completes would skip subscribeToRoom because connectionStatus$ fires with
         // this.roomId not yet confirmed as a valid in-game room.
         if (this.wsService.isConnected()) {
-          console.log('📡 WS already connected — ensuring room subscriptions are active');
           this.wsService.subscribeToRoom(this.roomId);
         }
 
         // Si le jeu est déjà en cours, récupérer l'état actuel pour reconnexion (une seule fois)
         if (!this.gameState) {
-          console.log('📡 Fetching current game state for reconnection...');
           this.gameService.getGameState(this.roomId).subscribe({
             next: (gameState) => {
-              console.log('✅ Game state received for reconnection:', gameState);
               this.gameState = gameState;
               
               if (gameState.players && gameState.players.length > 0) {
                 gameState.players.forEach((p: any) => {
-                  console.log(`   - ${p.username}: ${p.hand?.length || 0} cards, status: ${p.status}, score: ${p.roundScore}/${p.totalScore}`);
                 });
                 
                 if (gameState.currentPlayerIndex >= 0) {
                   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
                   this.currentPlayerId = currentPlayer.userId;
                   this.isMyTurn = this.currentPlayerId === this.currentUserId;
-                  console.log('🎯 Current player:', currentPlayer.username, '- My turn:', this.isMyTurn);
                 }
                 
                 // Vérifier si on a des cartes pending à assigner (Stop/DrawThree)
                 // Utiliser la queue pendingSpecialCards au lieu de chercher dans la main
                 if (gameState.pendingSpecialCards && gameState.pendingSpecialCards.length > 0) {
-                  console.log('🔍 Checking pending special cards on reconnection:', gameState.pendingSpecialCards);
-                  console.log('🔍 Current user ID on reconnection:', this.currentUserId);
-                  
-                  // DEBUG: Afficher chaque carte en attente
-                  gameState.pendingSpecialCards.forEach((pending: any, index: number) => {
-                    console.log(`   📋 Reconnection Card ${index}:`, {
-                      type: pending.specialType,
-                      sourcePlayerId: pending.sourcePlayerId,
-                      targetPlayerId: pending.targetPlayerId,
-                      remainingForcedDraws: pending.remainingForcedDraws,
-                      isForMe: pending.sourcePlayerId === this.currentUserId
-                    });
-                  });
-                  
                   const pendingStopCard = gameState.pendingSpecialCards.find((pending: any) => 
                     pending.sourcePlayerId === this.currentUserId &&
                     !pending.targetPlayerId &&
@@ -552,7 +491,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                   );
                   
                   if (pendingStopCard && !this.showStopCardModal) {
-                    console.log('🛑 Pending Stop card detected on reconnection');
                     const card = { id: pendingStopCard.cardId, specialType: pendingStopCard.specialType };
                     this.showStopCardSelection(card);
                   }
@@ -564,7 +502,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                   );
                   
                   if (pendingDrawThreeCard && !this.showDrawThreeModal) {
-                    console.log('➕3️⃣ Pending DrawThree card detected on reconnection');
                     const card = { id: pendingDrawThreeCard.cardId, specialType: pendingDrawThreeCard.specialType };
                     this.showDrawThreeCardSelection(card);
                   }
@@ -577,7 +514,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
                       pending.specialType === 'LIFE'
                     );
                     if (pendingLifeCard && !this.showLifeCardModal) {
-                      console.log('❤️ Pending Life card detected on reconnection');
                       this.lifeCardToAssign = { id: pendingLifeCard.cardId, specialType: 'LIFE' };
                       this.showLifeCardModal = true;
                     }
@@ -586,18 +522,15 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
                 // Vérifier si on est en état WAITING_NEXT_ROUND
                 if (gameState.gameState === 'WAITING_NEXT_ROUND') {
-                  console.log('⏳ Reconnected during WAITING_NEXT_ROUND state');
                   // Le bouton est maintenant dans le game footer, pas besoin de popup
                   this.showStartRoundPopup = false;
                 }
               }
             },
             error: (err) => {
-              console.error('❌ Error fetching game state:', err);
               
               // Si erreur 400, c'est que la partie n'existe plus (backend redémarré ou partie terminée)
               if (err.status === 400) {
-                console.warn('⚠️ Game not found - redirecting to room page');
                 this.showError('game.errors.gameNotFoundAfterRestart');
                 setTimeout(() => this.router.navigate(['/room']), 3000);
               } else {
@@ -606,11 +539,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
             }
           });
         } else {
-          console.log('⏭️ Game state already loaded, skipping fetch');
         }
       },
       error: (error) => {
-        console.error('❌ Error loading room:', error);
         this.showError('game.errors.roomNotFound');
         setTimeout(() => this.router.navigate(['/room']), 2000);
       }
@@ -618,62 +549,44 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   onPlayerAction(action: any): void {
-    console.log('🎯 Player action received:', action);
-    console.log('   - roomId:', this.roomId);
-    console.log('   - isMyTurn:', this.isMyTurn);
     
     if (!this.roomId) {
-      console.error('❌ No roomId!');
       return;
     }
     
     // Temporairement: permettre l'action même si ce n'est pas notre tour (pour debug)
     if (!this.isMyTurn) {
-      console.warn('⚠️ Not your turn, but allowing action for debugging');
     }
     
     if (action.action === 'REVEAL') {
       // Joueur clique sur "Hit" - Tirer une carte
-      console.log('🎲 Calling drawCard API...');
       this.gameService.drawCard(this.roomId).subscribe({
         next: (result) => {
-          console.log('🃏 Card drawn:', result);
-          console.log('   - needsStopAssignment:', result.needsStopAssignment);
-          console.log('   - card:', result.card);
           
           if (result.needsStopAssignment && result.card) {
             // Carte Stop ou DrawThree piochée - afficher la sélection de joueur
             const cardData = result.card as any;
-            console.log('🎴 Card needs assignment, cardType:', cardData.cardType);
             
             // Le backend retourne "cardType" au lieu de "type"
             if (cardData.cardType === 'SPECIAL' || cardData.type === 'SPECIAL') {
-              console.log('   Special type:', cardData.specialType);
               if (cardData.specialType === 'STOP') {
-                console.log('🛑 Stop card drawn - showing player selection');
                 this.showStopCardSelection(result.card);
               } else if (cardData.specialType === 'DRAW_THREE') {
-                console.log('➕3️⃣ DrawThree card drawn - showing player selection');
                 this.showDrawThreeCardSelection(result.card);
               } else {
-                console.warn('⚠️ Unknown special type:', cardData.specialType);
               }
             } else {
-              console.warn('⚠️ needsStopAssignment but card is not SPECIAL:', cardData);
             }
           } else if (result.eliminated) {
             // Message supprimé - déjà affiché dans le footer avec getPlayerStatusMessage()
           } else if (result.lifeUsed) {
-            console.log('⚡ Carte Vie utilisée automatiquement');
           } else if (result.roundEnded) {
-            console.log('🎯 FLIP7 ! 7 cartes numérotées différentes ! Le round s\'arrête et vous gagnez +15 points !');
             this.showFlip7CelebrationPopup();
           }
           
           // L'état sera mis à jour via WebSocket
         },
         error: (error) => {
-          console.error('❌ Error drawing card:', error);
           this.showError('Erreur lors de la pioche');
         }
       });
@@ -681,11 +594,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
       // Joueur clique sur "Stop"
       this.gameService.stopDrawing(this.roomId).subscribe({
         next: () => {
-          console.log('✋ Stopped drawing');
           // L'état sera mis à jour via WebSocket
         },
         error: (error) => {
-          console.error('❌ Error stopping:', error);
           this.showError('Erreur lors de l\'arrêt');
         }
       });
@@ -701,18 +612,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
 
   private updateRoomState(): void {
     if (!this.currentRoom) {
-      console.warn('⚠️ updateRoomState called but currentRoom is null');
       return;
     }
     
     this.isAdmin = this.currentRoom.adminId === this.currentUserId;
     this.isMyTurn = this.currentRoom.currentPlayerId === this.currentUserId;
     
-    console.log('🔄 Room state updated:');
-    console.log('  - isAdmin:', this.isAdmin);
-    console.log('  - isMyTurn:', this.isMyTurn);
-    console.log('  - players count:', this.currentRoom.players.length);
-    console.log('  - room status:', this.currentRoom.status);
   }
 
   showError(message: string): void {
@@ -889,54 +794,37 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Tire une carte (Hit)
    */
   drawCard(): void {
-    console.log('🎲 drawCard() called');
-    console.log('   - roomId:', this.roomId);
-    console.log('   - isMyTurn:', this.isMyTurn);
     
     if (!this.roomId) {
-      console.error('❌ No roomId!');
       return;
     }
     
     if (!this.isMyTurn) {
-      console.warn('⚠️ Not your turn!');
       this.showError('Ce n\'est pas votre tour');
       return;
     }
     
-    console.log('🎲 Calling drawCard API...');
     this.gameService.drawCard(this.roomId).subscribe({
       next: (result) => {
-        console.log('🃏 Card drawn:', result);
-        console.log('   - needsStopAssignment:', result.needsStopAssignment);
-        console.log('   - card:', result.card);
         
         if (result.needsStopAssignment && result.card) {
           // Carte Stop ou DrawThree piochée - afficher la sélection de joueur
           const cardData = result.card as any;
-          console.log('🎴 Card needs assignment, cardType:', cardData.cardType);
           
           // Le backend retourne "cardType" au lieu de "type"
           if (cardData.cardType === 'SPECIAL' || cardData.type === 'SPECIAL') {
-            console.log('   Special type:', cardData.specialType);
             if (cardData.specialType === 'STOP') {
-              console.log('🛑 Stop card drawn - showing player selection');
               this.showStopCardSelection(result.card);
             } else if (cardData.specialType === 'DRAW_THREE') {
-              console.log('➕3️⃣ DrawThree card drawn - showing player selection');
               this.showDrawThreeCardSelection(result.card);
             } else {
-              console.warn('⚠️ Unknown special type:', cardData.specialType);
             }
           } else {
-            console.warn('⚠️ needsStopAssignment but card is not SPECIAL:', cardData);
           }
         } else if (result.eliminated) {
           // Message supprimé - déjà affiché dans le footer avec getPlayerStatusMessage()
         } else if (result.lifeUsed) {
-          console.log('⚡ Carte Vie utilisée automatiquement');
         } else if (result.roundEnded) {
-          console.log('🎯 FLIP7 ! 7 cartes numérotées différentes ! Le round s\'arrête et vous gagnez +15 points !');
           this.showFlip7CelebrationPopup();
         }
         
@@ -957,7 +845,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ Error drawing card:', error);
         this.showError('Erreur lors de la pioche');
       }
     });
@@ -967,22 +854,18 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Arrête de tirer des cartes (Stop)
    */
   stopDrawing(): void {
-    console.log('✋ stopDrawing() called');
     
     if (!this.roomId) {
-      console.error('❌ No roomId!');
       return;
     }
     
     if (!this.isMyTurn) {
-      console.warn('⚠️ Not your turn!');
       this.showError('Ce n\'est pas votre tour');
       return;
     }
     
     this.gameService.stopDrawing(this.roomId).subscribe({
       next: () => {
-        console.log('✋ Stopped drawing');
         if (!this.wsService.isConnected()) {
           this.gameService.getGameState(this.roomId).subscribe({
             next: (state) => {
@@ -998,7 +881,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ Error stopping:', error);
         this.showError('Erreur lors de l\'arrêt');
       }
     });
@@ -1019,27 +901,21 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Ouvre le modal de sélection de joueur pour la carte Stop
    */
   showStopCardSelection(card: any): void {
-    console.log('🛑 Opening Stop card selection modal');
-    console.log('   - Card object:', card);
-    console.log('   - Card ID:', card?.id);
-    console.log('   - Card type:', card?.cardType || card?.type);
-    console.log('   - Card specialType:', card?.specialType);
     
     // Définir la carte AVANT de vérifier l'auto-assignation
     this.stopCardToAssign = card;
     
     // Vérifier combien de joueurs sont assignables (non éliminés, non stopped)
     const assignablePlayers = this.getAssignablePlayers();
-    console.log('👥 Joueurs assignables:', assignablePlayers.length);
     
     // Si un seul joueur assignable (le joueur actuel), auto-assigner
     if (assignablePlayers.length === 1) {
-      console.log('⚠️ JOUEUR SEUL - Auto-assignation à soi-même');
       this.assignStopToPlayer(this.currentUserId);
       return;
     }
     
     // Sinon, afficher le modal
+    this.selectorMinimized = false;
     this.showStopCardModal = true;
   }
 
@@ -1047,10 +923,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Assigne la carte Stop au joueur sélectionné
    */
   assignStopToPlayer(playerId: string): void {
-    console.log('🛑 assignStopToPlayer called');
-    console.log('   - stopCardToAssign:', this.stopCardToAssign);
-    console.log('   - stopCardToAssign.id:', this.stopCardToAssign?.id);
-    console.log('   - playerId:', playerId);
     
     if (!this.stopCardToAssign) {
       this.showError('Aucune carte Stop à assigner');
@@ -1058,12 +930,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
 
     if (!this.stopCardToAssign.id) {
-      console.error('❌ Card ID is missing!', this.stopCardToAssign);
       this.showError('Erreur: ID de carte manquant');
       return;
     }
 
-    console.log('🛑 Calling gameService.assignStopCard...');
     
     this.gameService.assignStopCard(
       this.roomId, 
@@ -1071,7 +941,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
       playerId
     ).subscribe({
       next: (result) => {
-        console.log('✅ Stop card assigned successfully:', result);
         this.closeStopCardModal();
         if (!this.wsService.isConnected()) {
           this.gameService.getGameState(this.roomId).subscribe({
@@ -1088,7 +957,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('❌ Error assigning Stop card:', error);
         this.showError('Erreur lors de l\'assignation de la carte Stop');
       }
     });
@@ -1106,23 +974,21 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Affiche le modal de sélection de joueur pour la carte DrawThree
    */
   showDrawThreeCardSelection(card: any): void {
-    console.log('➕3️⃣ Opening DrawThree card selection modal', card);
     
     // Définir la carte AVANT de vérifier l'auto-assignation
     this.drawThreeCardToAssign = card;
     
     // Vérifier combien de joueurs sont assignables (non éliminés, non stopped)
     const assignablePlayers = this.getAssignablePlayers();
-    console.log('👥 Joueurs assignables:', assignablePlayers.length);
     
     // Si un seul joueur assignable (le joueur actuel), auto-assigner
     if (assignablePlayers.length === 1) {
-      console.log('⚠️ JOUEUR SEUL - Auto-assignation à soi-même');
       this.assignDrawThreeToPlayer(this.currentUserId);
       return;
     }
     
     // Sinon, afficher le modal
+    this.selectorMinimized = false;
     this.showDrawThreeModal = true;
   }
   
@@ -1132,7 +998,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
    */
   private getAssignablePlayers(): any[] {
     if (!this.gameState || !this.gameState.players) {
-      console.log('⚠️ getAssignablePlayers: Pas de gameState ou players');
       return [];
     }
     
@@ -1140,11 +1005,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
       const isAssignable = player.status !== 'ELIMINATED' && 
                            player.status !== 'STOPPED' && 
                            player.status !== 'FORCED_STOP';
-      console.log(`   - ${player.username} (${player.status}): ${isAssignable ? '✅ Assignable' : '❌ Non assignable'}`);
       return isAssignable;
     });
     
-    console.log(`📊 Total joueurs assignables: ${assignable.length}`);
     return assignable;
   }
 
@@ -1157,7 +1020,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('➕3️⃣ Assigning DrawThree card to player:', playerId);
     
     this.gameService.assignDrawThreeCard(
       this.roomId, 
@@ -1165,11 +1027,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
       playerId
     ).subscribe({
       next: (result) => {
-        console.log('✅ DrawThree card assigned successfully:', result);
         this.closeDrawThreeModal();
       },
       error: (error) => {
-        console.error('❌ Error assigning DrawThree card:', error);
         this.showError('Erreur lors de l\'assignation de la carte DrawThree');
       }
     });
@@ -1184,7 +1044,8 @@ export class GamePageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Retourne les coéquipiers éligibles à recevoir la carte Vie (mode équipe)
+   * Retourne les coéquipiers éligibles à recevoir la carte Vie (mode équipe).
+   * Inclut le joueur lui-même (il peut garder la carte Vie).
    */
   get eligibleLifeTargets(): any[] {
     if (!this.lifeCardToAssign || !this.gameState?.players) return [];
@@ -1193,7 +1054,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
     const myTeamId = myPlayer.teamId;
     return this.gameState.players.filter((p: any) =>
       p.teamId === myTeamId &&
-      p.userId !== this.currentUserId &&
       (p.status === 'PLAYING' || p.status === 'STOPPED')
     );
   }
@@ -1208,12 +1068,10 @@ export class GamePageComponent implements OnInit, OnDestroy {
     }
     this.gameService.assignLifeCard(this.roomId, this.lifeCardToAssign.id, targetPlayerId).subscribe({
       next: (result) => {
-        console.log('✅ Life card assigned to teammate:', result);
         this.showLifeCardModal = false;
         this.lifeCardToAssign = null;
       },
       error: (error) => {
-        console.error('❌ Error assigning Life card:', error);
         this.showError('Erreur lors du transfert de la carte Vie');
       }
     });
@@ -1228,15 +1086,12 @@ export class GamePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('🚀 Starting next round...');
     
     this.gameService.startNextRound(this.roomId).subscribe({
       next: (result) => {
-        console.log('✅ Round started:', result);
         this.showStartRoundPopup = false;
       },
       error: (error) => {
-        console.error('❌ Error starting round:', error);
         this.showError('Erreur lors du démarrage du round');
       }
     });
@@ -1277,18 +1132,14 @@ export class GamePageComponent implements OnInit, OnDestroy {
     // Afficher la popup
     this.showGameOverPopup = true;
 
-    console.log('🏆 Game Over Rankings:', this.gameOverRankings);
-    console.log('👑 Winner:', this.gameOverWinner);
   }
 
   /**
    * Gère le clic sur "Rejouer"
    */
     onPlayAgain() {
-      console.log('🔄 Play again requested');
 
       if (!this.roomId) {
-        console.error('❌ No room ID available');
         return;
       }
 
@@ -1298,11 +1149,9 @@ export class GamePageComponent implements OnInit, OnDestroy {
         // Admin triggers backend reset
         this.gameService.restartGame(this.roomId).subscribe({
           next: () => {
-            console.log('✅ Room reset via backend');
             this.router.navigate(['/room'], { queryParams: { mode: 'waiting', roomId: this.roomId } });
           },
           error: (error) => {
-            console.error('❌ Error resetting room:', error);
             this.showError('Erreur lors de la réinitialisation de la salle');
           }
         });
@@ -1350,7 +1199,6 @@ export class GamePageComponent implements OnInit, OnDestroy {
    * Gère le clic sur "Quitter la salle"
    */
   onLeaveRoom(): void {
-    console.log('🚪 Leave room requested');
     this.showGameOverPopup = false;
     this.router.navigate(['/']);
   }

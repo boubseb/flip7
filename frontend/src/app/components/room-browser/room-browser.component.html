@@ -1,65 +1,68 @@
 <div class="room-browser">
 
-  <!-- Section : Rooms ouvertes -->
-  <div class="rooms-section">
-    <div class="section-header">
-      <span class="section-title">🟢 {{ 'room.browseTab.title' | translate }}</span>
-      <button class="btn-refresh" (click)="refreshRooms()" [title]="'room.browseTab.refresh' | translate">🔄</button>
+  <!-- Sections scrollables -->
+  <div class="rooms-scroll-area">
+    <!-- Section : Rooms ouvertes -->
+    <div class="rooms-section">
+      <div class="section-header">
+        <span class="section-title">🟢 {{ 'room.browseTab.title' | translate }}</span>
+        <button class="btn-refresh" (click)="refreshRooms()" [title]="'room.browseTab.refresh' | translate">🔄</button>
+      </div>
+
+      @if (openRooms.length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">😴</span>
+          <span>{{ 'room.browseTab.noRooms' | translate }}</span>
+        </div>
+      } @else {
+        <div class="rooms-list">
+          @for (room of openRooms; track room.id) {
+            <div
+              class="room-card"
+              [class.selected]="selectedRoomId === room.id"
+              (click)="selectRoom(room.id)">
+              <div class="room-card-left">
+                <span class="room-id">{{ room.id | slice:0:8 }}…</span>
+                <span class="room-players">👥 {{ room.currentPlayers }} / {{ room.maxPlayers }}</span>
+              </div>
+              <div class="room-card-right">
+                <span class="room-score">🎯 {{ room.targetScore ?? 200 }} pts</span>
+                <span class="badge waiting">{{ 'room.status.waiting' | translate }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
 
-    @if (openRooms.length === 0) {
-      <div class="empty-state">
-        <span class="empty-icon">😴</span>
-        <span>{{ 'room.browseTab.noRooms' | translate }}</span>
-      </div>
-    } @else {
-      <div class="rooms-list">
-        @for (room of openRooms; track room.id) {
-          <div
-            class="room-card"
-            [class.selected]="selectedRoomId === room.id"
-            (click)="selectRoom(room.id)">
-            <div class="room-card-left">
-              <span class="room-id">{{ room.id | slice:0:8 }}…</span>
-              <span class="room-players">👥 {{ room.currentPlayers }} / {{ room.maxPlayers }}</span>
+    <!-- Section : Mes rooms (déjà dedans) -->
+    @if (myRooms.length > 0) {
+      <div class="rooms-section">
+        <div class="section-header">
+          <span class="section-title">👤 Mes parties</span>
+        </div>
+        <div class="rooms-list">
+          @for (room of myRooms; track room.id) {
+            <div
+              class="room-card my-room"
+              [class.selected]="selectedRoomId === room.id"
+              (click)="selectRoom(room.id)">
+              <div class="room-card-left">
+                <span class="room-id">{{ room.id | slice:0:8 }}…</span>
+                <span class="room-players">👥 {{ room.currentPlayers }} / {{ room.maxPlayers }}</span>
+              </div>
+              <div class="room-card-right">
+                <span class="room-score">🎯 {{ room.targetScore ?? 200 }} pts</span>
+                <span class="badge" [class]="room.status.toLowerCase()">{{ room.status }}</span>
+              </div>
             </div>
-            <div class="room-card-right">
-              <span class="room-score">🎯 {{ room.targetScore ?? 200 }} pts</span>
-              <span class="badge waiting">{{ 'room.status.waiting' | translate }}</span>
-            </div>
-          </div>
-        }
+          }
+        </div>
       </div>
     }
   </div>
 
-  <!-- Section : Mes rooms (déjà dedans) -->
-  @if (myRooms.length > 0) {
-    <div class="rooms-section">
-      <div class="section-header">
-        <span class="section-title">👤 Mes parties</span>
-      </div>
-      <div class="rooms-list">
-        @for (room of myRooms; track room.id) {
-          <div
-            class="room-card my-room"
-            [class.selected]="selectedRoomId === room.id"
-            (click)="selectRoom(room.id)">
-            <div class="room-card-left">
-              <span class="room-id">{{ room.id | slice:0:8 }}…</span>
-              <span class="room-players">👥 {{ room.currentPlayers }} / {{ room.maxPlayers }}</span>
-            </div>
-            <div class="room-card-right">
-              <span class="room-score">🎯 {{ room.targetScore ?? 200 }} pts</span>
-              <span class="badge" [class]="room.status.toLowerCase()">{{ room.status }}</span>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  }
-
-  <!-- Formulaire rejoindre -->
+  <!-- Formulaire rejoindre (épinglé en bas) -->
   <div class="join-form">
     <div class="form-row">
       <div class="input-wrap">

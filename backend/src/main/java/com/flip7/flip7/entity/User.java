@@ -36,7 +36,10 @@ public class User {
 
     @Column(unique=true)
     private String email;
-    
+
+    @Column(nullable = false)
+    private String role = "USER"; // USER | ADMIN | SUPERADMIN
+
     // --- Getters & setters ---
     public String getId() {
         return id;
@@ -94,6 +97,11 @@ public class User {
         this.email = email;
     }
 
+    public String getRole() {
+        return role == null ? "USER" : role;
+    }
 
-
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

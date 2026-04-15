@@ -33,13 +33,12 @@ export class ProfilComponent implements OnInit {
 
   initForms(): void {
     this.profileForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      birthDate: ['', Validators.required],
+      pseudo: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]]
     });
 
     this.passwordForm = this.fb.group({
+      currentPassword: ['', [Validators.required]],
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required, Validators.minLength(6)]]
     }, { validators: this.passwordMatchValidator });
@@ -57,32 +56,16 @@ export class ProfilComponent implements OnInit {
   }
 
   loadUserData(): void {
-    console.log('=== Loading user profile ===');
     this.isLoading = true;
     this.userService.getUserProfile().subscribe({
       next: (user) => {
-        console.log('User profile received:', user);
-        console.log('User firstname:', user.firstname);
-        console.log('User lastname:', user.lastname);
-        console.log('User dateOfBirth:', user.dateOfBirth);
-        console.log('User email:', user.email);
-        
         this.profileForm.patchValue({
-          firstName: user.firstname,
-          lastName: user.lastname,
-          birthDate: user.dateOfBirth,
+          pseudo: user.pseudo || user.firstname || '',
           email: user.email
         });
         this.isLoading = false;
-        console.log('Form patched successfully');
       },
       error: (error) => {
-        console.error('=== Error loading user data ===');
-        console.error('Error object:', error);
-        console.error('Error status:', error.status);
-        console.error('Error message:', error.message);
-        console.error('Error body:', error.error);
-        
         this.errorMessage = this.translate.instant('profile.errors.loadData') + ': ' + (error.error?.message || error.message);
         this.isLoading = false;
         setTimeout(() => this.errorMessage = '', 5000);
@@ -93,11 +76,12 @@ export class ProfilComponent implements OnInit {
   onUpdateProfile(): void {
     if (this.profileForm.valid) {
       this.isLoading = true;
+      const pseudo = this.profileForm.value.pseudo;
       const profileData = {
-        firstname: this.profileForm.value.firstName,
-        lastname: this.profileForm.value.lastName,
+        firstname: pseudo,
+        lastname: pseudo,
         email: this.profileForm.value.email,
-        dateOfBirth: this.profileForm.value.birthDate
+        dateOfBirth: '2000-01-01'
       };
 
       this.userService.updateProfile(profileData).subscribe({
@@ -107,7 +91,6 @@ export class ProfilComponent implements OnInit {
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
-          console.error('Error updating profile:', error);
           this.errorMessage = this.translate.instant('profile.errors.updateProfile');
           this.isLoading = false;
           setTimeout(() => this.errorMessage = '', 3000);
@@ -119,9 +102,9 @@ export class ProfilComponent implements OnInit {
   onChangePassword(): void {
     if (this.passwordForm.valid) {
       this.isLoading = true;
-      const newPassword = this.passwordForm.value.newPassword;
+      const { currentPassword, newPassword } = this.passwordForm.value;
 
-      this.userService.changePassword(newPassword).subscribe({
+      this.userService.changePassword(currentPassword, newPassword).subscribe({
         next: (response) => {
           this.successMessage = this.translate.instant('profile.success.changePassword');
           this.passwordForm.reset();
@@ -129,8 +112,7 @@ export class ProfilComponent implements OnInit {
           setTimeout(() => this.successMessage = '', 3000);
         },
         error: (error) => {
-          console.error('Error changing password:', error);
-          this.errorMessage = this.translate.instant('profile.errors.changePassword');
+          this.errorMessage = error.error?.message || this.translate.instant('profile.errors.changePassword');
           this.isLoading = false;
           setTimeout(() => this.errorMessage = '', 3000);
         }
@@ -148,7 +130,6 @@ export class ProfilComponent implements OnInit {
           this.router.navigateByUrl('/');
         },
         error: (error) => {
-          console.error('Error deleting account:', error);
           this.errorMessage = this.translate.instant('profile.errors.deleteAccount');
           this.isLoading = false;
           setTimeout(() => this.errorMessage = '', 3000);

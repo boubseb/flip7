@@ -64,6 +64,19 @@ export interface TeamInfo {
 }
 
 /**
+ * Événement d'une carte spéciale (historique en partie)
+ */
+export interface SpecialCardEvent {
+  type: 'STOP' | 'DRAW_THREE' | 'LIFE';
+  sourcePlayerId: string;
+  sourceName: string;
+  targetPlayerId: string;
+  targetName: string;
+  round: number;
+  timestamp: string; // ISO-8601
+}
+
+/**
  * État complet du jeu
  */
 export interface GameStateResponse {
@@ -78,6 +91,7 @@ export interface GameStateResponse {
   teamMode?: boolean;
   winningTeamId?: number;
   teams?: { [teamId: number]: TeamInfo };
+  eventLog?: SpecialCardEvent[];
 }
 
 /**

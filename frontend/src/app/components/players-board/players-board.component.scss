@@ -18,7 +18,8 @@
     box-sizing: border-box;
     gap: 1rem;
     min-height: 0; // Important pour le flex
-    // PAS de overflow: hidden ici ! Sinon les plateaux sont coupés
+    overflow-y: auto; // Scroll global pour le mode équipe
+    overflow-x: hidden;
 
     .round-navigation {
         flex-shrink: 0; // Ne se comprime pas
@@ -150,9 +151,9 @@
 
     // ─── Team sections ───
     .team-section {
-        margin-bottom: 0.75rem;
+        flex-shrink: 0; // Ne pas comprimer dans le scroll global
         border-radius: 10px;
-        overflow: hidden;
+        overflow: visible; // Permet l'expansion des plateaux
 
         &.team-border-1 { border-left: 4px solid #3b82f6; }
         &.team-border-2 { border-left: 4px solid #ef4444; }
@@ -167,21 +168,33 @@
             background: var(--bg-secondary);
             font-size: 0.8rem;
             font-weight: 700;
+            border-radius: 10px 10px 0 0;
 
             .team-name { color: var(--text-primary); }
             .team-score { color: #a78bfa; font-size: 0.75rem; }
         }
+
+        .players-list {
+            flex: none; // En mode équipe : hauteur naturelle, pas de flex: 1
+            min-height: 0;
+            overflow-y: visible; // Le scroll est géré par .players-board
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
     }
 
-    .players-list {
+    // players-list en mode solo (direct dans .players-board)
+    > .players-list {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
         flex: 1;
         min-height: 0;
-        overflow-y: auto;
+        overflow-y: visible; // Le parent .players-board gère le scroll
         overflow-x: hidden;
-        padding-bottom: 20px; // Petit espace seulement
+        padding-bottom: 20px;
 
         @media (max-width: 768px) {
             padding-bottom: 20px;
@@ -279,6 +292,20 @@
                 display: flex;
                 align-items: center;
                 gap: 0.5rem;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+
+                .badge-pending {
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    padding: 0.1rem 0.3rem;
+                    border-radius: 6px;
+                    background: rgba(239, 68, 68, 0.15);
+                    border: 1px solid rgba(239, 68, 68, 0.3);
+                    color: #ef4444;
+                    animation: pulse 1.5s infinite;
+                    white-space: nowrap;
+                }
 
                 .player-score-safe {
                     font-weight: 600;
@@ -301,7 +328,7 @@
         }
 
         .player-content {
-            padding: 0 1rem 1rem 1rem;
+            padding: 0.75rem 1rem 1rem 1rem;
             border-top: 1px solid var(--border-color);
             background: var(--bg-secondary);
             animation: slideDown 0.2s ease;
@@ -403,5 +430,98 @@
     to {
         opacity: 1;
         max-height: 500px;
+    }
+}
+
+// ── Event log (historique cartes spéciales) ───────────────────────────────────
+
+.event-log {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.25rem 0;
+    min-height: 0;
+}
+
+.event-log-empty {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    padding: 2rem 0;
+    font-style: italic;
+}
+
+.event-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+    flex-wrap: nowrap;
+
+    .event-icon {
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .event-names {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .event-source,
+    .event-target {
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 6rem;
+    }
+
+    .event-arrow {
+        color: var(--text-secondary);
+        flex-shrink: 0;
+    }
+
+    .event-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        flex-shrink: 0;
+        gap: 0.05rem;
+    }
+
+    .event-round {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #667eea;
+        white-space: nowrap;
+    }
+
+    .event-time {
+        font-size: 0.68rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        font-family: monospace;
+    }
+}
+
+@media (max-width: 768px) {
+    .event-row {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.78rem;
+
+        .event-source,
+        .event-target { max-width: 4.5rem; }
     }
 }

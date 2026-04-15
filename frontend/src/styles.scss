@@ -79,6 +79,7 @@
 
 html, body {
   height: 100%;
+  height: 100dvh; /* iOS Safari : exclut la barre d'adresse dynamique */
   margin: 0;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -107,12 +108,19 @@ app-footer {
   height: $footerHeight;
 }
 
-/* MAIN prend exactement l'espace entre header et footer */
+/* MAIN prend l'espace entre le header et le bas de l'écran */
 main {
   position: absolute;
-  top: var(--header-height, $headerHeight);   /* espace égal à la hauteur du header */
+  top: var(--header-height, $headerHeight);
   left: 0;
   right: 0;
-  bottom: $footerHeight; /* laisse la place au footer fixe */
-  overflow: hidden;
+  bottom: 0;
+  overflow-y: auto;
+}
+
+/* iOS safe area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  app-footer {
+    height: calc(#{$footerHeight} + env(safe-area-inset-bottom));
+  }
 }
