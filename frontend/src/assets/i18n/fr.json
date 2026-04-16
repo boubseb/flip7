@@ -129,6 +129,10 @@
       "playersRefreshed": "✅ Liste des joueurs mise à jour !",
       "playerKicked": "✅ Joueur retiré de la room !"
     },
+    "status": {
+      "waiting": "En attente",
+      "in_game": "En jeu"
+    },
     "browseTabs": {
       "browse": "Parcourir les salles",
       "joinById": "Rejoindre par ID"
@@ -448,6 +452,9 @@
     "x2RoundsNotEliminated": "×2 sans élimination",
     "avgScoreWithX2": "Moy. score avec ×2",
     "avgScoreFlip7": "Moy. score Flip7",
+    "cardDistSection": "Distribution des cartes piochées",
+    "elimByCardSection": "Morts par double (valeur)",
+    "scoreDistSection": "Distribution des scores de round",
     "globalStats": "Statistiques Globales",
     "globalIndivStats": "Global — Solo",
     "globalTeamStats": "Global — Équipe",

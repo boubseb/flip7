@@ -232,6 +232,7 @@ public class Game {
         // Pioche la carte
         Card drawnCard = deck.draw();
         player.addCard(drawnCard);
+        trackCardDrawn(player, drawnCard);
 
         // Tracking ×2
         if (drawnCard instanceof OperatorCard && ((OperatorCard) drawnCard).getOperatorType() == OperatorType.MULTIPLY_2) {
@@ -312,6 +313,20 @@ public class Game {
     }
 
     /**
+     * Enregistre la carte piochée dans la distribution du joueur
+     */
+    private void trackCardDrawn(GamePlayer player, Card card) {
+        if (card instanceof NumberCard) {
+            player.trackCardDraw(String.valueOf(((NumberCard) card).getValue()));
+        } else if (card instanceof OperatorCard) {
+            OperatorType ot = ((OperatorCard) card).getOperatorType();
+            player.trackCardDraw(ot == OperatorType.MULTIPLY_2 ? "X2" : "PLUS_" + ot.getValue());
+        } else if (card instanceof SpecialCard) {
+            player.trackCardDraw(((SpecialCard) card).getSpecialType().name());
+        }
+    }
+
+    /**
      * Gère le cas où un joueur pioche un double
      * @param skipNextPlayer true si on doit passer au joueur suivant, false si c'est une pioche forcée en cours
      */
@@ -331,6 +346,9 @@ public class Game {
             // Le joueur est éliminé - son score de round passe à 0
             player.setStatus(PlayerStatus.ELIMINATED);
             player.resetRoundScore();
+            if (drawnCard instanceof NumberCard) {
+                player.setEliminatingCardValue(((NumberCard) drawnCard).getValue());
+            }
             System.out.println("💀 " + player.getUsername() + " éliminé ! Score du round remis à 0.");
             if (skipNextPlayer) {
                 nextPlayer();
@@ -691,7 +709,8 @@ public class Game {
             // Piocher une carte
             Card card = deck.draw();
             targetPlayer.addCard(card);
-            
+            trackCardDrawn(targetPlayer, card);
+
             int remaining = cardsToDraw - i - 1;
             System.out.println("   Carte " + (i+1) + "/" + cardsToDraw + ": " + card.getDisplayName() + " (restantes: " + remaining + ")");
             System.out.println("   Score actuel: " + targetPlayer.getRoundScore());
@@ -801,9 +820,13 @@ public class Game {
                 for (int i = 0; i < 3; i++) {
                     Card drawnCard = deck.draw();
                     targetPlayer.addCard(drawnCard);
+                    trackCardDrawn(targetPlayer, drawnCard);
                     // Vérifier le double après chaque carte
                     if (targetPlayer.hasDouble() && targetPlayer.getLifeCardsInHand() == 0) {
                         targetPlayer.setStatus(PlayerStatus.ELIMINATED);
+                        if (drawnCard instanceof NumberCard) {
+                            targetPlayer.setEliminatingCardValue(((NumberCard) drawnCard).getValue());
+                        }
                         if (targetPlayer.getUserId().equals(getCurrentPlayer().getUserId())) {
                             nextPlayer();
                         }
@@ -1035,6 +1058,7 @@ public class Game {
             // Ce joueur a besoin d'une carte
             Card card = deck.draw();
             player.addCard(card);
+            trackCardDrawn(player, card);
             if (card instanceof OperatorCard && ((OperatorCard) card).getOperatorType() == OperatorType.MULTIPLY_2) {
                 player.incrementX2CardsDrawn();
             }
@@ -1280,7 +1304,8 @@ public class Game {
             // Piocher une carte
             Card card = deck.draw();
             player.addCard(card);
-            
+            trackCardDrawn(player, card);
+
             int remaining = numCards - i - 1;
             System.out.println("   📥 Carte " + (i+1) + "/" + numCards + ": " + card.toString() + " (restantes: " + remaining + ")");
             

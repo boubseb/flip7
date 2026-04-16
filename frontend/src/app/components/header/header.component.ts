@@ -60,75 +60,58 @@ export class HeaderComponent {
   isProfilMenuOpen: boolean = false;
 
 
-  toggleIsRules() {
-    this.isRules = !this.isRules;
-    // Fermer le profil et les stats quand on ouvre les règles
-    if (this.isRules) {
-      this.isStatistics = false;
-      this.isProfil = false;
-    }
+  private closeAll(): void {
+    this.isRules = false;
+    this.isProfil = false;
+    this.isStatistics = false;
+    this.isHistory = false;
+    this.isAdminOpen = false;
+    this.isProfilMenuOpen = false;
   }
-  
+
+  toggleIsRules() {
+    const next = !this.isRules;
+    this.closeAll();
+    this.isRules = next;
+  }
+
   toggleIsProfil() {
-    this.isProfil = !this.isProfil;
-    // Fermer stats et règles quand on ouvre le profil
-    if (this.isProfil) {
-      this.isStatistics = false;
-      this.isRules = false;
-    }
+    const next = !this.isProfil;
+    this.closeAll();
+    this.isProfil = next;
   }
 
   toggleIsStatistics() {
-    this.isStatistics = !this.isStatistics;
-    // Fermer profil et règles quand on ouvre les stats
-    if (this.isStatistics) {
-      this.isProfil = false;
-      this.isRules = false;
-      this.isProfilMenuOpen = false;
-    }
+    const next = !this.isStatistics;
+    this.closeAll();
+    this.isStatistics = next;
   }
 
   toggleProfilMenu() {
-    this.isProfilMenuOpen = !this.isProfilMenuOpen;
-    // Fermer les règles et stats quand on ouvre le menu profil
-    if (this.isProfilMenuOpen) {
-      this.isRules = false;
-      this.isStatistics = false;
-    }
+    const next = !this.isProfilMenuOpen;
+    this.closeAll();
+    this.isProfilMenuOpen = next;
   }
 
   openProfil() {
-    this.isProfilMenuOpen = false;
+    this.closeAll();
     this.isProfil = true;
-    // Fermer les règles et stats si elles sont ouvertes
-    this.isRules = false;
-    this.isStatistics = false;
   }
 
   openStats() {
-    this.isProfilMenuOpen = false;
+    this.closeAll();
     this.isStatistics = true;
-    this.isRules = false;
-    this.isProfil = false;
-    this.isHistory = false;
   }
 
   openHistory() {
-    this.isProfilMenuOpen = false;
+    this.closeAll();
     this.isHistory = true;
-    this.isRules = false;
-    this.isProfil = false;
-    this.isStatistics = false;
   }
 
   toggleIsHistory() {
-    this.isHistory = !this.isHistory;
-    if (this.isHistory) {
-      this.isRules = false;
-      this.isProfil = false;
-      this.isStatistics = false;
-      this.isProfilMenuOpen = false;
-    }
+    const next = !this.isHistory;
+    this.closeAll();
+    this.isHistory = next;
   }
 
   onTitleClick(event: Event) {

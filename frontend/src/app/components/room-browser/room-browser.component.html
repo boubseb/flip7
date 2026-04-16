@@ -53,7 +53,7 @@
               </div>
               <div class="room-card-right">
                 <span class="room-score">🎯 {{ room.targetScore ?? 200 }} pts</span>
-                <span class="badge" [class]="room.status.toLowerCase()">{{ room.status }}</span>
+                <span class="badge" [class]="room.status.toLowerCase()">{{ 'room.status.' + room.status.toLowerCase() | translate }}</span>
               </div>
             </div>
           }

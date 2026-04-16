@@ -249,6 +249,49 @@
       </div>
     </div>
   </div>
+
+  <!-- Distribution des cartes piochées -->
+  @if (sortedCardEntries(s.cardsDrawnTotal).length > 0) {
+    <div class="stats-section">
+      <p class="section-title">🃏 {{ 'statistics.cardDistSection' | translate }}</p>
+      <table class="card-dist-table">
+        @for (e of sortedCardEntries(s.cardsDrawnTotal); track e[0]) {
+          <tr>
+            <td class="cd-name">{{ cardLabel(e[0]) }}</td>
+            <td class="cd-count">{{ e[1] }}</td>
+          </tr>
+        }
+      </table>
+    </div>
+  }
+
+  <!-- Morts par double -->
+  @if (sortedElimEntries(s.eliminationsByCard).length > 0) {
+    <div class="stats-section">
+      <p class="section-title">💀 {{ 'statistics.elimByCardSection' | translate }}</p>
+      <table class="card-dist-table">
+        @for (e of sortedElimEntries(s.eliminationsByCard); track e[0]) {
+          <tr>
+            <td class="cd-name">{{ e[0] }}</td>
+            <td class="cd-count">{{ e[1] }}</td>
+          </tr>
+        }
+      </table>
+    </div>
+  }
+
+  <!-- Distribution des scores de round -->
+  <div class="stats-section">
+    <p class="section-title">📊 {{ 'statistics.scoreDistSection' | translate }}</p>
+    <div class="stats-grid cols-3">
+      @for (b of SCORE_BUCKET_ORDER; track b) {
+        <div class="stat-item">
+          <span class="stat-value">{{ (s.scoreDistribution)[b] ?? 0 }}</span>
+          <span class="stat-label">{{ b }} pts</span>
+        </div>
+      }
+    </div>
+  </div>
 </ng-template>
 
 <!-- ── Template : stats globales ───────────────────────────────────── -->
@@ -290,4 +333,28 @@
       <span class="stat-label">{{ 'statistics.avgScoreFlip7' | translate }}</span>
     </div>
   </div>
+
+  @if (sortedCardEntries(g.cardsDrawnTotal).length > 0) {
+    <p class="section-title mt-2">🃏 {{ 'statistics.cardDistSection' | translate }}</p>
+    <table class="card-dist-table">
+      @for (e of sortedCardEntries(g.cardsDrawnTotal); track e[0]) {
+        <tr>
+          <td class="cd-name">{{ cardLabel(e[0]) }}</td>
+          <td class="cd-count">{{ e[1] }}</td>
+        </tr>
+      }
+    </table>
+  }
+
+  @if (sortedElimEntries(g.eliminationsByCard).length > 0) {
+    <p class="section-title mt-2">💀 {{ 'statistics.elimByCardSection' | translate }}</p>
+    <table class="card-dist-table">
+      @for (e of sortedElimEntries(g.eliminationsByCard); track e[0]) {
+        <tr>
+          <td class="cd-name">{{ e[0] }}</td>
+          <td class="cd-count">{{ e[1] }}</td>
+        </tr>
+      }
+    </table>
+  }
 </ng-template>

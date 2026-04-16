@@ -310,6 +310,8 @@ public class GameHistory {
         private int selfAssignedSpecialCards; // Nombre de fois auto-attribution carte spéciale
         private int drawThreeDealtSuccess;  // Nombre de +3 distribués qui ont réussi (perspective source)
         private int teamId;                 // ID équipe du joueur (0 si mode solo)
+        private Map<String, Integer> cardDrawCounts = new HashMap<>(); // Distribution des cartes piochées
+        private int eliminatingCardValue = -1; // Valeur de la carte double éliminatrice (-1 si non éliminé)
 
         public PlayerRoundData() {
         }
@@ -452,6 +454,12 @@ public class GameHistory {
 
         public int getTeamId() { return teamId; }
         public void setTeamId(int teamId) { this.teamId = teamId; }
+
+        public Map<String, Integer> getCardDrawCounts() { return cardDrawCounts; }
+        public void setCardDrawCounts(Map<String, Integer> cardDrawCounts) { this.cardDrawCounts = cardDrawCounts != null ? cardDrawCounts : new HashMap<>(); }
+
+        public int getEliminatingCardValue() { return eliminatingCardValue; }
+        public void setEliminatingCardValue(int eliminatingCardValue) { this.eliminatingCardValue = eliminatingCardValue; }
     }
 
     /**

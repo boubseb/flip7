@@ -129,6 +129,10 @@
       "playersRefreshed": "✅ Player list updated!",
       "playerKicked": "✅ Player removed from room!"
     },
+    "status": {
+      "waiting": "Waiting",
+      "in_game": "In game"
+    },
     "browseTabs": {
       "browse": "Browse Rooms",
       "joinById": "Join by ID"
@@ -448,6 +452,9 @@
     "x2RoundsNotEliminated": "×2 without elimination",
     "avgScoreWithX2": "Avg score with ×2",
     "avgScoreFlip7": "Avg Flip7 score",
+    "cardDistSection": "Card draw distribution",
+    "elimByCardSection": "Deaths by double (value)",
+    "scoreDistSection": "Round score distribution",
     "globalStats": "Global Statistics",
     "globalIndivStats": "Global — Solo",
     "globalTeamStats": "Global — Team",

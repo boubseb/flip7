@@ -23,6 +23,9 @@ export interface IndivStats {
   x2RoundsNotEliminated: number;
   avgScoreWithX2: number;
   avgScoreFlip7: number;
+  cardsDrawnTotal: Record<string, number>;
+  eliminationsByCard: Record<string, number>;
+  scoreDistribution: Record<string, number>;
 }
 
 export interface GlobalStats {
@@ -34,6 +37,8 @@ export interface GlobalStats {
   x2WithFlip7: number;
   avgScoreWithX2: number;
   avgScoreFlip7: number;
+  cardsDrawnTotal: Record<string, number>;
+  eliminationsByCard: Record<string, number>;
 }
 
 export interface PlayerStatistics {

@@ -22,6 +22,8 @@ public class GamePlayer {
     private int lifeCardsDrawnThisRound = 0;    // Cartes Vie piochées du deck (source, mode équipe)
     private int selfAssignedThisRound = 0;      // Fois où ce joueur s'est auto-attribué une carte spéciale
     private int x2CardsDrawnThisRound = 0;      // Cartes ×2 piochées du deck par ce joueur
+    private Map<String, Integer> cardDrawCounts = new HashMap<>(); // Distribution des cartes piochées
+    private int eliminatingCardValue = -1;      // Valeur de la carte qui a éliminé (-1 si non éliminé par double)
     private int teamId = 0; // 0 = no team (solo mode)
     private String userId;
     private String username;
@@ -261,6 +263,8 @@ public class GamePlayer {
         lifeCardsDrawnThisRound = 0;
         selfAssignedThisRound = 0;
         x2CardsDrawnThisRound = 0;
+        cardDrawCounts = new HashMap<>();
+        eliminatingCardValue = -1;
         receivedInitialCard = false;
         // Réinitialiser le contexte des actions spéciales
         stoppedByUserId = null;
@@ -293,6 +297,15 @@ public class GamePlayer {
 
     public int getX2CardsDrawnThisRound() { return x2CardsDrawnThisRound; }
     public void incrementX2CardsDrawn() { x2CardsDrawnThisRound++; }
+
+    public Map<String, Integer> getCardDrawCounts() { return cardDrawCounts; }
+
+    public void trackCardDraw(String key) {
+        cardDrawCounts.merge(key, 1, Integer::sum);
+    }
+
+    public int getEliminatingCardValue() { return eliminatingCardValue; }
+    public void setEliminatingCardValue(int eliminatingCardValue) { this.eliminatingCardValue = eliminatingCardValue; }
 
     /**
      * Ajoute le score du round au score total

@@ -1,5 +1,8 @@
 package com.flip7.flip7.dto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * DTO contenant les statistiques d'un joueur, séparées en sections indiv et équipe.
  */
@@ -57,6 +60,11 @@ public class PlayerStatistics {
         private double avgScoreWithX2;     // Moyenne des scores dans les rounds avec ×2
         private double avgScoreFlip7;      // Moyenne des scores dans les rounds Flip7
 
+        // Distribution des cartes piochées
+        private Map<String, Integer> cardsDrawnTotal = new HashMap<>();
+        private Map<String, Integer> eliminationsByCard = new HashMap<>();
+        private Map<String, Integer> scoreDistribution = new HashMap<>();
+
         // Getters et Setters
         public int getTotalGames() { return totalGames; }
         public void setTotalGames(int v) { this.totalGames = v; }
@@ -106,6 +114,12 @@ public class PlayerStatistics {
         public void setAvgScoreWithX2(double v) { this.avgScoreWithX2 = v; }
         public double getAvgScoreFlip7() { return avgScoreFlip7; }
         public void setAvgScoreFlip7(double v) { this.avgScoreFlip7 = v; }
+        public Map<String, Integer> getCardsDrawnTotal() { return cardsDrawnTotal; }
+        public void setCardsDrawnTotal(Map<String, Integer> v) { this.cardsDrawnTotal = v; }
+        public Map<String, Integer> getEliminationsByCard() { return eliminationsByCard; }
+        public void setEliminationsByCard(Map<String, Integer> v) { this.eliminationsByCard = v; }
+        public Map<String, Integer> getScoreDistribution() { return scoreDistribution; }
+        public void setScoreDistribution(Map<String, Integer> v) { this.scoreDistribution = v; }
     }
 
     // ── Nested: statistiques globales d'une catégorie de parties ─────────────
@@ -118,6 +132,8 @@ public class PlayerStatistics {
         private int x2WithFlip7;
         private double avgScoreWithX2;
         private double avgScoreFlip7;
+        private Map<String, Integer> cardsDrawnTotal = new HashMap<>();
+        private Map<String, Integer> eliminationsByCard = new HashMap<>();
 
         public int getCompletedGames() { return completedGames; }
         public void setCompletedGames(int v) { this.completedGames = v; }
@@ -135,5 +151,9 @@ public class PlayerStatistics {
         public void setAvgScoreWithX2(double v) { this.avgScoreWithX2 = v; }
         public double getAvgScoreFlip7() { return avgScoreFlip7; }
         public void setAvgScoreFlip7(double v) { this.avgScoreFlip7 = v; }
+        public Map<String, Integer> getCardsDrawnTotal() { return cardsDrawnTotal; }
+        public void setCardsDrawnTotal(Map<String, Integer> v) { this.cardsDrawnTotal = v; }
+        public Map<String, Integer> getEliminationsByCard() { return eliminationsByCard; }
+        public void setEliminationsByCard(Map<String, Integer> v) { this.eliminationsByCard = v; }
     }
 }

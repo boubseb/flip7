@@ -92,4 +92,35 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   formatNumber(num: number): string {
     return num.toFixed(2);
   }
+
+  readonly CARD_ORDER = [
+    '0','1','2','3','4','5','6','7','8','9','10','11','12',
+    'PLUS_2','PLUS_4','PLUS_6','PLUS_8','PLUS_10','X2',
+    'STOP','DRAW_THREE','LIFE'
+  ];
+
+  readonly SCORE_BUCKET_ORDER = ['0','1-10','11-20','21-30','31-40','41+'];
+
+  cardLabel(key: string): string {
+    const labels: Record<string, string> = {
+      'X2': '×2', 'PLUS_2': '+2', 'PLUS_4': '+4', 'PLUS_6': '+6',
+      'PLUS_8': '+8', 'PLUS_10': '+10',
+      'STOP': 'Stop', 'DRAW_THREE': '+3', 'LIFE': 'Vie'
+    };
+    return labels[key] ?? key;
+  }
+
+  sortedCardEntries(map: Record<string, number>): [string, number][] {
+    if (!map) return [];
+    return this.CARD_ORDER
+      .filter(k => (map[k] ?? 0) > 0)
+      .map(k => [k, map[k] ?? 0] as [string, number]);
+  }
+
+  sortedElimEntries(map: Record<string, number>): [string, number][] {
+    if (!map) return [];
+    return Array.from({ length: 13 }, (_, i) => String(i))
+      .filter(k => (map[k] ?? 0) > 0)
+      .map(k => [k, map[k] ?? 0] as [string, number]);
+  }
 }

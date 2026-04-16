@@ -6,7 +6,9 @@ import com.flip7.flip7.repository.GameHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,6 +69,10 @@ public class StatisticsService {
         int x2WithFlip7 = 0, x2RoundsNotEliminated = 0;
         int x2RoundsCount = 0, x2TotalPoints = 0;
         int flip7TotalPoints = 0;
+        Map<String, Integer> cardsDrawnTotal = new HashMap<>();
+        Map<String, Integer> eliminationsByCard = new HashMap<>();
+        Map<String, Integer> scoreDistribution = new HashMap<>(Map.of(
+            "0", 0, "1-10", 0, "11-20", 0, "21-30", 0, "31-40", 0, "41+", 0));
 
         for (GameHistory game : games) {
             if (game.getStatus() == GameHistory.GameStatus.COMPLETED) {
@@ -113,6 +119,17 @@ public class StatisticsService {
                     if (pd.isHasSevenDifferent()) x2WithFlip7++;
                 }
                 if (pd.isHasSevenDifferent()) flip7TotalPoints += score;
+
+                // Distribution des cartes piochées
+                if (pd.getCardDrawCounts() != null) {
+                    pd.getCardDrawCounts().forEach((k, v) -> cardsDrawnTotal.merge(k, v, Integer::sum));
+                }
+                if (pd.getEliminatingCardValue() >= 0) {
+                    eliminationsByCard.merge(String.valueOf(pd.getEliminatingCardValue()), 1, Integer::sum);
+                }
+                String bucket = score == 0 ? "0" : score <= 10 ? "1-10" : score <= 20 ? "11-20"
+                    : score <= 30 ? "21-30" : score <= 40 ? "31-40" : "41+";
+                scoreDistribution.merge(bucket, 1, Integer::sum);
             }
         }
 
@@ -142,6 +159,10 @@ public class StatisticsService {
         if (x2RoundsCount > 0) s.setAvgScoreWithX2((double) x2TotalPoints / x2RoundsCount);
         if (totalFlip7 > 0) s.setAvgScoreFlip7((double) flip7TotalPoints / totalFlip7);
 
+        s.setCardsDrawnTotal(cardsDrawnTotal);
+        s.setEliminationsByCard(eliminationsByCard);
+        s.setScoreDistribution(scoreDistribution);
+
         return s;
     }
 
@@ -158,6 +179,10 @@ public class StatisticsService {
         int indivX2Rounds = 0, teamX2Rounds = 0;
         int indivX2Points = 0, teamX2Points = 0;
         int indivFlip7Points = 0, teamFlip7Points = 0;
+        Map<String, Integer> indivCardsDrawn = new HashMap<>();
+        Map<String, Integer> teamCardsDrawn = new HashMap<>();
+        Map<String, Integer> indivElimByCard = new HashMap<>();
+        Map<String, Integer> teamElimByCard = new HashMap<>();
 
         for (GameHistory game : allGames) {
             boolean isTeam = game.isTeamMode();
@@ -191,6 +216,16 @@ public class StatisticsService {
                     } else {
                         if (score > indivMaxScore) indivMaxScore = score;
                     }
+
+                    // Distribution des cartes
+                    Map<String, Integer> cardsTarget = isTeam ? teamCardsDrawn : indivCardsDrawn;
+                    Map<String, Integer> elimTarget   = isTeam ? teamElimByCard : indivElimByCard;
+                    if (pd.getCardDrawCounts() != null) {
+                        pd.getCardDrawCounts().forEach((k, v) -> cardsTarget.merge(k, v, Integer::sum));
+                    }
+                    if (pd.getEliminatingCardValue() >= 0) {
+                        elimTarget.merge(String.valueOf(pd.getEliminatingCardValue()), 1, Integer::sum);
+                    }
                 }
             }
         }
@@ -203,6 +238,8 @@ public class StatisticsService {
         if (indivCompleted > 0) gi.setAverageRoundsPerGame((double) indivTotalRounds / indivCompleted);
         if (indivX2Rounds > 0) gi.setAvgScoreWithX2((double) indivX2Points / indivX2Rounds);
         if (indivFlip7 > 0) gi.setAvgScoreFlip7((double) indivFlip7Points / indivFlip7);
+        gi.setCardsDrawnTotal(indivCardsDrawn);
+        gi.setEliminationsByCard(indivElimByCard);
 
         PlayerStatistics.GlobalStats gt = stats.getGlobalTeam();
         gt.setCompletedGames(teamCompleted);
@@ -212,5 +249,7 @@ public class StatisticsService {
         if (teamCompleted > 0) gt.setAverageRoundsPerGame((double) teamTotalRounds / teamCompleted);
         if (teamX2Rounds > 0) gt.setAvgScoreWithX2((double) teamX2Points / teamX2Rounds);
         if (teamFlip7 > 0) gt.setAvgScoreFlip7((double) teamFlip7Points / teamFlip7);
+        gt.setCardsDrawnTotal(teamCardsDrawn);
+        gt.setEliminationsByCard(teamElimByCard);
     }
 }

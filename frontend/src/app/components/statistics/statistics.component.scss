@@ -315,6 +315,31 @@
   to { transform: rotate(360deg); }
 }
 
+.card-dist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+
+  .cd-name {
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 0.2rem 0.5rem 0.2rem 0;
+  }
+
+  .cd-count {
+    color: var(--text-primary);
+    font-weight: 800;
+    text-align: right;
+    padding: 0.2rem 0;
+  }
+
+  tr:not(:last-child) td {
+    border-bottom: 1px solid var(--border-color);
+  }
+}
+
+.mt-2 { margin-top: 0.75rem; }
+
 // Responsive
 @media (max-width: 768px) {
   .stats-grid {

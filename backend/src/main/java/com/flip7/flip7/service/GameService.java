@@ -1098,6 +1098,8 @@ public class GameService {
             data.setLifeCardsDrawn(player.getLifeCardsDrawnThisRound());
             data.setSelfAssignedSpecialCards(player.getSelfAssignedThisRound());
             data.setTeamId(player.getTeamId());
+            data.setCardDrawCounts(new java.util.HashMap<>(player.getCardDrawCounts()));
+            data.setEliminatingCardValue(player.getEliminatingCardValue());
 
             roundHistory.addPlayerData(data);
 
