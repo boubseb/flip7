@@ -233,6 +233,11 @@ public class Game {
         Card drawnCard = deck.draw();
         player.addCard(drawnCard);
 
+        // Tracking ×2
+        if (drawnCard instanceof OperatorCard && ((OperatorCard) drawnCard).getOperatorType() == OperatorType.MULTIPLY_2) {
+            player.incrementX2CardsDrawn();
+        }
+
         System.out.println("🃏 " + player.getUsername() + " pioche: " + drawnCard.toString());
 
         // Vérification si c'est une carte spéciale (STOP ou DRAW_THREE)
@@ -1030,6 +1035,9 @@ public class Game {
             // Ce joueur a besoin d'une carte
             Card card = deck.draw();
             player.addCard(card);
+            if (card instanceof OperatorCard && ((OperatorCard) card).getOperatorType() == OperatorType.MULTIPLY_2) {
+                player.incrementX2CardsDrawn();
+            }
             player.setStatus(PlayerStatus.PLAYING);
             player.setReceivedInitialCard(true); // Marquer avant toute pause potentielle
                 

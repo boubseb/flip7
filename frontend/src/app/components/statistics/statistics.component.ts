@@ -3,7 +3,7 @@ import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { UserService } from '../../services/user/user.service';
-import { StatisticsService } from '../../services/statistics/statistics.service';
+import { StatisticsService, StatsFilters } from '../../services/statistics/statistics.service';
 import { PlayerStatistics } from '../../models/statistics/player-statistics.model';
 
 @Component({
@@ -19,6 +19,12 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   error: string | null = null;
   currentUserId: string | null = null;
   activeTab: 'indiv' | 'team' = 'indiv';
+
+  // Filtres : null = all, true/false = filtre actif
+  filterPersistentDeck: boolean | null = null;
+  filterStatsEnabled: boolean | null = null;
+  filterCompletedOnly: boolean | null = null;
+
   private gameEndedSub: Subscription | null = null;
 
   constructor(
@@ -59,7 +65,12 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     if (!this.currentUserId) return;
     this.loading = true;
     this.error = null;
-    this.statisticsService.getPlayerStatistics(this.currentUserId).subscribe({
+    const filters: StatsFilters = {
+      persistentDeck: this.filterPersistentDeck,
+      statsEnabled:   this.filterStatsEnabled,
+      completedOnly:  this.filterCompletedOnly
+    };
+    this.statisticsService.getPlayerStatistics(this.currentUserId, filters).subscribe({
       next: (stats: any) => {
         this.statistics = stats;
         this.loading = false;
@@ -69,6 +80,13 @@ export class StatisticsComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  setFilter(key: 'persistentDeck' | 'statsEnabled' | 'completedOnly', value: boolean | null): void {
+    if (key === 'persistentDeck') this.filterPersistentDeck = value;
+    else if (key === 'statsEnabled') this.filterStatsEnabled = value;
+    else this.filterCompletedOnly = value;
+    this.loadStatistics();
   }
 
   formatNumber(num: number): string {

@@ -184,6 +184,9 @@ public class GameService {
         
         // Créer un nouvel historique de partie
         GameHistory history = new GameHistory(roomId, room.getPlayers());
+        history.setTeamMode(teamMode);
+        history.setPersistentDeck(persistentDeck);
+        history.setStatisticsEnabled(room.isStatisticsEnabled());
         history = gameHistoryRepository.save(history);
         gameHistoryIds.put(roomId, history.getId());
         
@@ -1090,6 +1093,7 @@ public class GameService {
 
             // Nouvelles stats détaillées
             data.setStopCardsDrawn(player.getStopCardsDrawnThisRound());
+            data.setX2CardsDrawn(player.getX2CardsDrawnThisRound());
             data.setDrawThreeDrawn(player.getDrawThreeDrawnThisRound());
             data.setLifeCardsDrawn(player.getLifeCardsDrawnThisRound());
             data.setSelfAssignedSpecialCards(player.getSelfAssignedThisRound());

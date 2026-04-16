@@ -45,10 +45,16 @@ public class GameHistory {
     private String winnerId;            // ID du gagnant (null si pas terminé)
 
     @Column(name = "team_mode")
-    private boolean teamMode = false;   // Partie en mode équipe
+    private Boolean teamMode = false;   // Partie en mode équipe
 
     @Column(name = "winner_team_id")
     private int winnerTeamId = 0;       // ID équipe gagnante (0 = mode solo)
+
+    @Column(name = "persistent_deck")
+    private Boolean persistentDeck = false; // Paquet persistant entre rounds
+
+    @Column(name = "statistics_enabled")
+    private Boolean statisticsEnabled = false; // Stats (proba élimination) activées
 
     @Column(name = "total_rounds")
     private int totalRounds;            // Nombre de rounds joués
@@ -188,11 +194,17 @@ public class GameHistory {
         this.totalRounds = this.rounds.size();
     }
 
-    public boolean isTeamMode() { return teamMode; }
-    public void setTeamMode(boolean teamMode) { this.teamMode = teamMode; }
+    public boolean isTeamMode() { return teamMode != null && teamMode; }
+    public void setTeamMode(Boolean teamMode) { this.teamMode = teamMode != null ? teamMode : false; }
 
     public int getWinnerTeamId() { return winnerTeamId; }
     public void setWinnerTeamId(int winnerTeamId) { this.winnerTeamId = winnerTeamId; }
+
+    public boolean isPersistentDeck() { return persistentDeck != null && persistentDeck; }
+    public void setPersistentDeck(Boolean persistentDeck) { this.persistentDeck = persistentDeck != null ? persistentDeck : false; }
+
+    public boolean isStatisticsEnabled() { return statisticsEnabled != null && statisticsEnabled; }
+    public void setStatisticsEnabled(Boolean statisticsEnabled) { this.statisticsEnabled = statisticsEnabled != null ? statisticsEnabled : false; }
 
     public List<PlayerScore> getFinalScores() {
         return finalScores;
@@ -292,6 +304,7 @@ public class GameHistory {
         private boolean completedDrawThree; // A réussi le +3 (sans élimination)
         private boolean eliminatedByDrawThree; // Éliminé par un double lors du +3
         private int stopCardsDrawn;         // Nombre de cartes Stop piochées
+        private int x2CardsDrawn;           // Nombre de cartes ×2 piochées
         private int drawThreeDrawn;         // Nombre de cartes +3 piochées
         private int lifeCardsDrawn;         // Nombre de cartes Vie piochées (comptées en mode équipe)
         private int selfAssignedSpecialCards; // Nombre de fois auto-attribution carte spéciale
@@ -421,6 +434,9 @@ public class GameHistory {
 
         public int getStopCardsDrawn() { return stopCardsDrawn; }
         public void setStopCardsDrawn(int stopCardsDrawn) { this.stopCardsDrawn = stopCardsDrawn; }
+
+        public int getX2CardsDrawn() { return x2CardsDrawn; }
+        public void setX2CardsDrawn(int x2CardsDrawn) { this.x2CardsDrawn = x2CardsDrawn; }
 
         public int getDrawThreeDrawn() { return drawThreeDrawn; }
         public void setDrawThreeDrawn(int drawThreeDrawn) { this.drawThreeDrawn = drawThreeDrawn; }

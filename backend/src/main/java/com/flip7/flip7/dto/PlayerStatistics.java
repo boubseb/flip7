@@ -22,6 +22,7 @@ public class PlayerStatistics {
 
     // ── Nested: stats personnelles d'une catégorie de parties ────────────────
     public static class IndivStats {
+        private int totalGames;
         private int completedGames;
         private int victories;
         private int totalFlip7;
@@ -31,9 +32,10 @@ public class PlayerStatistics {
         private double averagePointsPerScoringRound;
         private int roundsEliminatedByDouble;
 
-        // Cartes Stop
+        // Cartes Stop / ×2
         private int stopCardsDrawn;    // Piochées (perspective source)
         private int stopCardsReceived; // Reçues (perspective cible)
+        private int x2CardsDrawn;      // ×2 piochés
 
         // Cartes Vie
         private int lifeCardsObtained; // Reçues (toutes méthodes confondues)
@@ -49,7 +51,15 @@ public class PlayerStatistics {
         // Cartes spéciales auto-attribuées
         private int selfAssignedSpecialCards;
 
+        // Combos ×2
+        private int x2WithFlip7;           // Rounds avec ×2 ET Flip7
+        private int x2RoundsNotEliminated; // Rounds avec ×2 sans élimination
+        private double avgScoreWithX2;     // Moyenne des scores dans les rounds avec ×2
+        private double avgScoreFlip7;      // Moyenne des scores dans les rounds Flip7
+
         // Getters et Setters
+        public int getTotalGames() { return totalGames; }
+        public void setTotalGames(int v) { this.totalGames = v; }
         public int getCompletedGames() { return completedGames; }
         public void setCompletedGames(int v) { this.completedGames = v; }
         public int getVictories() { return victories; }
@@ -70,6 +80,8 @@ public class PlayerStatistics {
         public void setStopCardsDrawn(int v) { this.stopCardsDrawn = v; }
         public int getStopCardsReceived() { return stopCardsReceived; }
         public void setStopCardsReceived(int v) { this.stopCardsReceived = v; }
+        public int getX2CardsDrawn() { return x2CardsDrawn; }
+        public void setX2CardsDrawn(int v) { this.x2CardsDrawn = v; }
         public int getLifeCardsObtained() { return lifeCardsObtained; }
         public void setLifeCardsObtained(int v) { this.lifeCardsObtained = v; }
         public int getLifeCardsDrawn() { return lifeCardsDrawn; }
@@ -86,6 +98,14 @@ public class PlayerStatistics {
         public void setDrawThreeDealtSuccess(int v) { this.drawThreeDealtSuccess = v; }
         public int getSelfAssignedSpecialCards() { return selfAssignedSpecialCards; }
         public void setSelfAssignedSpecialCards(int v) { this.selfAssignedSpecialCards = v; }
+        public int getX2WithFlip7() { return x2WithFlip7; }
+        public void setX2WithFlip7(int v) { this.x2WithFlip7 = v; }
+        public int getX2RoundsNotEliminated() { return x2RoundsNotEliminated; }
+        public void setX2RoundsNotEliminated(int v) { this.x2RoundsNotEliminated = v; }
+        public double getAvgScoreWithX2() { return avgScoreWithX2; }
+        public void setAvgScoreWithX2(double v) { this.avgScoreWithX2 = v; }
+        public double getAvgScoreFlip7() { return avgScoreFlip7; }
+        public void setAvgScoreFlip7(double v) { this.avgScoreFlip7 = v; }
     }
 
     // ── Nested: statistiques globales d'une catégorie de parties ─────────────
@@ -95,6 +115,9 @@ public class PlayerStatistics {
         private int totalFlip7;
         private int maxScoreInOneRound;
         private int theoreticalMaxScore = 156; // +2+4+6+8+10 + (12+11+10+9+8+7+6) × 2
+        private int x2WithFlip7;
+        private double avgScoreWithX2;
+        private double avgScoreFlip7;
 
         public int getCompletedGames() { return completedGames; }
         public void setCompletedGames(int v) { this.completedGames = v; }
@@ -106,5 +129,11 @@ public class PlayerStatistics {
         public void setMaxScoreInOneRound(int v) { this.maxScoreInOneRound = v; }
         public int getTheoreticalMaxScore() { return theoreticalMaxScore; }
         public void setTheoreticalMaxScore(int v) { this.theoreticalMaxScore = v; }
+        public int getX2WithFlip7() { return x2WithFlip7; }
+        public void setX2WithFlip7(int v) { this.x2WithFlip7 = v; }
+        public double getAvgScoreWithX2() { return avgScoreWithX2; }
+        public void setAvgScoreWithX2(double v) { this.avgScoreWithX2 = v; }
+        public double getAvgScoreFlip7() { return avgScoreFlip7; }
+        public void setAvgScoreFlip7(double v) { this.avgScoreFlip7 = v; }
     }
 }

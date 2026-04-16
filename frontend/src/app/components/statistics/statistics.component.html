@@ -23,6 +23,34 @@
 @if (statistics && !loading && !error) {
   <div class="statistics-container">
 
+    <!-- Filtres -->
+    <div class="filters-bar">
+      <div class="filter-group">
+        <span class="filter-label">{{ 'statistics.filterPersistentDeck' | translate }}</span>
+        <div class="filter-chips">
+          <button class="chip" [class.active]="filterPersistentDeck === null"  (click)="setFilter('persistentDeck', null)">{{ 'statistics.filterAll' | translate }}</button>
+          <button class="chip" [class.active]="filterPersistentDeck === false" (click)="setFilter('persistentDeck', false)">{{ 'statistics.filterNo' | translate }}</button>
+          <button class="chip" [class.active]="filterPersistentDeck === true"  (click)="setFilter('persistentDeck', true)">{{ 'statistics.filterYes' | translate }}</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">{{ 'statistics.filterStatsEnabled' | translate }}</span>
+        <div class="filter-chips">
+          <button class="chip" [class.active]="filterStatsEnabled === null"  (click)="setFilter('statsEnabled', null)">{{ 'statistics.filterAll' | translate }}</button>
+          <button class="chip" [class.active]="filterStatsEnabled === false" (click)="setFilter('statsEnabled', false)">{{ 'statistics.filterNo' | translate }}</button>
+          <button class="chip" [class.active]="filterStatsEnabled === true"  (click)="setFilter('statsEnabled', true)">{{ 'statistics.filterYes' | translate }}</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">{{ 'statistics.filterCompleted' | translate }}</span>
+        <div class="filter-chips">
+          <button class="chip" [class.active]="filterCompletedOnly === null"  (click)="setFilter('completedOnly', null)">{{ 'statistics.filterAll' | translate }}</button>
+          <button class="chip" [class.active]="filterCompletedOnly === false" (click)="setFilter('completedOnly', false)">{{ 'statistics.filterNo' | translate }}</button>
+          <button class="chip" [class.active]="filterCompletedOnly === true"  (click)="setFilter('completedOnly', true)">{{ 'statistics.filterYes' | translate }}</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Tabs Solo / Équipe -->
     <div class="mode-tabs">
       <button class="mode-tab" [class.active]="activeTab === 'indiv'" (click)="activeTab = 'indiv'">
@@ -61,9 +89,14 @@
   <!-- Parties & Victoires -->
   <div class="stats-section">
     <p class="section-title">{{ 'profile.gamesPlayed' | translate }}</p>
-    <div class="stats-grid cols-4">
+    <div class="stats-grid cols-3">
       <div class="stat-item accent">
         <span class="stat-icon">🎮</span>
+        <span class="stat-value">{{ s.totalGames }}</span>
+        <span class="stat-label">{{ 'statistics.totalGames' | translate }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">✅</span>
         <span class="stat-value">{{ s.completedGames }}</span>
         <span class="stat-label">{{ 'statistics.completedGames' | translate }}</span>
       </div>
@@ -112,17 +145,22 @@
     </div>
   </div>
 
-  <!-- Cartes Stop -->
+  <!-- Cartes spéciales piochées -->
   <div class="stats-section">
-    <p class="section-title">🛑 Stop</p>
+    <p class="section-title">🃏 {{ 'statistics.drawnCards' | translate }}</p>
     <div class="stats-grid cols-3">
       <div class="stat-item danger">
-        <span class="stat-icon">🃏</span>
+        <span class="stat-icon">🛑</span>
         <span class="stat-value">{{ s.stopCardsDrawn }}</span>
         <span class="stat-label">{{ 'statistics.stopCardsDrawn' | translate }}</span>
       </div>
+      <div class="stat-item gold">
+        <span class="stat-icon">×2</span>
+        <span class="stat-value">{{ s.x2CardsDrawn }}</span>
+        <span class="stat-label">{{ 'statistics.x2CardsDrawn' | translate }}</span>
+      </div>
       <div class="stat-item danger">
-        <span class="stat-icon">🛑</span>
+        <span class="stat-icon">🚫</span>
         <span class="stat-value">{{ s.stopCardsReceived }}</span>
         <span class="stat-label">{{ 'statistics.stopCardsReceived' | translate }}</span>
       </div>
@@ -130,6 +168,33 @@
         <span class="stat-icon">🎭</span>
         <span class="stat-value">{{ s.selfAssignedSpecialCards }}</span>
         <span class="stat-label">{{ 'statistics.selfAssignedSpecialCards' | translate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Combos ×2 -->
+  <div class="stats-section">
+    <p class="section-title">×2 {{ 'statistics.x2CombosSection' | translate }}</p>
+    <div class="stats-grid cols-2">
+      <div class="stat-item gold">
+        <span class="stat-icon">🎯</span>
+        <span class="stat-value">{{ s.x2WithFlip7 }}</span>
+        <span class="stat-label">{{ 'statistics.x2WithFlip7' | translate }}</span>
+      </div>
+      <div class="stat-item success">
+        <span class="stat-icon">✅</span>
+        <span class="stat-value">{{ s.x2RoundsNotEliminated }}</span>
+        <span class="stat-label">{{ 'statistics.x2RoundsNotEliminated' | translate }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📊</span>
+        <span class="stat-value">{{ formatNumber(s.avgScoreWithX2) }}</span>
+        <span class="stat-label">{{ 'statistics.avgScoreWithX2' | translate }}</span>
+      </div>
+      <div class="stat-item accent">
+        <span class="stat-icon">🏅</span>
+        <span class="stat-value">{{ formatNumber(s.avgScoreFlip7) }}</span>
+        <span class="stat-label">{{ 'statistics.avgScoreFlip7' | translate }}</span>
       </div>
     </div>
   </div>
@@ -208,6 +273,21 @@
       <span class="stat-icon">🔥</span>
       <span class="stat-value">{{ g.maxScoreInOneRound }}</span>
       <span class="stat-label">{{ 'statistics.globalMaxScoreInOneRound' | translate }}</span>
+    </div>
+    <div class="stat-item gold">
+      <span class="stat-icon">⚡</span>
+      <span class="stat-value">{{ g.x2WithFlip7 }}</span>
+      <span class="stat-label">{{ 'statistics.x2WithFlip7' | translate }}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">📈</span>
+      <span class="stat-value">{{ formatNumber(g.avgScoreWithX2) }}</span>
+      <span class="stat-label">{{ 'statistics.avgScoreWithX2' | translate }}</span>
+    </div>
+    <div class="stat-item accent">
+      <span class="stat-icon">🏅</span>
+      <span class="stat-value">{{ formatNumber(g.avgScoreFlip7) }}</span>
+      <span class="stat-label">{{ 'statistics.avgScoreFlip7' | translate }}</span>
     </div>
   </div>
 </ng-template>

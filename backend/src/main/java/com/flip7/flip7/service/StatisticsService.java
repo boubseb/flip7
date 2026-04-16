@@ -17,15 +17,28 @@ public class StatisticsService {
 
     /**
      * Calcule les statistiques d'un joueur, séparées en indiv / équipe.
+     * Les filtres sont optionnels (null = pas de filtre sur ce critère).
      */
-    public PlayerStatistics getPlayerStatistics(String userId) {
+    public PlayerStatistics getPlayerStatistics(String userId,
+                                                Boolean persistentDeckFilter,
+                                                Boolean statsEnabledFilter,
+                                                Boolean completedOnlyFilter) {
         PlayerStatistics stats = new PlayerStatistics();
 
         List<GameHistory> playerGames = gameHistoryRepository.findByPlayerIdsContaining(userId);
         System.out.println("📊 getPlayerStatistics: userId=" + userId + " → " + playerGames.size() + " partie(s)");
 
-        List<GameHistory> indivGames = playerGames.stream().filter(g -> !g.isTeamMode()).collect(Collectors.toList());
-        List<GameHistory> teamGames  = playerGames.stream().filter(GameHistory::isTeamMode).collect(Collectors.toList());
+        // Appliquer les filtres
+        List<GameHistory> filtered = playerGames.stream()
+            .filter(g -> persistentDeckFilter == null || g.isPersistentDeck() == persistentDeckFilter)
+            .filter(g -> statsEnabledFilter  == null || g.isStatisticsEnabled() == statsEnabledFilter)
+            .filter(g -> completedOnlyFilter == null
+                || (completedOnlyFilter && g.getStatus() == GameHistory.GameStatus.COMPLETED)
+                || (!completedOnlyFilter && g.getStatus() != GameHistory.GameStatus.COMPLETED))
+            .collect(Collectors.toList());
+
+        List<GameHistory> indivGames = filtered.stream().filter(g -> !g.isTeamMode()).collect(Collectors.toList());
+        List<GameHistory> teamGames  = filtered.stream().filter(GameHistory::isTeamMode).collect(Collectors.toList());
 
         stats.setIndiv(computePersonalStats(indivGames, userId));
         stats.setTeam(computePersonalStats(teamGames, userId));
@@ -40,15 +53,20 @@ public class StatisticsService {
     private PlayerStatistics.IndivStats computePersonalStats(List<GameHistory> games, String userId) {
         PlayerStatistics.IndivStats s = new PlayerStatistics.IndivStats();
 
+        s.setTotalGames(games.size());
         int completedGames = 0, victories = 0;
         int totalFlip7 = 0, totalRounds = 0;
         int maxScore = 0, totalPoints = 0, scoringRounds = 0;
         int roundsEliminatedByDouble = 0;
         int stopCardsDrawn = 0, stopCardsReceived = 0;
+        int x2CardsDrawn = 0;
         int lifeCardsObtained = 0, lifeCardsDrawn = 0;
         int drawThreeDrawn = 0, drawThreeReceived = 0;
         int drawThreeCompleted = 0, drawThreeWithElim = 0, drawThreeDealtSuccess = 0;
         int selfAssigned = 0;
+        int x2WithFlip7 = 0, x2RoundsNotEliminated = 0;
+        int x2RoundsCount = 0, x2TotalPoints = 0;
+        int flip7TotalPoints = 0;
 
         for (GameHistory game : games) {
             if (game.getStatus() == GameHistory.GameStatus.COMPLETED) {
@@ -71,7 +89,8 @@ public class StatisticsService {
                 if (pd.isHasSevenDifferent()) totalFlip7++;
                 if (pd.isEliminatedByDouble() && !pd.isEliminatedByDrawThree()) roundsEliminatedByDouble++;
 
-                stopCardsDrawn   += pd.getStopCardsDrawn();
+                stopCardsDrawn += pd.getStopCardsDrawn();
+                x2CardsDrawn   += pd.getX2CardsDrawn();
                 if (pd.isReceivedStopCard()) stopCardsReceived++;
 
                 lifeCardsObtained += pd.getLifeCardsObtained();
@@ -85,6 +104,15 @@ public class StatisticsService {
                 }
                 drawThreeDealtSuccess += pd.getDrawThreeDealtSuccess();
                 selfAssigned          += pd.getSelfAssignedSpecialCards();
+
+                boolean drewX2 = pd.getX2CardsDrawn() > 0;
+                if (drewX2) {
+                    x2RoundsCount++;
+                    x2TotalPoints += score;
+                    if (!pd.isEliminated()) x2RoundsNotEliminated++;
+                    if (pd.isHasSevenDifferent()) x2WithFlip7++;
+                }
+                if (pd.isHasSevenDifferent()) flip7TotalPoints += score;
             }
         }
 
@@ -95,6 +123,7 @@ public class StatisticsService {
         s.setMaxScoreInOneRound(maxScore);
         s.setRoundsEliminatedByDouble(roundsEliminatedByDouble);
         s.setStopCardsDrawn(stopCardsDrawn);
+        s.setX2CardsDrawn(x2CardsDrawn);
         s.setStopCardsReceived(stopCardsReceived);
         s.setLifeCardsObtained(lifeCardsObtained);
         s.setLifeCardsDrawn(lifeCardsDrawn);
@@ -108,6 +137,11 @@ public class StatisticsService {
         if (totalRounds > 0) s.setAveragePointsPerRound((double) totalPoints / totalRounds);
         if (scoringRounds > 0) s.setAveragePointsPerScoringRound((double) totalPoints / scoringRounds);
 
+        s.setX2WithFlip7(x2WithFlip7);
+        s.setX2RoundsNotEliminated(x2RoundsNotEliminated);
+        if (x2RoundsCount > 0) s.setAvgScoreWithX2((double) x2TotalPoints / x2RoundsCount);
+        if (totalFlip7 > 0) s.setAvgScoreFlip7((double) flip7TotalPoints / totalFlip7);
+
         return s;
     }
 
@@ -120,6 +154,10 @@ public class StatisticsService {
         int indivTotalRounds = 0, teamTotalRounds = 0;
         int indivFlip7 = 0, teamFlip7 = 0;
         int indivMaxScore = 0, teamMaxScore = 0;
+        int indivX2Flip7 = 0, teamX2Flip7 = 0;
+        int indivX2Rounds = 0, teamX2Rounds = 0;
+        int indivX2Points = 0, teamX2Points = 0;
+        int indivFlip7Points = 0, teamFlip7Points = 0;
 
         for (GameHistory game : allGames) {
             boolean isTeam = game.isTeamMode();
@@ -137,10 +175,17 @@ public class StatisticsService {
 
             for (GameHistory.RoundHistory round : game.getRounds()) {
                 for (GameHistory.PlayerRoundData pd : round.getPlayerData()) {
-                    if (pd.isHasSevenDifferent()) {
-                        if (isTeam) teamFlip7++; else indivFlip7++;
-                    }
+                    boolean flip7 = pd.isHasSevenDifferent();
+                    boolean drewX2 = pd.getX2CardsDrawn() > 0;
                     int score = pd.getRoundScore();
+                    if (flip7) {
+                        if (isTeam) { teamFlip7++; teamFlip7Points += score; }
+                        else        { indivFlip7++; indivFlip7Points += score; }
+                    }
+                    if (drewX2) {
+                        if (isTeam) { teamX2Rounds++; teamX2Points += score; if (flip7) teamX2Flip7++; }
+                        else        { indivX2Rounds++; indivX2Points += score; if (flip7) indivX2Flip7++; }
+                    }
                     if (isTeam) {
                         if (score > teamMaxScore) teamMaxScore = score;
                     } else {
@@ -154,12 +199,18 @@ public class StatisticsService {
         gi.setCompletedGames(indivCompleted);
         gi.setTotalFlip7(indivFlip7);
         gi.setMaxScoreInOneRound(indivMaxScore);
+        gi.setX2WithFlip7(indivX2Flip7);
         if (indivCompleted > 0) gi.setAverageRoundsPerGame((double) indivTotalRounds / indivCompleted);
+        if (indivX2Rounds > 0) gi.setAvgScoreWithX2((double) indivX2Points / indivX2Rounds);
+        if (indivFlip7 > 0) gi.setAvgScoreFlip7((double) indivFlip7Points / indivFlip7);
 
         PlayerStatistics.GlobalStats gt = stats.getGlobalTeam();
         gt.setCompletedGames(teamCompleted);
         gt.setTotalFlip7(teamFlip7);
         gt.setMaxScoreInOneRound(teamMaxScore);
+        gt.setX2WithFlip7(teamX2Flip7);
         if (teamCompleted > 0) gt.setAverageRoundsPerGame((double) teamTotalRounds / teamCompleted);
+        if (teamX2Rounds > 0) gt.setAvgScoreWithX2((double) teamX2Points / teamX2Rounds);
+        if (teamFlip7 > 0) gt.setAvgScoreFlip7((double) teamFlip7Points / teamFlip7);
     }
 }

@@ -21,6 +21,7 @@ public class GamePlayer {
     private int drawThreeDrawnThisRound = 0;    // Cartes +3 piochées du deck par ce joueur
     private int lifeCardsDrawnThisRound = 0;    // Cartes Vie piochées du deck (source, mode équipe)
     private int selfAssignedThisRound = 0;      // Fois où ce joueur s'est auto-attribué une carte spéciale
+    private int x2CardsDrawnThisRound = 0;      // Cartes ×2 piochées du deck par ce joueur
     private int teamId = 0; // 0 = no team (solo mode)
     private String userId;
     private String username;
@@ -259,6 +260,7 @@ public class GamePlayer {
         drawThreeDrawnThisRound = 0;
         lifeCardsDrawnThisRound = 0;
         selfAssignedThisRound = 0;
+        x2CardsDrawnThisRound = 0;
         receivedInitialCard = false;
         // Réinitialiser le contexte des actions spéciales
         stoppedByUserId = null;
@@ -288,6 +290,9 @@ public class GamePlayer {
 
     public int getSelfAssignedThisRound() { return selfAssignedThisRound; }
     public void incrementSelfAssigned() { selfAssignedThisRound++; }
+
+    public int getX2CardsDrawnThisRound() { return x2CardsDrawnThisRound; }
+    public void incrementX2CardsDrawn() { x2CardsDrawnThisRound++; }
 
     /**
      * Ajoute le score du round au score total

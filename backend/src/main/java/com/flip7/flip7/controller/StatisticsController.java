@@ -14,12 +14,20 @@ public class StatisticsController {
     private StatisticsService statisticsService;
 
     /**
-     * Récupère les statistiques d'un joueur
+     * Récupère les statistiques d'un joueur avec filtres optionnels.
+     * @param persistentDeck  null = all, true = only persistent deck, false = only normal
+     * @param statsEnabled    null = all, true = only stats-enabled, false = only without
+     * @param completedOnly   null = all, true = only completed, false = only non-completed
      */
     @GetMapping("/{userId}")
-    public ResponseEntity<PlayerStatistics> getPlayerStatistics(@PathVariable String userId) {
+    public ResponseEntity<PlayerStatistics> getPlayerStatistics(
+            @PathVariable String userId,
+            @RequestParam(required = false) Boolean persistentDeck,
+            @RequestParam(required = false) Boolean statsEnabled,
+            @RequestParam(required = false) Boolean completedOnly) {
         try {
-            PlayerStatistics stats = statisticsService.getPlayerStatistics(userId);
+            PlayerStatistics stats = statisticsService.getPlayerStatistics(
+                userId, persistentDeck, statsEnabled, completedOnly);
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
             System.err.println("❌ Erreur lors de la récupération des statistiques: " + e.getMessage());
